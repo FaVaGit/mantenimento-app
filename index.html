@@ -144,6 +144,7 @@
       font-size: 0.78rem;
       line-height: 1.35;
       color: #3d5250;
+      display: none;
     }
 
     .mode-guideline a {
@@ -838,15 +839,14 @@
           <div class="shared-grid">
             <div class="field">
               <label for="calcMode" class="label-row">Modalita calcolo
-                <span class="hint" title="Scegli tra modalita legale-proporzionale e simulazione semplificata sulla differenza netti.">i</span>
+                <span class="hint" title="Scegli tra modalita legale-proporzionale, semplificata o linea guida Tribunale di Genova.">i</span>
               </label>
               <select id="calcMode">
                 <option value="legal" selected>Legale-proporzionale (consigliata)</option>
                 <option value="simple">Semplificata: differenza netti x %</option>
+                <option value="genova">Linee guida Tribunale di Genova</option>
               </select>
-              <div class="mode-guideline">
-                Riferimento utile: <a href="https://www.ufficigiudiziarigenova.it/documentazione/D_112851.pdf" target="_blank" rel="noopener noreferrer">Linee guida del Tribunale di Genova (PDF)</a>.
-              </div>
+              <div class="mode-guideline" id="modeGuideline"></div>
             </div>
             <div class="field">
               <label for="numFigli" class="label-row">Numero figli
@@ -1523,6 +1523,17 @@
       simplePerc.title = isSimple
         ? "Percentuale usata nella formula semplificata."
         : "Campo inattivo: viene usato solo nella modalita semplificata.";
+
+      const guideline = document.getElementById("modeGuideline");
+      if (guideline) {
+        if (mode === "genova") {
+          guideline.innerHTML = "Riferimento modalita selezionata: <a href=\"https://www.ufficigiudiziarigenova.it/documentazione/D_112851.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">Linee guida del Tribunale di Genova (PDF)</a>.";
+          guideline.style.display = "block";
+        } else {
+          guideline.innerHTML = "";
+          guideline.style.display = "none";
+        }
+      }
     }
 
     function computeModel() {
@@ -1573,6 +1584,8 @@
 
       const saldo1 = quotaTeorica1 - quotaDiretta1;
       const saldo2 = quotaTeorica2 - quotaDiretta2;
+      const costoGiornalieroFiglio = fabbisognoFigli / 30;
+      const collocatario = perm1 >= perm2 ? 1 : 2;
 
       let assegnoDa1a2 = Math.max(0, saldo1);
       let assegnoDa2a1 = Math.max(0, saldo2);
@@ -1582,6 +1595,14 @@
         const assegnoSemplificato = diffNetti * (simplePerc / 100);
         assegnoDa1a2 = disp1 > disp2 ? assegnoSemplificato : 0;
         assegnoDa2a1 = disp2 > disp1 ? assegnoSemplificato : 0;
+      } else if (mode === "genova") {
+        const nonCollocatario = collocatario === 1 ? 2 : 1;
+        const quotaTeoricaNonColl = nonCollocatario === 1 ? quotaTeorica1 : quotaTeorica2;
+        const giorniPermanenzaNonColl = nonCollocatario === 1 ? (perm1 / 100) * 30 : (perm2 / 100) * 30;
+        const quotaDirettaNonColl = costoGiornalieroFiglio * giorniPermanenzaNonColl;
+        const contributoIndiretto = Math.max(0, quotaTeoricaNonColl - quotaDirettaNonColl);
+        assegnoDa1a2 = nonCollocatario === 1 ? contributoIndiretto : 0;
+        assegnoDa2a1 = nonCollocatario === 2 ? contributoIndiretto : 0;
       }
 
       const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
@@ -1594,6 +1615,7 @@
         spese1, spese2, speseTot,
         disp1, disp2, peso1, peso2,
         mode, simplePerc,
+        collocatario, costoGiornalieroFiglio,
         fabbisognoFigli, quotaTeorica1, quotaTeorica2,
         quotaDiretta1, quotaDiretta2,
         saldo1, saldo2,
@@ -1655,6 +1677,15 @@
           <br />3) Assegno suggerito = differenza netti x ${m.simplePerc.toFixed(0)}%.
           <br />4) Paga il coniuge con disponibilita netta maggiore all'altro coniuge.
         `;
+      } else if (m.mode === "genova") {
+        formulaNote.innerHTML = `
+          1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.
+          <br />2) Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.
+          <br />3) Fabbisogno figli = totale spese familiari inserite x coefficiente tecnico fisso (35%).
+          <br />4) Genitore collocatario stimato = coniuge con permanenza maggiore (qui: Coniuge ${m.collocatario}).
+          <br />5) Quota diretta del non collocatario = costo giornaliero (${eur(m.costoGiornalieroFiglio)}) x giorni di permanenza presso non collocatario.
+          <br />6) Assegno suggerito = max(0, quota teorica non collocatario - quota diretta non collocatario).
+        `;
       } else {
         formulaNote.innerHTML = `
           1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.
@@ -1678,7 +1709,7 @@
       kpi.innerHTML = "";
 
       const items = [
-        ["Modalita attiva", m.mode === "legal" ? "Legale-proporzionale" : `Semplificata (${m.simplePerc.toFixed(0)}%)`, "warn"],
+        ["Modalita attiva", m.mode === "legal" ? "Legale-proporzionale" : (m.mode === "simple" ? `Semplificata (${m.simplePerc.toFixed(0)}%)` : "Linee guida Tribunale di Genova"), "warn"],
         ["Disponibilita netta Coniuge 1", eur(m.disp1), m.disp1 >= 0 ? "ok" : "bad"],
         ["Disponibilita netta Coniuge 2", eur(m.disp2), m.disp2 >= 0 ? "ok" : "bad"],
         ["Totale spese inserite", eur(m.speseTot), "warn"],
