@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calcolatore Mantenimento Figli</title>
+  <style>
+    :root {
+      --bg-1: #f4efe7;
+      --bg-2: #dfe8de;
+      --panel: #fffdf8;
+      --ink: #1f2a2a;
+      --muted: #5c6b6b;
+      --brand: #0f766e;
+      --brand-2: #d97706;
+      --line: #d6d8cf;
+      --ok: #166534;
+      --warn: #a16207;
+      --bad: #991b1b;
+      --shadow: 0 12px 30px rgba(15, 35, 35, 0.12);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1000px 500px at 0% -10%, #fff7e6 0%, transparent 70%),
+        radial-gradient(900px 420px at 100% 0%, #e7f6f3 0%, transparent 65%),
+        linear-gradient(150deg, var(--bg-1), var(--bg-2));
+      font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 22px auto;
+      padding: 0 14px 22px;
+      animation: fadeIn 520ms ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero {
+      background: linear-gradient(120deg, #113a38, #1e5b56 45%, #326d64);
+      color: #f4fbfa;
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.3rem, 2.2vw, 2rem);
+      letter-spacing: 0.3px;
+    }
+
+    .hero p { margin: 0; line-height: 1.4; color: #d9eeeb; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 980px) {
+      .grid { grid-template-columns: 1.15fr 0.85fr; }
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card h2 {
+      margin: 0;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #faf9f4;
+      font-size: 1.03rem;
+      color: #253534;
+    }
+
+    .content { padding: 14px; }
+
+    .top-inputs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    
+    .shared-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+      padding: 10px;
+      border: 1px solid #d8ded3;
+      border-radius: 12px;
+      background: #f8faf6;
+    }
+    
+    .spouse-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .spouse-box {
+      border: 1px solid #d3dacd;
+      border-radius: 12px;
+      background: #fff;
+      padding: 10px;
+    }
+    
+    .spouse-box h3 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      color: #27403e;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    
+    .label-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .hint {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: #dceeea;
+      color: #0f6760;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: help;
+      border: 1px solid #b7d7d1;
+      line-height: 1;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid #c8cec4;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 0.95rem;
+      background: #fff;
+      color: #152020;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid #c8cec4;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 0.95rem;
+      background: #fff;
+      color: #152020;
+    }
+
+    input[type="number"]:focus {
+      outline: 2px solid rgba(15, 118, 110, 0.2);
+      border-color: var(--brand);
+    }
+
+    input[readonly] {
+      background: #eef2ee;
+      color: #455a57;
+      border-style: dashed;
+    }
+
+    input:disabled,
+    select:disabled {
+      background: #eef2ee;
+      color: #6a7876;
+      border-style: dashed;
+      cursor: not-allowed;
+      opacity: 0.9;
+    }
+
+    .spese-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.92rem;
+    }
+
+    .spese-table th,
+    .spese-table td {
+      border-bottom: 1px dashed #d9ddd4;
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .spese-table th {
+      color: #304443;
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .spese-table input { min-width: 110px; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s ease, filter 0.12s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--brand), #149a8f);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #e8ece6;
+      color: #223130;
+      border: 1px solid #c6cdc3;
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        color: #111;
+      }
+
+      .wrap {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .hero,
+      .card,
+      .live-box,
+      .result-pill,
+      .kpi-item,
+      .note,
+      details {
+        box-shadow: none !important;
+      }
+
+      .toolbar,
+      .hint {
+        display: none !important;
+      }
+
+      .grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .card {
+        border: 1px solid #cfcfcf;
+        break-inside: avoid;
+        margin-bottom: 10px;
+      }
+
+      .spese-table {
+        font-size: 11px;
+      }
+
+      input[type="number"] {
+        border: 1px solid #cfcfcf;
+        padding: 6px;
+      }
+    }
+
+    .kpi {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+
+    .kpi-item {
+      border: 1px solid #d3d8cd;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .kpi-item strong { display: block; font-size: 1.15rem; margin-top: 4px; }
+
+    .result-pill {
+      border-radius: 14px;
+      padding: 14px;
+      background: #f2f7f6;
+      border: 1px solid #c8dbd8;
+      margin-bottom: 10px;
+    }
+
+    .result-pill .big {
+      font-size: 1.36rem;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+
+    .live-box {
+      border-radius: 14px;
+      padding: 12px;
+      background: #f7faf9;
+      border: 1px solid #cddfdc;
+      margin-bottom: 10px;
+    }
+
+    .live-title {
+      font-weight: 800;
+      color: #1d3a38;
+      margin-bottom: 8px;
+    }
+
+    .live-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .live-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .live-col {
+      border: 1px solid #d5dfdb;
+      border-radius: 12px;
+      background: #ffffff;
+      padding: 9px;
+    }
+
+    .live-col h4 {
+      margin: 0 0 8px;
+      font-size: 0.92rem;
+      color: #264746;
+    }
+
+    .live-k {
+      border: 1px solid #d8e2df;
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+      font-size: 0.88rem;
+    }
+
+    .live-k strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1.02rem;
+    }
+
+    .live-row {
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px dashed #d8ddd4;
+    }
+
+    .live-row:last-child {
+      border-bottom: none;
+    }
+
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+
+    .note {
+      font-size: 0.84rem;
+      color: #4b5d5b;
+      line-height: 1.45;
+      background: #f9f5e8;
+      border: 1px solid #eadfbf;
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 8px;
+    }
+
+    .spese-count-title {
+      margin-top: 2px;
+      margin-bottom: 8px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid #d8c9a0;
+      background: linear-gradient(90deg, #f8ecd2, #f3e7c9);
+      color: #6a4b11;
+      font-size: 1.06rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .legal-footer {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid #cfd8cf;
+      background: #f6f8f3;
+      color: #415250;
+      font-size: 0.84rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .legal-footer a {
+      color: #0f6b64;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .legal-footer a:hover {
+      text-decoration: underline;
+    }
+
+    details {
+      margin-top: 10px;
+      border: 1px solid #d8ddd2;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    summary { cursor: pointer; font-weight: 700; color: #304443; }
+
+    .mini {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .mini div {
+      background: #fbfcfa;
+      border: 1px solid #dbe0d8;
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .live-columns { grid-template-columns: 1fr; }
+      .shared-grid { grid-template-columns: 1fr; }
+      .spouse-grid { grid-template-columns: 1fr; }
+      .top-inputs { grid-template-columns: 1fr; }
+      .spese-table th:first-child,
+      .spese-table td:first-child { width: 42%; }
+      .spese-table input { min-width: 90px; }
+    }
+
+    @media print {
+      .legal-footer {
+        border: 1px solid #cfcfcf;
+        background: #fff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Calcolatore Assegno di Mantenimento</h1>
+      <p>
+        Modello ispirato al calcolatore di The Lawyer Theory, adattato al <strong>reddito mensile netto</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
+      </p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Dati Input</h2>
+        <div class="content">
+          <div class="shared-grid">
+            <div class="field">
+              <label for="calcMode" class="label-row">Modalita calcolo
+                <span class="hint" title="Scegli tra modalita legale-proporzionale e simulazione semplificata sulla differenza netti.">i</span>
+              </label>
+              <select id="calcMode">
+                <option value="legal" selected>Legale-proporzionale (consigliata)</option>
+                <option value="simple">Semplificata: differenza netti x %</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="numFigli" class="label-row">Numero figli
+                <span class="hint" title="Numero complessivo dei figli interessati dal mantenimento.">i</span>
+              </label>
+              <input id="numFigli" type="number" min="1" step="1" value="1" />
+            </div>
+            <div class="field">
+              <label for="simplePerc" class="label-row">Percentuale semplificata (%)
+                <span class="hint" title="Usata solo nella modalita semplificata: importo = differenza netti x percentuale.">i</span>
+              </label>
+              <input id="simplePerc" type="number" min="0" max="100" step="1" value="50" />
+            </div>
+            <div class="field">
+              <label for="perm1" class="label-row">Permanenza figli presso Coniuge 1 (%)
+                <span class="hint" title="Percentuale di tempo in cui i figli stanno presso Coniuge 1 su base mensile.">i</span>
+              </label>
+              <input id="perm1" type="number" min="0" max="100" step="1" value="40" />
+            </div>
+            <div class="field">
+              <label for="perm2" class="label-row">Permanenza figli presso Coniuge 2 (%)
+                <span class="hint" title="Si aggiorna automaticamente a 100 - permanenza Coniuge 1.">i</span>
+              </label>
+              <input id="perm2" type="number" min="0" max="100" step="1" value="60" readonly />
+            </div>
+          </div>
+
+          <div class="spouse-grid">
+            <div class="spouse-box">
+              <h3>Coniuge 1</h3>
+              <div class="top-inputs">
+                <div class="field">
+                  <label for="reddito1" class="label-row">Reddito mensile netto (EUR)
+                    <span class="hint" title="Entrate nette mensili disponibili del Coniuge 1.">i</span>
+                  </label>
+                  <input id="reddito1" type="number" min="0" step="0.01" value="2500" />
+                </div>
+                <div class="field">
+                  <label for="assegnoPercepito1" class="label-row">Assegno mantenimento percepito (EUR/mese)
+                    <span class="hint" title="Importo mensile di mantenimento che Coniuge 1 riceve dall'altro coniuge.">i</span>
+                  </label>
+                  <input id="assegnoPercepito1" type="number" min="0" step="0.01" value="0" />
+                </div>
+                <div class="field">
+                  <label for="assegnoPagato1" class="label-row">Assegno mantenimento pagato (EUR/mese)
+                    <span class="hint" title="Importo mensile di mantenimento che Coniuge 1 versa all'altro coniuge.">i</span>
+                  </label>
+                  <input id="assegnoPagato1" type="number" min="0" step="0.01" value="0" />
+                </div>
+                <div class="field">
+                  <label for="assegnoFam1" class="label-row">Assegno familiare percepito INPS (EUR/mese)
+                    <span class="hint" title="Assegno unico/familiare erogato da INPS percepito da Coniuge 1.">i</span>
+                  </label>
+                  <input id="assegnoFam1" type="number" min="0" step="0.01" value="0" />
+                </div>
+              </div>
+            </div>
+
+            <div class="spouse-box">
+              <h3>Coniuge 2</h3>
+              <div class="top-inputs">
+                <div class="field">
+                  <label for="reddito2" class="label-row">Reddito mensile netto (EUR)
+                    <span class="hint" title="Entrate nette mensili disponibili del Coniuge 2.">i</span>
+                  </label>
+                  <input id="reddito2" type="number" min="0" step="0.01" value="2500" />
+                </div>
+                <div class="field">
+                  <label for="assegnoPercepito2" class="label-row">Assegno mantenimento percepito (EUR/mese)
+                    <span class="hint" title="Importo mensile di mantenimento che Coniuge 2 riceve dall'altro coniuge.">i</span>
+                  </label>
+                  <input id="assegnoPercepito2" type="number" min="0" step="0.01" value="0" />
+                </div>
+                <div class="field">
+                  <label for="assegnoPagato2" class="label-row">Assegno mantenimento pagato (EUR/mese)
+                    <span class="hint" title="Importo mensile di mantenimento che Coniuge 2 versa all'altro coniuge.">i</span>
+                  </label>
+                  <input id="assegnoPagato2" type="number" min="0" step="0.01" value="0" />
+                </div>
+                <div class="field">
+                  <label for="assegnoFam2" class="label-row">Assegno familiare percepito INPS (EUR/mese)
+                    <span class="hint" title="Assegno unico/familiare erogato da INPS percepito da Coniuge 2.">i</span>
+                  </label>
+                  <input id="assegnoFam2" type="number" min="0" step="0.01" value="0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <p class="spese-count-title" id="speseCountNote">
+            Elenco spese compilabili.
+          </p>
+
+          <table class="spese-table" aria-label="Spese per coniuge">
+            <thead>
+              <tr>
+                <th>Voce spesa</th>
+                <th>Coniuge 1 (EUR)</th>
+                <th>Coniuge 2 (EUR)</th>
+              </tr>
+            </thead>
+            <tbody id="rowsSpese"></tbody>
+          </table>
+
+          <div class="toolbar">
+            <button class="btn-secondary" id="btnReset">Reset</button>
+            <button class="btn-secondary" id="btnSalva">Salva</button>
+            <button class="btn-secondary" id="btnExportJson">Esporta JSON</button>
+            <button class="btn-secondary" id="btnImportJson">Carica JSON</button>
+            <button class="btn-secondary" id="btnPdf">Export PDF</button>
+            <input id="fileJson" type="file" accept="application/json,.json" style="display:none" />
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Risultati</h2>
+        <div class="content">
+          <div class="live-box">
+            <div class="live-title">Impatto in Tempo Reale sul Netto</div>
+            <div class="live-grid" id="liveNet"></div>
+            <div id="liveBreakdown"></div>
+          </div>
+
+          <div class="result-pill">
+            <div>Assegno suggerito</div>
+            <div id="risultatoMain" class="big">Calcolo in tempo reale</div>
+          </div>
+
+          <div class="kpi" id="kpi"></div>
+
+          <details>
+            <summary>Come viene calcolato</summary>
+            <div class="note" id="formulaNote">
+              1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.
+              <br />2) Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.
+              <br />3) Fabbisogno figli = totale spese familiari inserite x coefficiente tecnico fisso (35%).
+              <br />4) Quota teorica per coniuge = fabbisogno figli x peso contributivo.
+              <br />5) Quota diretta per permanenza = fabbisogno figli x percentuale permanenza presso il coniuge.
+              <br />6) Assegno suggerito = differenza tra quota teorica e quota diretta.
+            </div>
+          </details>
+
+          <p class="note">
+            Questo strumento e solo orientativo e non sostituisce una valutazione legale/professionale del caso concreto.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <footer class="legal-footer">
+      <span>Copyright Fabio Vacchino</span>
+      <span>Licensed under the <a href="LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a></span>
+    </footer>
+  </div>
+
+  <script>
+    const expenseItems = [
+      { label: "Affitto", help: "Canone mensile di locazione dell'abitazione." },
+      { label: "Mutuo casa", help: "Rata mensile del mutuo abitazione." },
+      { label: "Casa (valore locativo)", help: "Valore locativo teorico della casa in uso, se rilevante." },
+      { label: "Utenze", help: "Luce, gas, acqua, internet e altre utenze domestiche." },
+      { label: "Cibo/Alimenti", help: "Spesa alimentare mensile imputabile al nucleo familiare." },
+      { label: "Abbigliamento", help: "Spese medie mensili per abbigliamento dei figli." },
+      { label: "Finanziamenti in corso (extra mutuo)", help: "Rate mensili di finanziamenti diversi dal mutuo." },
+      { label: "Spese macchina", help: "Carburante, assicurazione, bollo, manutenzione ordinaria." },
+      { label: "Amministrazione condominio", help: "Quote condominiali ordinarie e costi amministrativi ricorrenti." },
+      { label: "Spese scolastiche/mensa", help: "Costi scolastici ricorrenti, mensa e contributi periodici." },
+      { label: "Spese sanitarie ricorrenti", help: "Farmaci, visite periodiche e terapie ricorrenti." },
+      { label: "Sport/attivita figli", help: "Costi medi mensili per sport e attivita extrascolastiche." },
+      { label: "Altre", help: "Voce generica per altre spese mensili ordinarie non incluse sopra." }
+    ];
+
+    const QUOTA_MANTENIMENTO_PERC = 35;
+
+    const rowsSpese = document.getElementById("rowsSpese");
+    const STORAGE_DEFAULT_KEY = "appMantenimentoDefaultState";
+
+    function eur(v) {
+      const n = Number(v || 0);
+      return new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(n);
+    }
+
+    function num(id) {
+      const raw = document.getElementById(id).value;
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function buildExpenseRows() {
+      rowsSpese.innerHTML = "";
+      document.getElementById("speseCountNote").textContent = `Elenco spese compilabili: ${expenseItems.length} voci.`;
+      expenseItems.forEach((item, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="label-row">${item.label}<span class="hint" title="${item.help}">i</span></span></td>
+          <td><input type="number" min="0" step="0.01" id="c1_${idx}" value="0" /></td>
+          <td><input type="number" min="0" step="0.01" id="c2_${idx}" value="0" /></td>
+        `;
+        rowsSpese.appendChild(tr);
+      });
+    }
+
+    function syncPermanenza() {
+      const p1 = Math.min(100, Math.max(0, num("perm1")));
+      const p2 = 100 - p1;
+      document.getElementById("perm1").value = p1;
+      document.getElementById("perm2").value = p2;
+    }
+
+    function sumSpese(prefix) {
+      return expenseItems.reduce((acc, _, idx) => acc + num(`${prefix}_${idx}`), 0);
+    }
+
+    function updateModeUi() {
+      const mode = document.getElementById("calcMode").value || "legal";
+      const simplePerc = document.getElementById("simplePerc");
+      const isSimple = mode === "simple";
+      simplePerc.disabled = !isSimple;
+      simplePerc.title = isSimple
+        ? "Percentuale usata nella formula semplificata."
+        : "Campo inattivo: viene usato solo nella modalita semplificata.";
+    }
+
+    function computeModel() {
+      const r1 = num("reddito1");
+      const r2 = num("reddito2");
+      const figli = Math.max(1, Math.round(num("numFigli")));
+      const perm1 = Math.min(100, Math.max(0, num("perm1")));
+      const perm2 = 100 - perm1;
+      const mode = document.getElementById("calcMode").value || "legal";
+      const simplePerc = Math.min(100, Math.max(0, num("simplePerc")));
+
+      const aPerc1 = num("assegnoPercepito1");
+      const aPag1 = num("assegnoPagato1");
+      const aPerc2 = num("assegnoPercepito2");
+      const aPag2 = num("assegnoPagato2");
+      const aFam1 = num("assegnoFam1");
+      const aFam2 = num("assegnoFam2");
+
+      // Match esplicito tra assegni pagati e percepiti tra i due coniugi.
+      // Se non c'e percepito corrispondente, il pagato e considerato esterno
+      // (es. precedente rapporto/divorzio) e non viene accreditato all'altro coniuge.
+      const match12 = Math.min(aPag1, aPerc2);
+      const match21 = Math.min(aPag2, aPerc1);
+      const esternoPag1 = Math.max(0, aPag1 - match12);
+      const esternoPag2 = Math.max(0, aPag2 - match21);
+
+      const spese1 = sumSpese("c1");
+      const spese2 = sumSpese("c2");
+      const speseTot = spese1 + spese2;
+
+      const disp1 = r1 + aPerc1 + aFam1 - aPag1 - spese1;
+      const disp2 = r2 + aPerc2 + aFam2 - aPag2 - spese2;
+
+      const dispPos1 = Math.max(0, disp1);
+      const dispPos2 = Math.max(0, disp2);
+      const dispPosTot = dispPos1 + dispPos2;
+
+      const peso1 = dispPosTot > 0 ? dispPos1 / dispPosTot : 0.5;
+      const peso2 = 1 - peso1;
+
+      const fabbisognoFigli = speseTot * (QUOTA_MANTENIMENTO_PERC / 100);
+
+      const quotaTeorica1 = fabbisognoFigli * peso1;
+      const quotaTeorica2 = fabbisognoFigli * peso2;
+
+      const quotaDiretta1 = fabbisognoFigli * (perm1 / 100);
+      const quotaDiretta2 = fabbisognoFigli * (perm2 / 100);
+
+      const saldo1 = quotaTeorica1 - quotaDiretta1;
+      const saldo2 = quotaTeorica2 - quotaDiretta2;
+
+      let assegnoDa1a2 = Math.max(0, saldo1);
+      let assegnoDa2a1 = Math.max(0, saldo2);
+
+      if (mode === "simple") {
+        const diffNetti = Math.abs(disp1 - disp2);
+        const assegnoSemplificato = diffNetti * (simplePerc / 100);
+        assegnoDa1a2 = disp1 > disp2 ? assegnoSemplificato : 0;
+        assegnoDa2a1 = disp2 > disp1 ? assegnoSemplificato : 0;
+      }
+
+      const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
+      const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
+
+      return {
+        r1, r2, figli, perm1, perm2,
+        aPerc1, aPag1, aPerc2, aPag2, aFam1, aFam2,
+        match12, match21, esternoPag1, esternoPag2,
+        spese1, spese2, speseTot,
+        disp1, disp2, peso1, peso2,
+        mode, simplePerc,
+        fabbisognoFigli, quotaTeorica1, quotaTeorica2,
+        quotaDiretta1, quotaDiretta2,
+        saldo1, saldo2,
+        assegnoDa1a2, assegnoDa2a1,
+        post1, post2
+      };
+    }
+
+    function renderLivePanel(m) {
+      const liveNet = document.getElementById("liveNet");
+      const liveBreakdown = document.getElementById("liveBreakdown");
+
+      const entrate1 = m.r1 + m.aPerc1 + m.aFam1;
+      const entrate2 = m.r2 + m.aPerc2 + m.aFam2;
+      const uscite1 = m.match12 + m.esternoPag1 + m.spese1;
+      const uscite2 = m.match21 + m.esternoPag2 + m.spese2;
+
+      liveNet.innerHTML = `
+        <div class="live-k">
+          Netto disponibile Coniuge 1
+          <strong class="${m.disp1 >= 0 ? "ok" : "bad"}">${eur(m.disp1)}</strong>
+        </div>
+        <div class="live-k">
+          Netto disponibile Coniuge 2
+          <strong class="${m.disp2 >= 0 ? "ok" : "bad"}">${eur(m.disp2)}</strong>
+        </div>
+      `;
+
+      liveBreakdown.innerHTML = `
+        <div class="live-columns">
+          <div class="live-col">
+            <h4>Coniuge 1</h4>
+            <div class="live-row"><span>Entrate totali (reddito + assegni + INPS)</span><strong class="ok">${eur(entrate1)}</strong></div>
+            <div class="live-row"><span>Assegno mantenimento pagato all'altro coniuge</span><strong class="warn">${eur(m.match12)}</strong></div>
+            <div class="live-row"><span>Assegno mantenimento pagato esterno</span><strong class="warn">${eur(m.esternoPag1)}</strong></div>
+            <div class="live-row"><span>Totale spese inserite</span><strong class="warn">${eur(m.spese1)}</strong></div>
+            <div class="live-row"><span>Uscite totali</span><strong class="warn">${eur(uscite1)}</strong></div>
+          </div>
+          <div class="live-col">
+            <h4>Coniuge 2</h4>
+            <div class="live-row"><span>Entrate totali (reddito + assegni + INPS)</span><strong class="ok">${eur(entrate2)}</strong></div>
+            <div class="live-row"><span>Assegno mantenimento pagato all'altro coniuge</span><strong class="warn">${eur(m.match21)}</strong></div>
+            <div class="live-row"><span>Assegno mantenimento pagato esterno</span><strong class="warn">${eur(m.esternoPag2)}</strong></div>
+            <div class="live-row"><span>Totale spese inserite</span><strong class="warn">${eur(m.spese2)}</strong></div>
+            <div class="live-row"><span>Uscite totali</span><strong class="warn">${eur(uscite2)}</strong></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function calculate() {
+      const m = computeModel();
+      const formulaNote = document.getElementById("formulaNote");
+
+      if (m.mode === "simple") {
+        formulaNote.innerHTML = `
+          1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.
+          <br />2) Differenza netti = valore assoluto della differenza tra le due disponibilita nette.
+          <br />3) Assegno suggerito = differenza netti x ${m.simplePerc.toFixed(0)}%.
+          <br />4) Paga il coniuge con disponibilita netta maggiore all'altro coniuge.
+        `;
+      } else {
+        formulaNote.innerHTML = `
+          1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.
+          <br />2) Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.
+          <br />3) Fabbisogno figli = totale spese familiari inserite x coefficiente tecnico fisso (35%).
+          <br />4) Quota teorica per coniuge = fabbisogno figli x peso contributivo.
+          <br />5) Quota diretta per permanenza = fabbisogno figli x percentuale permanenza presso il coniuge.
+          <br />6) Assegno suggerito = differenza tra quota teorica e quota diretta.
+        `;
+      }
+
+      let mainText = "Nessun trasferimento suggerito";
+      if (m.assegnoDa1a2 > 0.005) {
+        mainText = `Coniuge 1 -> Coniuge 2: ${eur(m.assegnoDa1a2)} / mese`;
+      } else if (m.assegnoDa2a1 > 0.005) {
+        mainText = `Coniuge 2 -> Coniuge 1: ${eur(m.assegnoDa2a1)} / mese`;
+      }
+      document.getElementById("risultatoMain").textContent = mainText;
+
+      const kpi = document.getElementById("kpi");
+      kpi.innerHTML = "";
+
+      const items = [
+        ["Modalita attiva", m.mode === "legal" ? "Legale-proporzionale" : `Semplificata (${m.simplePerc.toFixed(0)}%)`, "warn"],
+        ["Disponibilita netta Coniuge 1", eur(m.disp1), m.disp1 >= 0 ? "ok" : "bad"],
+        ["Disponibilita netta Coniuge 2", eur(m.disp2), m.disp2 >= 0 ? "ok" : "bad"],
+        ["Totale spese inserite", eur(m.speseTot), "warn"],
+        ["Fabbisogno figli stimato", eur(m.fabbisognoFigli), "warn"],
+        ["Quota teorica Coniuge 1", eur(m.quotaTeorica1), "ok"],
+        ["Quota teorica Coniuge 2", eur(m.quotaTeorica2), "ok"],
+        ["Post-assegno Coniuge 1", eur(m.post1), m.post1 >= 0 ? "ok" : "bad"],
+        ["Post-assegno Coniuge 2", eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
+        ["Importo per figlio", eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
+      ];
+
+      items.forEach(([label, value, cls]) => {
+        const el = document.createElement("div");
+        el.className = "kpi-item";
+        el.innerHTML = `<span>${label}</span><strong class="${cls}">${value}</strong>`;
+        kpi.appendChild(el);
+      });
+    }
+
+    function renderAll() {
+      const m = computeModel();
+      renderLivePanel(m);
+      calculate();
+    }
+
+    function setDefaultValuesFromState(state) {
+      if (!state || !state.base || !state.spese) {
+        return;
+      }
+
+      Object.entries(state.base).forEach(([k, v]) => {
+        const el = document.getElementById(k);
+        if (el) {
+          el.defaultValue = String(v ?? 0);
+        }
+      });
+
+      state.spese.forEach((row, i) => {
+        const c1 = document.getElementById(`c1_${i}`);
+        const c2 = document.getElementById(`c2_${i}`);
+        if (c1) c1.defaultValue = String(row.c1 ?? 0);
+        if (c2) c2.defaultValue = String(row.c2 ?? 0);
+      });
+
+      const perm2 = document.getElementById("perm2");
+      if (perm2) {
+        const p1 = Number(state.base.perm1 ?? 0);
+        perm2.defaultValue = String(Math.max(0, Math.min(100, 100 - p1)));
+      }
+    }
+
+    function applyState(state) {
+      hydrateState(state);
+      renderAll();
+    }
+
+    function saveAsStartingData() {
+      const state = serializeState();
+      localStorage.setItem(STORAGE_DEFAULT_KEY, JSON.stringify(state));
+      setDefaultValuesFromState(state);
+      alert("Dati di partenza aggiornati.");
+    }
+
+    function exportJson() {
+      const state = serializeState();
+      const payload = JSON.stringify(state, null, 2);
+      const blob = new Blob([payload], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
+      a.href = url;
+      a.download = `mantenimento-dati-${ts}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJsonFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const state = JSON.parse(String(reader.result || "{}"));
+          if (!state || typeof state !== "object" || !state.base || !Array.isArray(state.spese)) {
+            throw new Error("Formato JSON non valido");
+          }
+          applyState(state);
+          alert("Dati caricati da JSON.");
+        } catch (_) {
+          alert("Impossibile caricare il JSON: formato non valido.");
+        }
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function serializeState() {
+      const base = {
+        reddito1: num("reddito1"),
+        reddito2: num("reddito2"),
+        numFigli: num("numFigli"),
+        perm1: num("perm1"),
+        calcMode: document.getElementById("calcMode").value,
+        simplePerc: num("simplePerc"),
+        assegnoPercepito1: num("assegnoPercepito1"),
+        assegnoPagato1: num("assegnoPagato1"),
+        assegnoFam1: num("assegnoFam1"),
+        assegnoPercepito2: num("assegnoPercepito2"),
+        assegnoPagato2: num("assegnoPagato2"),
+        assegnoFam2: num("assegnoFam2")
+      };
+      const spese = expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
+      return { base, spese };
+    }
+
+    function hydrateState(state) {
+      if (!state || !state.base || !state.spese) return;
+      Object.entries(state.base).forEach(([k, v]) => {
+        const el = document.getElementById(k);
+        if (el) el.value = v;
+      });
+      syncPermanenza();
+      state.spese.forEach((row, i) => {
+        const c1 = document.getElementById(`c1_${i}`);
+        const c2 = document.getElementById(`c2_${i}`);
+        if (c1) c1.value = row.c1;
+        if (c2) c2.value = row.c2;
+      });
+    }
+
+    function resetAll() {
+      document.querySelectorAll("input[type='number']").forEach((el) => {
+        if (el.id !== "perm2") {
+          el.value = el.defaultValue || 0;
+        }
+      });
+      syncPermanenza();
+      renderAll();
+    }
+
+    document.getElementById("btnReset").addEventListener("click", resetAll);
+
+    document.getElementById("btnSalva").addEventListener("click", saveAsStartingData);
+
+    document.getElementById("btnExportJson").addEventListener("click", exportJson);
+
+    document.getElementById("btnImportJson").addEventListener("click", () => {
+      document.getElementById("fileJson").click();
+    });
+
+    document.getElementById("fileJson").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        importJsonFromFile(file);
+      }
+      e.target.value = "";
+    });
+
+    document.getElementById("btnPdf").addEventListener("click", () => {
+      window.print();
+    });
+
+    document.addEventListener("input", (e) => {
+      if (e.target && e.target.matches("input[type='number']")) {
+        if (e.target.id === "perm1") {
+          syncPermanenza();
+        }
+        renderAll();
+      }
+    });
+
+    document.addEventListener("change", (e) => {
+      if (e.target && e.target.id === "calcMode") {
+        updateModeUi();
+        renderAll();
+      }
+    });
+
+    buildExpenseRows();
+    syncPermanenza();
+    updateModeUi();
+    const rawDefault = localStorage.getItem(STORAGE_DEFAULT_KEY);
+    if (rawDefault) {
+      try {
+        const state = JSON.parse(rawDefault);
+        applyState(state);
+        setDefaultValuesFromState(state);
+      } catch (_) {
+        renderAll();
+      }
+    } else {
+      renderAll();
+    }
+  </script>
+</body>
+</html>
