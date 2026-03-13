@@ -277,17 +277,20 @@
       }
 
       .hero {
-        padding: 10px 12px;
-        margin-bottom: 8px;
+        padding: 6px 10px;
+        margin-bottom: 4px;
+        break-after: avoid;
+        page-break-after: avoid;
       }
 
       .hero h1 {
-        font-size: 18px;
-        margin-bottom: 4px;
+        font-size: 15px;
+        margin: 0 0 2px;
       }
 
       .hero p {
-        font-size: 11px;
+        font-size: 9px;
+        line-height: 1.2;
       }
 
       .hero,
@@ -306,15 +309,29 @@
       }
 
       .grid {
-        grid-template-columns: 1.2fr 0.8fr !important;
+        display: flex !important;
+        flex-direction: row;
         gap: 8px;
-        align-items: start;
+        align-items: flex-start;
+        break-before: avoid;
+        page-break-before: avoid;
       }
 
       .card {
         border: 1px solid #cfcfcf;
-        break-inside: avoid;
+        flex: 1 1 0;
+        min-width: 0;
+        break-inside: auto;
+        page-break-inside: auto;
         margin-bottom: 0;
+      }
+
+      .grid > .card:first-child {
+        flex: 1.25 1 0;
+      }
+
+      .grid > .card:last-child {
+        flex: 0.85 1 0;
       }
 
       .card h2 {
@@ -412,6 +429,10 @@
 
       .note {
         line-height: 1.25;
+      }
+
+      .legal-footer {
+        margin-top: 4px;
       }
     }
 
