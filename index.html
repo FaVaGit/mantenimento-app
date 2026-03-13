@@ -171,6 +171,17 @@
       color: #152020;
     }
 
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      border: 1px solid #c8cec4;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 0.95rem;
+      background: #fff;
+      color: #152020;
+    }
+
     select {
       width: 100%;
       border: 1px solid #c8cec4;
@@ -251,6 +262,13 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
+    }
+
+    .auth-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
     }
 
     .auth-status {
@@ -656,6 +674,7 @@
       .spouse-grid { grid-template-columns: 1fr; }
       .top-inputs { grid-template-columns: 1fr; }
       .auth-grid { grid-template-columns: 1fr; }
+      .auth-grid-3 { grid-template-columns: 1fr; }
       .spese-table th:first-child,
       .spese-table td:first-child { width: 42%; }
       .spese-table input { min-width: 90px; }
@@ -704,6 +723,29 @@
               <button class="btn-secondary" id="btnLogoutKeyLock" type="button">Logout</button>
               <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva mia situazione</button>
               <button class="btn-secondary" id="btnLoadMyScenario" type="button">Ricarica mia situazione</button>
+            </div>
+            <div class="auth-grid-3">
+              <div class="field">
+                <label for="cloudGithubToken" class="label-row">Token GitHub (scope gist)
+                  <span class="hint" title="Personal Access Token GitHub con permesso gist per salvare/caricare la cache cloud cifrata.">i</span>
+                </label>
+                <input id="cloudGithubToken" type="password" autocomplete="off" placeholder="ghp_..." />
+              </div>
+              <div class="field">
+                <label for="cloudGistId" class="label-row">Gist ID cache cloud
+                  <span class="hint" title="Se vuoto, viene creato automaticamente al primo salvataggio cloud.">i</span>
+                </label>
+                <input id="cloudGistId" type="text" autocomplete="off" placeholder="auto al primo salvataggio" />
+              </div>
+              <div class="field">
+                <label class="label-row">Operazioni cloud
+                  <span class="hint" title="La cache cloud e per utente KeyLock e resta cifrata: puo essere usata da dispositivi diversi.">i</span>
+                </label>
+                <div class="toolbar" style="margin-top:0">
+                  <button class="btn-secondary" id="btnCloudSaveScenario" type="button">Salva su cloud</button>
+                  <button class="btn-secondary" id="btnCloudLoadScenario" type="button">Carica da cloud</button>
+                </div>
+              </div>
             </div>
             <div id="authStatus" class="auth-status">Non autenticato.</div>
           </div>
@@ -897,6 +939,8 @@
     const STORAGE_DEFAULT_KEY = "appMantenimentoDefaultState";
     const KEYLOCK_USERS_KEY = "appMantenimentoKeyLockUsers";
     const KEYLOCK_PROFILES_KEY = "appMantenimentoKeyLockProfiles";
+    const KEYLOCK_CLOUD_CFG_KEY = "appMantenimentoKeyLockCloudCfg";
+    const KEYLOCK_GIST_FILENAME = "keylock-cache.json";
     const authSession = {
       username: null,
       keyBits: null
@@ -929,6 +973,14 @@
 
     function setJsonStore(key, value) {
       localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function getCloudCfg() {
+      return getJsonStore(KEYLOCK_CLOUD_CFG_KEY, { gistId: "" });
+    }
+
+    function setCloudCfg(cfg) {
+      setJsonStore(KEYLOCK_CLOUD_CFG_KEY, cfg || { gistId: "" });
     }
 
     function normalizeUsername(value) {
@@ -1012,6 +1064,79 @@
       document.getElementById("btnLogoutKeyLock").disabled = !logged;
       document.getElementById("btnSaveMyScenario").disabled = !logged;
       document.getElementById("btnLoadMyScenario").disabled = !logged;
+      document.getElementById("btnCloudSaveScenario").disabled = !logged;
+      document.getElementById("btnCloudLoadScenario").disabled = !logged;
+    }
+
+    async function githubApiRequest(method, url, token, body) {
+      const headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": `Bearer ${token}`,
+        "X-GitHub-Api-Version": "2022-11-28"
+      };
+      if (body) headers["Content-Type"] = "application/json";
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined
+      });
+      const txt = await res.text();
+      const data = txt ? (() => {
+        try { return JSON.parse(txt); } catch (_) { return null; }
+      })() : null;
+      if (!res.ok) {
+        const msg = data && data.message ? data.message : `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    async function readGistCacheDoc(token, gistId) {
+      const gist = await githubApiRequest("GET", `https://api.github.com/gists/${gistId}`, token);
+      const file = gist.files && (gist.files[KEYLOCK_GIST_FILENAME] || Object.values(gist.files)[0]);
+      if (!file) return { gistId: gist.id, doc: { version: 1, profiles: {} } };
+      let content = file.content || "";
+      if (file.truncated && file.raw_url) {
+        const rawRes = await fetch(file.raw_url);
+        content = await rawRes.text();
+      }
+      let doc;
+      try {
+        doc = JSON.parse(content || "{}");
+      } catch (_) {
+        doc = { version: 1, profiles: {} };
+      }
+      if (!doc || typeof doc !== "object") doc = { version: 1, profiles: {} };
+      if (!doc.profiles || typeof doc.profiles !== "object") doc.profiles = {};
+      return { gistId: gist.id, doc };
+    }
+
+    async function ensureGistCacheDoc(token, gistId) {
+      const cleanId = String(gistId || "").trim();
+      if (cleanId) {
+        return readGistCacheDoc(token, cleanId);
+      }
+      const initial = { version: 1, profiles: {} };
+      const created = await githubApiRequest("POST", "https://api.github.com/gists", token, {
+        description: "KeyLock cloud cache - Calcolatore Mantenimento",
+        public: false,
+        files: {
+          [KEYLOCK_GIST_FILENAME]: {
+            content: JSON.stringify(initial, null, 2)
+          }
+        }
+      });
+      return { gistId: created.id, doc: initial };
+    }
+
+    async function writeGistCacheDoc(token, gistId, doc) {
+      await githubApiRequest("PATCH", `https://api.github.com/gists/${gistId}`, token, {
+        files: {
+          [KEYLOCK_GIST_FILENAME]: {
+            content: JSON.stringify(doc, null, 2)
+          }
+        }
+      });
     }
 
     function getKeyLockUsers() {
@@ -1127,6 +1252,60 @@
         setAuthStatus("Situazione personale caricata.");
       } catch (_) {
         setAuthStatus("Impossibile decifrare i dati: verifica login/password.", true);
+      }
+    }
+
+    async function saveScenarioToCloudForLoggedUser() {
+      if (!authSession.username || !authSession.keyBits) {
+        setAuthStatus("Effettua prima il login.", true);
+        return;
+      }
+      const token = text("cloudGithubToken");
+      if (!token) {
+        setAuthStatus("Inserisci un token GitHub con scope gist.", true);
+        return;
+      }
+      try {
+        const { gistId, doc } = await ensureGistCacheDoc(token, text("cloudGistId"));
+        const state = serializeState();
+        const encrypted = await encryptStateForKey(state, authSession.keyBits);
+        doc.profiles[authSession.username] = {
+          ...encrypted,
+          updatedAt: new Date().toISOString()
+        };
+        await writeGistCacheDoc(token, gistId, doc);
+        document.getElementById("cloudGistId").value = gistId;
+        setCloudCfg({ gistId });
+        setAuthStatus(`Situazione salvata su cloud (Gist ${gistId}).`);
+      } catch (err) {
+        setAuthStatus(`Salvataggio cloud fallito: ${err.message}`, true);
+      }
+    }
+
+    async function loadScenarioFromCloudForLoggedUser() {
+      if (!authSession.username || !authSession.keyBits) {
+        setAuthStatus("Effettua prima il login.", true);
+        return;
+      }
+      const token = text("cloudGithubToken");
+      const gistId = text("cloudGistId");
+      if (!token || !gistId) {
+        setAuthStatus("Inserisci token GitHub e Gist ID per caricare dal cloud.", true);
+        return;
+      }
+      try {
+        const { doc } = await readGistCacheDoc(token, gistId);
+        const payload = doc.profiles[authSession.username];
+        if (!payload || !payload.iv || !payload.data) {
+          setAuthStatus("Nessuna situazione cloud trovata per questo utente.", true);
+          return;
+        }
+        const state = await decryptStateForKey(payload, authSession.keyBits);
+        applyState(state);
+        setCloudCfg({ gistId });
+        setAuthStatus("Situazione personale caricata dal cloud.");
+      } catch (err) {
+        setAuthStatus(`Caricamento cloud fallito: ${err.message}`, true);
       }
     }
 
@@ -1500,6 +1679,14 @@
       await loadScenarioForLoggedUser();
     });
 
+    document.getElementById("btnCloudSaveScenario").addEventListener("click", async () => {
+      await saveScenarioToCloudForLoggedUser();
+    });
+
+    document.getElementById("btnCloudLoadScenario").addEventListener("click", async () => {
+      await loadScenarioFromCloudForLoggedUser();
+    });
+
     document.addEventListener("input", (e) => {
       if (e.target && e.target.matches("input[type='number']")) {
         if (e.target.id === "perm1") {
@@ -1518,6 +1705,10 @@
 
     buildExpenseRows();
     updateAuthUi();
+    const cloudCfg = getCloudCfg();
+    if (cloudCfg && cloudCfg.gistId) {
+      document.getElementById("cloudGistId").value = cloudCfg.gistId;
+    }
     syncPermanenza();
     updateModeUi();
     const rawDefault = localStorage.getItem(STORAGE_DEFAULT_KEY);
