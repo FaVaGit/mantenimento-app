@@ -337,27 +337,6 @@
       background: #fff5f5;
     }
 
-    .auth-logged-card {
-      margin-bottom: 8px;
-      border: 1px solid #c9ddd8;
-      border-radius: 10px;
-      background: #ffffff;
-      padding: 8px 10px;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      color: #1e4a46;
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    .auth-logged-card svg {
-      width: 16px;
-      height: 16px;
-      fill: currentColor;
-      flex: 0 0 auto;
-    }
-
     .is-hidden {
       display: none !important;
     }
@@ -792,10 +771,6 @@
             <div class="auth-dropdown" id="authDropdown">
               <div class="auth-box">
                 <div class="auth-head">KeyLock Utente</div>
-                <div id="authLoggedCard" class="auth-logged-card" role="status" aria-live="polite">
-                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12c2.76 0 5-2.69 5-6s-2.24-6-5-6-5 2.69-5 6 2.24 6 5 6zm0 2c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z"/></svg>
-                  <span id="authLoggedText">Utente loggato</span>
-                </div>
                 <div id="authLoginSection" class="auth-grid">
                   <div class="field">
                     <label for="keylockUser" class="label-row">Utente
@@ -813,6 +788,8 @@
                 <div id="authLoginActions" class="toolbar">
                   <button class="btn-secondary" id="btnRegisterKeyLock" type="button">Registrati</button>
                   <button class="btn-primary" id="btnLoginKeyLock" type="button">Login</button>
+                </div>
+                <div id="authSessionActions" class="toolbar is-hidden">
                   <button class="btn-secondary" id="btnLogoutKeyLock" type="button">Logout</button>
                   <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva mia situazione</button>
                   <button class="btn-secondary" id="btnLoadMyScenario" type="button">Ricarica mia situazione</button>
@@ -1148,26 +1125,31 @@
 
     function setAuthStatus(message, isError = false) {
       const el = document.getElementById("authStatus");
-      el.textContent = message;
+      if (!el) return;
+      const logged = !!authSession.username;
       el.classList.toggle("error", !!isError);
+
+      // Keep status area clean when logged in: show only errors.
+      if (logged && !isError) {
+        el.textContent = "";
+        el.style.display = "none";
+        return;
+      }
+
+      el.style.display = "block";
+      el.textContent = message;
     }
 
     function updateAuthUi() {
       const logged = !!authSession.username;
       const loginSection = document.getElementById("authLoginSection");
       const loginActions = document.getElementById("authLoginActions");
-      const loggedCard = document.getElementById("authLoggedCard");
-      const loggedText = document.getElementById("authLoggedText");
+      const sessionActions = document.getElementById("authSessionActions");
       const toggleBtn = document.getElementById("btnAuthMenu");
 
       if (loginSection) loginSection.classList.toggle("is-hidden", logged);
       if (loginActions) loginActions.classList.toggle("is-hidden", logged);
-      if (loggedCard) {
-        loggedCard.style.display = logged ? "inline-flex" : "none";
-      }
-      if (loggedText) {
-        loggedText.textContent = logged ? `Loggato come ${authSession.username}` : "Utente loggato";
-      }
+      if (sessionActions) sessionActions.classList.toggle("is-hidden", !logged);
       if (toggleBtn) {
         toggleBtn.classList.toggle("logged", logged);
         toggleBtn.querySelector("span").textContent = logged ? `Utente: ${authSession.username}` : "KeyLock Login";
@@ -1180,6 +1162,12 @@
       document.getElementById("btnLoadMyScenario").disabled = !logged;
       document.getElementById("btnCloudSaveScenario").disabled = !logged;
       document.getElementById("btnCloudLoadScenario").disabled = !logged;
+
+      if (logged) {
+        setAuthStatus("", false);
+      } else {
+        setAuthStatus("Non autenticato.", false);
+      }
     }
 
     function setAuthMenuOpen(open) {
