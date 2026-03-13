@@ -138,6 +138,19 @@
       font-size: 0.88rem;
       color: var(--muted);
     }
+
+    .mode-guideline {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      color: #3d5250;
+    }
+
+    .mode-guideline a {
+      color: #0b625b;
+      font-weight: 600;
+      text-decoration: underline;
+    }
     
     .label-row {
       display: inline-flex;
@@ -755,7 +768,7 @@
     <section class="hero">
       <h1>Calcolatore Assegno di Mantenimento</h1>
       <p>
-        Modello ispirato al calcolatore di The Lawyer Theory, adattato al <strong>reddito mensile netto</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
+        Modello di calcolo orientativo adattato al <strong>reddito mensile netto</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
       </p>
     </section>
 
@@ -831,6 +844,9 @@
                 <option value="legal" selected>Legale-proporzionale (consigliata)</option>
                 <option value="simple">Semplificata: differenza netti x %</option>
               </select>
+              <div class="mode-guideline">
+                Riferimento utile: <a href="https://www.ufficigiudiziarigenova.it/documentazione/D_112851.pdf" target="_blank" rel="noopener noreferrer">Linee guida del Tribunale di Genova (PDF)</a>.
+              </div>
             </div>
             <div class="field">
               <label for="numFigli" class="label-row">Numero figli
@@ -1011,7 +1027,6 @@
     const STORAGE_DEFAULT_KEY = "appMantenimentoDefaultState";
     const KEYLOCK_USERS_KEY = "appMantenimentoKeyLockUsers";
     const KEYLOCK_PROFILES_KEY = "appMantenimentoKeyLockProfiles";
-    const KEYLOCK_CLOUD_CFG_KEY = "appMantenimentoKeyLockCloudCfg";
     const KEYLOCK_GIST_FILENAME = "keylock-cache.json";
     const authSession = {
       username: null,
@@ -1047,12 +1062,33 @@
       localStorage.setItem(key, JSON.stringify(value));
     }
 
-    function getCloudCfg() {
-      return getJsonStore(KEYLOCK_CLOUD_CFG_KEY, { gistId: "" });
+    function getCloudFormData() {
+      return {
+        token: text("cloudGithubToken"),
+        gistId: text("cloudGistId")
+      };
     }
 
-    function setCloudCfg(cfg) {
-      setJsonStore(KEYLOCK_CLOUD_CFG_KEY, cfg || { gistId: "" });
+    function applyCloudFormData(data) {
+      const tokenEl = document.getElementById("cloudGithubToken");
+      const gistEl = document.getElementById("cloudGistId");
+      const cfg = data && typeof data === "object" ? data : {};
+      if (tokenEl) tokenEl.value = String(cfg.token || "");
+      if (gistEl) gistEl.value = String(cfg.gistId || "");
+    }
+
+    function toStateWithCloudData(state) {
+      const cloud = getCloudFormData();
+      if (!cloud.token && !cloud.gistId) {
+        return state;
+      }
+      return {
+        ...state,
+        keylockCloud: {
+          token: cloud.token,
+          gistId: cloud.gistId
+        }
+      };
     }
 
     function normalizeUsername(value) {
@@ -1369,7 +1405,7 @@
         return;
       }
       const profiles = getKeyLockProfiles();
-      const state = serializeState();
+      const state = toStateWithCloudData(serializeState());
       profiles[authSession.username] = await encryptStateForKey(state, authSession.keyBits);
       setKeyLockProfiles(profiles);
       setAuthStatus("Situazione salvata per l'utente loggato.");
@@ -1389,6 +1425,7 @@
       try {
         const state = await decryptStateForKey(payload, authSession.keyBits);
         applyState(state);
+        applyCloudFormData(state.keylockCloud);
         setAuthStatus("Situazione personale caricata.");
       } catch (_) {
         setAuthStatus("Impossibile decifrare i dati: verifica login/password.", true);
@@ -1407,7 +1444,7 @@
       }
       try {
         const { gistId, doc } = await ensureGistCacheDoc(token, text("cloudGistId"));
-        const state = serializeState();
+        const state = toStateWithCloudData(serializeState());
         const encrypted = await encryptStateForKey(state, authSession.keyBits);
         doc.profiles[authSession.username] = {
           ...encrypted,
@@ -1415,7 +1452,6 @@
         };
         await writeGistCacheDoc(token, gistId, doc);
         document.getElementById("cloudGistId").value = gistId;
-        setCloudCfg({ gistId });
         setAuthStatus(`Situazione salvata su cloud (Gist ${gistId}).`);
       } catch (err) {
         setAuthStatus(`Salvataggio cloud fallito: ${err.message}`, true);
@@ -1442,7 +1478,12 @@
         }
         const state = await decryptStateForKey(payload, authSession.keyBits);
         applyState(state);
-        setCloudCfg({ gistId });
+        applyCloudFormData({
+          token,
+          gistId: state && state.keylockCloud && state.keylockCloud.gistId
+            ? state.keylockCloud.gistId
+            : gistId
+        });
         setAuthStatus("Situazione personale caricata dal cloud.");
       } catch (err) {
         setAuthStatus(`Caricamento cloud fallito: ${err.message}`, true);
@@ -1708,7 +1749,7 @@
         return;
       }
 
-      const state = serializeState();
+      const state = toStateWithCloudData(serializeState());
       const encrypted = await encryptStateForKey(state, authSession.keyBits);
       const payloadObj = {
         format: "keylock-encrypted-state-v1",
@@ -1752,6 +1793,7 @@
           }
 
           applyState(state);
+          applyCloudFormData(state.keylockCloud);
           setAuthStatus("JSON cifrato importato correttamente.");
           alert("Dati caricati da JSON cifrato.");
         } catch (err) {
@@ -1877,10 +1919,6 @@
     buildExpenseRows();
     initAuthMenu();
     updateAuthUi();
-    const cloudCfg = getCloudCfg();
-    if (cloudCfg && cloudCfg.gistId) {
-      document.getElementById("cloudGistId").value = cloudCfg.gistId;
-    }
     syncPermanenza();
     updateModeUi();
     const rawDefault = localStorage.getItem(STORAGE_DEFAULT_KEY);
