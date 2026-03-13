@@ -243,6 +243,50 @@
       margin-top: 12px;
     }
 
+    .auth-menu-wrap {
+      position: relative;
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+    .auth-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #b9c9c5;
+      background: #eef4f2;
+      color: #1f3a38;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .auth-toggle svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .auth-dropdown {
+      position: absolute;
+      top: 44px;
+      right: 0;
+      width: min(900px, 100%);
+      z-index: 30;
+      display: none;
+    }
+
+    .auth-menu-wrap.open .auth-dropdown {
+      display: block;
+    }
+
+    .auth-dropdown .auth-box {
+      margin-bottom: 0;
+      box-shadow: 0 10px 24px rgba(14, 39, 37, 0.14);
+    }
+
     .auth-box {
       border: 1px solid #d5dccf;
       border-radius: 12px;
@@ -360,6 +404,7 @@
 
       .toolbar,
       .auth-box,
+      .auth-menu-wrap,
       .hint {
         display: none !important;
       }
@@ -675,6 +720,13 @@
       .top-inputs { grid-template-columns: 1fr; }
       .auth-grid { grid-template-columns: 1fr; }
       .auth-grid-3 { grid-template-columns: 1fr; }
+      .auth-menu-wrap { display: block; }
+      .auth-toggle { width: 100%; justify-content: center; }
+      .auth-dropdown {
+        position: static;
+        width: 100%;
+        margin-top: 8px;
+      }
       .spese-table th:first-child,
       .spese-table td:first-child { width: 42%; }
       .spese-table input { min-width: 90px; }
@@ -701,53 +753,61 @@
       <section class="card">
         <h2>Dati Input</h2>
         <div class="content">
-          <div class="auth-box">
-            <div class="auth-head">KeyLock Utente</div>
-            <div class="auth-grid">
-              <div class="field">
-                <label for="keylockUser" class="label-row">Utente
-                  <span class="hint" title="Nome utente univoco per accedere ai dati personali sul browser corrente.">i</span>
-                </label>
-                <input id="keylockUser" type="text" autocomplete="username" placeholder="es. favagit" />
-              </div>
-              <div class="field">
-                <label for="keylockPass" class="label-row">Password KeyLock
-                  <span class="hint" title="Password usata per login e cifratura locale del tuo scenario salvato.">i</span>
-                </label>
-                <input id="keylockPass" type="password" autocomplete="current-password" placeholder="min 6 caratteri" />
-              </div>
-            </div>
-            <div class="toolbar">
-              <button class="btn-secondary" id="btnRegisterKeyLock" type="button">Registrati</button>
-              <button class="btn-primary" id="btnLoginKeyLock" type="button">Login</button>
-              <button class="btn-secondary" id="btnLogoutKeyLock" type="button">Logout</button>
-              <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva mia situazione</button>
-              <button class="btn-secondary" id="btnLoadMyScenario" type="button">Ricarica mia situazione</button>
-            </div>
-            <div class="auth-grid-3">
-              <div class="field">
-                <label for="cloudGithubToken" class="label-row">Token GitHub (scope gist)
-                  <span class="hint" title="Personal Access Token GitHub con permesso gist per salvare/caricare la cache cloud cifrata.">i</span>
-                </label>
-                <input id="cloudGithubToken" type="password" autocomplete="off" placeholder="ghp_..." />
-              </div>
-              <div class="field">
-                <label for="cloudGistId" class="label-row">Gist ID cache cloud
-                  <span class="hint" title="Se vuoto, viene creato automaticamente al primo salvataggio cloud.">i</span>
-                </label>
-                <input id="cloudGistId" type="text" autocomplete="off" placeholder="auto al primo salvataggio" />
-              </div>
-              <div class="field">
-                <label class="label-row">Operazioni cloud
-                  <span class="hint" title="La cache cloud e per utente KeyLock e resta cifrata: puo essere usata da dispositivi diversi.">i</span>
-                </label>
-                <div class="toolbar" style="margin-top:0">
-                  <button class="btn-secondary" id="btnCloudSaveScenario" type="button">Salva su cloud</button>
-                  <button class="btn-secondary" id="btnCloudLoadScenario" type="button">Carica da cloud</button>
+          <div class="auth-menu-wrap" id="authMenuWrap">
+            <button class="auth-toggle" id="btnAuthMenu" type="button" aria-expanded="false" aria-controls="authDropdown">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12c2.76 0 5-2.69 5-6s-2.24-6-5-6-5 2.69-5 6 2.24 6 5 6zm0 2c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z"/></svg>
+              <span>KeyLock Login</span>
+            </button>
+            <div class="auth-dropdown" id="authDropdown">
+              <div class="auth-box">
+                <div class="auth-head">KeyLock Utente</div>
+                <div class="auth-grid">
+                  <div class="field">
+                    <label for="keylockUser" class="label-row">Utente
+                      <span class="hint" title="Nome utente univoco per accedere ai dati personali sul browser corrente.">i</span>
+                    </label>
+                    <input id="keylockUser" type="text" autocomplete="username" placeholder="es. favagit" />
+                  </div>
+                  <div class="field">
+                    <label for="keylockPass" class="label-row">Password KeyLock
+                      <span class="hint" title="Password usata per login e cifratura locale del tuo scenario salvato.">i</span>
+                    </label>
+                    <input id="keylockPass" type="password" autocomplete="current-password" placeholder="min 6 caratteri" />
+                  </div>
                 </div>
+                <div class="toolbar">
+                  <button class="btn-secondary" id="btnRegisterKeyLock" type="button">Registrati</button>
+                  <button class="btn-primary" id="btnLoginKeyLock" type="button">Login</button>
+                  <button class="btn-secondary" id="btnLogoutKeyLock" type="button">Logout</button>
+                  <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva mia situazione</button>
+                  <button class="btn-secondary" id="btnLoadMyScenario" type="button">Ricarica mia situazione</button>
+                </div>
+                <div class="auth-grid-3">
+                  <div class="field">
+                    <label for="cloudGithubToken" class="label-row">Token GitHub (scope gist)
+                      <span class="hint" title="Personal Access Token GitHub con permesso gist per salvare/caricare la cache cloud cifrata.">i</span>
+                    </label>
+                    <input id="cloudGithubToken" type="password" autocomplete="off" placeholder="ghp_..." />
+                  </div>
+                  <div class="field">
+                    <label for="cloudGistId" class="label-row">Gist ID cache cloud
+                      <span class="hint" title="Se vuoto, viene creato automaticamente al primo salvataggio cloud.">i</span>
+                    </label>
+                    <input id="cloudGistId" type="text" autocomplete="off" placeholder="auto al primo salvataggio" />
+                  </div>
+                  <div class="field">
+                    <label class="label-row">Operazioni cloud
+                      <span class="hint" title="La cache cloud e per utente KeyLock e resta cifrata: puo essere usata da dispositivi diversi.">i</span>
+                    </label>
+                    <div class="toolbar" style="margin-top:0">
+                      <button class="btn-secondary" id="btnCloudSaveScenario" type="button">Salva su cloud</button>
+                      <button class="btn-secondary" id="btnCloudLoadScenario" type="button">Carica da cloud</button>
+                    </div>
+                  </div>
+                </div>
+                <div id="authStatus" class="auth-status">Non autenticato.</div>
               </div>
             </div>
-            <div id="authStatus" class="auth-status">Non autenticato.</div>
           </div>
 
           <div class="shared-grid">
@@ -1066,6 +1126,40 @@
       document.getElementById("btnLoadMyScenario").disabled = !logged;
       document.getElementById("btnCloudSaveScenario").disabled = !logged;
       document.getElementById("btnCloudLoadScenario").disabled = !logged;
+    }
+
+    function setAuthMenuOpen(open) {
+      const wrap = document.getElementById("authMenuWrap");
+      const btn = document.getElementById("btnAuthMenu");
+      if (!wrap || !btn) return;
+      wrap.classList.toggle("open", !!open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    function initAuthMenu() {
+      const wrap = document.getElementById("authMenuWrap");
+      const btn = document.getElementById("btnAuthMenu");
+      if (!wrap || !btn) return;
+
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const willOpen = !wrap.classList.contains("open");
+        setAuthMenuOpen(willOpen);
+      });
+
+      wrap.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      document.addEventListener("click", () => {
+        setAuthMenuOpen(false);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          setAuthMenuOpen(false);
+        }
+      });
     }
 
     async function githubApiRequest(method, url, token, body) {
@@ -1735,6 +1829,7 @@
     });
 
     buildExpenseRows();
+    initAuthMenu();
     updateAuthUi();
     const cloudCfg = getCloudCfg();
     if (cloudCfg && cloudCfg.gistId) {
