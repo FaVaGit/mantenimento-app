@@ -1561,33 +1561,62 @@
       alert("Dati di partenza aggiornati.");
     }
 
-    function exportJson() {
+    async function exportJson() {
+      if (!authSession.username || !authSession.keyBits) {
+        setAuthStatus("Effettua il login KeyLock prima di esportare JSON cifrato.", true);
+        alert("Per esportare, devi prima fare login KeyLock.");
+        return;
+      }
+
       const state = serializeState();
-      const payload = JSON.stringify(state, null, 2);
+      const encrypted = await encryptStateForKey(state, authSession.keyBits);
+      const payloadObj = {
+        format: "keylock-encrypted-state-v1",
+        owner: authSession.username,
+        createdAt: new Date().toISOString(),
+        cipher: encrypted
+      };
+      const payload = JSON.stringify(payloadObj, null, 2);
       const blob = new Blob([payload], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
       a.href = url;
-      a.download = `mantenimento-dati-${ts}.json`;
+      a.download = `mantenimento-cifrato-${authSession.username}-${ts}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     }
 
-    function importJsonFromFile(file) {
+    async function importJsonFromFile(file) {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         try {
-          const state = JSON.parse(String(reader.result || "{}"));
-          if (!state || typeof state !== "object" || !state.base || !Array.isArray(state.spese)) {
-            throw new Error("Formato JSON non valido");
+          const payload = JSON.parse(String(reader.result || "{}"));
+          if (!payload || payload.format !== "keylock-encrypted-state-v1" || !payload.owner || !payload.cipher) {
+            throw new Error("Formato JSON non valido: e richiesto un export cifrato KeyLock");
           }
+
+          if (!authSession.username || !authSession.keyBits) {
+            throw new Error("Effettua prima il login KeyLock per importare il file cifrato");
+          }
+
+          if (normalizeUsername(payload.owner) !== normalizeUsername(authSession.username)) {
+            throw new Error("Questo file appartiene a un altro utente KeyLock");
+          }
+
+          const state = await decryptStateForKey(payload.cipher, authSession.keyBits);
+          if (!state || typeof state !== "object" || !state.base || !Array.isArray(state.spese)) {
+            throw new Error("Contenuto decifrato non valido");
+          }
+
           applyState(state);
-          alert("Dati caricati da JSON.");
-        } catch (_) {
-          alert("Impossibile caricare il JSON: formato non valido.");
+          setAuthStatus("JSON cifrato importato correttamente.");
+          alert("Dati caricati da JSON cifrato.");
+        } catch (err) {
+          setAuthStatus(`Import JSON fallito: ${err.message}`, true);
+          alert(`Impossibile caricare il JSON: ${err.message}`);
         }
       };
       reader.readAsText(file, "utf-8");
@@ -1641,16 +1670,18 @@
 
     document.getElementById("btnSalva").addEventListener("click", saveAsStartingData);
 
-    document.getElementById("btnExportJson").addEventListener("click", exportJson);
+    document.getElementById("btnExportJson").addEventListener("click", async () => {
+      await exportJson();
+    });
 
     document.getElementById("btnImportJson").addEventListener("click", () => {
       document.getElementById("fileJson").click();
     });
 
-    document.getElementById("fileJson").addEventListener("change", (e) => {
+    document.getElementById("fileJson").addEventListener("change", async (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        importJsonFromFile(file);
+        await importJsonFromFile(file);
       }
       e.target.value = "";
     });
