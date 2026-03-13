@@ -248,22 +248,25 @@
       letter-spacing: 0.5px;
     }
 
-    .spese-table input { min-width: 110px; }
+    .spese-table input { min-width: 86px; }
 
     .spese-input-wrap {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     .spese-input-wrap input {
       flex: 1 1 auto;
-      min-width: 88px;
+      min-width: 66px;
+      padding: 6px 7px;
+      font-size: 0.86rem;
     }
 
     .spese-partial {
-      font-size: 0.72rem;
-      color: #5c6b6b;
+      font-size: 0.66rem;
+      color: #2f4745;
+      font-weight: 700;
       white-space: nowrap;
     }
 
@@ -1055,6 +1058,15 @@
       return new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(n);
     }
 
+    function eurTiny(v) {
+      const n = Number(v || 0);
+      const short = new Intl.NumberFormat("it-IT", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(n);
+      return `${short} EUR`;
+    }
+
     function num(id) {
       const raw = document.getElementById(id).value;
       const n = Number(raw);
@@ -1517,13 +1529,13 @@
           <td>
             <div class="spese-input-wrap">
               <input type="number" min="0" step="0.01" id="c1_${idx}" value="0" />
-              <span class="spese-partial" id="p1_${idx}">Parz.: ${eur(0)}</span>
+              <span class="spese-partial" id="p1_${idx}" title="Somma parziale progressiva">Tot: ${eurTiny(0)}</span>
             </div>
           </td>
           <td>
             <div class="spese-input-wrap">
               <input type="number" min="0" step="0.01" id="c2_${idx}" value="0" />
-              <span class="spese-partial" id="p2_${idx}">Parz.: ${eur(0)}</span>
+              <span class="spese-partial" id="p2_${idx}" title="Somma parziale progressiva">Tot: ${eurTiny(0)}</span>
             </div>
           </td>
         `;
@@ -1539,8 +1551,14 @@
         partial2 += num(`c2_${idx}`);
         const p1 = document.getElementById(`p1_${idx}`);
         const p2 = document.getElementById(`p2_${idx}`);
-        if (p1) p1.textContent = `Parz.: ${eur(partial1)}`;
-        if (p2) p2.textContent = `Parz.: ${eur(partial2)}`;
+        if (p1) {
+          p1.textContent = `Tot: ${eurTiny(partial1)}`;
+          p1.title = `Somma parziale progressiva: ${eur(partial1)}`;
+        }
+        if (p2) {
+          p2.textContent = `Tot: ${eurTiny(partial2)}`;
+          p2.title = `Somma parziale progressiva: ${eur(partial2)}`;
+        }
       });
     }
 
