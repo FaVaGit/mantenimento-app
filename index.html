@@ -250,6 +250,23 @@
 
     .spese-table input { min-width: 110px; }
 
+    .spese-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .spese-input-wrap input {
+      flex: 1 1 auto;
+      min-width: 88px;
+    }
+
+    .spese-partial {
+      font-size: 0.72rem;
+      color: #5c6b6b;
+      white-space: nowrap;
+    }
+
     .toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -1497,10 +1514,33 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td><span class="label-row">${item.label}<span class="hint" title="${item.help}">i</span></span></td>
-          <td><input type="number" min="0" step="0.01" id="c1_${idx}" value="0" /></td>
-          <td><input type="number" min="0" step="0.01" id="c2_${idx}" value="0" /></td>
+          <td>
+            <div class="spese-input-wrap">
+              <input type="number" min="0" step="0.01" id="c1_${idx}" value="0" />
+              <span class="spese-partial" id="p1_${idx}">Parz.: ${eur(0)}</span>
+            </div>
+          </td>
+          <td>
+            <div class="spese-input-wrap">
+              <input type="number" min="0" step="0.01" id="c2_${idx}" value="0" />
+              <span class="spese-partial" id="p2_${idx}">Parz.: ${eur(0)}</span>
+            </div>
+          </td>
         `;
         rowsSpese.appendChild(tr);
+      });
+    }
+
+    function updateExpensePartials() {
+      let partial1 = 0;
+      let partial2 = 0;
+      expenseItems.forEach((_, idx) => {
+        partial1 += num(`c1_${idx}`);
+        partial2 += num(`c2_${idx}`);
+        const p1 = document.getElementById(`p1_${idx}`);
+        const p2 = document.getElementById(`p2_${idx}`);
+        if (p1) p1.textContent = `Parz.: ${eur(partial1)}`;
+        if (p2) p2.textContent = `Parz.: ${eur(partial2)}`;
       });
     }
 
@@ -1731,6 +1771,7 @@
 
     function renderAll() {
       const m = computeModel();
+      updateExpensePartials();
       renderLivePanel(m);
       calculate();
     }
