@@ -21,6 +21,7 @@
       --bad: #991b1b;
       --shadow: 0 14px 38px rgba(10, 40, 36, 0.14);
       --radius: 16px;
+      --ui-zoom: 1;
     }
 
     * { box-sizing: border-box; }
@@ -32,6 +33,8 @@
         radial-gradient(880px 460px at 105% -4%, #d8f2ec 0%, transparent 67%),
         linear-gradient(160deg, var(--bg-1), var(--bg-2) 62%, var(--bg-3));
       font-family: "Candara", "Gill Sans", "Trebuchet MS", sans-serif;
+      font-size: 16px;
+      line-height: 1.36;
       min-height: 100vh;
     }
 
@@ -41,6 +44,15 @@
       margin: 22px auto;
       padding: 0 14px 22px;
       animation: fadeIn 520ms ease;
+      zoom: var(--ui-zoom);
+    }
+
+    @supports not (zoom: 1) {
+      .wrap {
+        transform: scale(var(--ui-zoom));
+        transform-origin: top center;
+        width: calc(100% / var(--ui-zoom));
+      }
     }
 
     @keyframes fadeIn {
@@ -68,10 +80,18 @@
 
     .hero p { margin: 0; line-height: 1.4; color: #d9eeeb; }
 
+    .hero-tools {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
     .top-actions {
       position: relative;
       display: inline-block;
-      margin-top: 12px;
+      margin-top: 0;
     }
 
     .top-actions-trigger {
@@ -111,6 +131,44 @@
       text-align: left;
       padding: 8px 10px;
       border-radius: 10px;
+    }
+
+    .zoom-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 7px;
+      border-radius: 999px;
+      border: 1px solid #a8c5bf;
+      background: linear-gradient(145deg, rgba(246, 252, 250, 0.98), rgba(230, 243, 239, 0.98));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+
+    .zoom-controls button {
+      border-radius: 9px;
+      border: 1px solid #9fbdb7;
+      background: linear-gradient(180deg, #ffffff, #eef6f4);
+      color: #184a45;
+      font-weight: 800;
+      min-width: 34px;
+      padding: 6px 8px;
+      line-height: 1;
+      box-shadow: none;
+    }
+
+    .zoom-controls button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .zoom-level {
+      min-width: 52px;
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #1f4643;
+      letter-spacing: 0.2px;
     }
 
     .grid {
@@ -995,6 +1053,20 @@
       .top-actions {
         display: block;
       }
+      .hero-tools {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .zoom-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .zoom-controls button {
+        min-width: 58px;
+      }
+      .zoom-level {
+        flex: 1;
+      }
       .top-actions-trigger {
         width: 100%;
       }
@@ -1009,6 +1081,11 @@
     }
 
     @media print {
+      .wrap {
+        zoom: 1 !important;
+        transform: none !important;
+        width: 100% !important;
+      }
       .legal-footer {
         border: 1px solid #cfcfcf;
         background: #fff;
@@ -1023,14 +1100,22 @@
       <p>
         Modello di calcolo orientativo adattato al <strong>reddito mensile netto</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
       </p>
-      <div class="top-actions" id="topActions" tabindex="0">
-        <button class="top-actions-trigger" type="button">Azioni rapide</button>
-        <div class="top-actions-menu" aria-label="Azioni applicazione">
-          <button class="btn-secondary" id="btnReset" type="button">Reset valori</button>
-          <button class="btn-secondary" id="btnExportJson" type="button">Esporta JSON cifrato</button>
-          <button class="btn-secondary" id="btnImportJson" type="button">Carica JSON cifrato</button>
-          <button class="btn-secondary" id="btnPdf" type="button">Genera e scarica PDF</button>
-          <input id="fileJson" type="file" accept="application/json,.json" style="display:none" />
+      <div class="hero-tools">
+        <div class="top-actions" id="topActions" tabindex="0">
+          <button class="top-actions-trigger" type="button">Azioni rapide</button>
+          <div class="top-actions-menu" aria-label="Azioni applicazione">
+            <button class="btn-secondary" id="btnReset" type="button">Reset valori</button>
+            <button class="btn-secondary" id="btnExportJson" type="button">Esporta JSON cifrato</button>
+            <button class="btn-secondary" id="btnImportJson" type="button">Carica JSON cifrato</button>
+            <button class="btn-secondary" id="btnPdf" type="button">Genera e scarica PDF</button>
+            <input id="fileJson" type="file" accept="application/json,.json" style="display:none" />
+          </div>
+        </div>
+        <div class="zoom-controls" aria-label="Controlli zoom interfaccia">
+          <button type="button" id="btnZoomOut" title="Riduci zoom">A-</button>
+          <span id="zoomLevel" class="zoom-level">100%</span>
+          <button type="button" id="btnZoomIn" title="Aumenta zoom">A+</button>
+          <button type="button" id="btnZoomReset" title="Ripristina zoom">Reset</button>
         </div>
       </div>
     </section>
@@ -1277,6 +1362,10 @@
     const KEYLOCK_PROFILE_TABLE = "keylock_profiles";
     const CLOUD_PROFILE_FORMAT = "keylock-cloud-profile-v2";
     const CLOUD_HISTORY_MAX = 24;
+    const UI_ZOOM_KEY = "keylock_ui_zoom";
+    const UI_ZOOM_MIN = 0.9;
+    const UI_ZOOM_MAX = 1.5;
+    const UI_ZOOM_STEP = 0.1;
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
     const SUPABASE_ANON_KEY = String(window.KEYLOCK_SUPABASE_ANON_KEY || "").trim();
     const supabaseClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -1302,6 +1391,51 @@
     let netDiffFabricCanvas = null;
     let authFlowInProgress = false;
     let authRateLimitedUntilTs = 0;
+
+    function normalizeUiZoom(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return 1;
+      const clamped = Math.min(UI_ZOOM_MAX, Math.max(UI_ZOOM_MIN, n));
+      return Math.round(clamped * 10) / 10;
+    }
+
+    function updateUiZoomButtons(zoom) {
+      const btnOut = document.getElementById("btnZoomOut");
+      const btnIn = document.getElementById("btnZoomIn");
+      if (btnOut) btnOut.disabled = zoom <= UI_ZOOM_MIN;
+      if (btnIn) btnIn.disabled = zoom >= UI_ZOOM_MAX;
+    }
+
+    function applyUiZoom(value) {
+      const zoom = normalizeUiZoom(value);
+      document.documentElement.style.setProperty("--ui-zoom", String(zoom));
+      const level = document.getElementById("zoomLevel");
+      if (level) level.textContent = `${Math.round(zoom * 100)}%`;
+      updateUiZoomButtons(zoom);
+      return zoom;
+    }
+
+    function setUiZoom(value, persist = true) {
+      const zoom = applyUiZoom(value);
+      if (persist) {
+        try {
+          localStorage.setItem(UI_ZOOM_KEY, String(zoom));
+        } catch (_) {}
+      }
+      return zoom;
+    }
+
+    function initUiZoom() {
+      let stored = null;
+      try {
+        stored = localStorage.getItem(UI_ZOOM_KEY);
+      } catch (_) {
+        stored = null;
+      }
+      const defaultZoom = window.matchMedia && window.matchMedia("(max-width: 640px)").matches ? 1.1 : 1;
+      const base = stored == null ? defaultZoom : Number(stored);
+      return setUiZoom(base, stored == null);
+    }
 
     function eur(v) {
       const n = Number(v || 0);
@@ -2366,6 +2500,12 @@
         return;
       }
 
+      const prevZoom = getComputedStyle(document.documentElement).getPropertyValue("--ui-zoom").trim() || "1";
+      if (prevZoom !== "1") {
+        applyUiZoom(1);
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      }
+
       const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
       const fileName = `mantenimento-${ts}.pdf`;
       const options = {
@@ -2404,6 +2544,10 @@
         setAuthStatus("PDF generato e scaricato automaticamente.");
       } catch (err) {
         setAuthStatus(`Generazione PDF fallita: ${err.message || err}`, true);
+      } finally {
+        if (prevZoom !== "1") {
+          applyUiZoom(prevZoom);
+        }
       }
     }
 
@@ -2535,6 +2679,20 @@
       await exportPdfDirect();
     });
 
+    document.getElementById("btnZoomOut").addEventListener("click", () => {
+      const current = normalizeUiZoom(getComputedStyle(document.documentElement).getPropertyValue("--ui-zoom"));
+      setUiZoom(current - UI_ZOOM_STEP);
+    });
+
+    document.getElementById("btnZoomIn").addEventListener("click", () => {
+      const current = normalizeUiZoom(getComputedStyle(document.documentElement).getPropertyValue("--ui-zoom"));
+      setUiZoom(current + UI_ZOOM_STEP);
+    });
+
+    document.getElementById("btnZoomReset").addEventListener("click", () => {
+      setUiZoom(1);
+    });
+
     document.getElementById("btnRegisterKeyLock").addEventListener("click", async () => {
       await registerKeyLockUser();
     });
@@ -2603,6 +2761,7 @@
     });
 
     buildExpenseRows();
+    initUiZoom();
     initAuthMenu();
     updateAuthUi();
     renderCloudHistoryPanel();
