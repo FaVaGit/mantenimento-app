@@ -2955,82 +2955,272 @@
       renderAll();
     }
 
-    async function exportPdfDirect() {
-      const source = document.querySelector(".wrap");
-      if (!source || !window.html2pdf) {
-        alert("Generazione PDF non disponibile in questo browser.");
+    function exportPdfDirect() {
+      const m = computeModel();
+      const now = new Date();
+      const genDate = now.toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" });
+      const genTime = now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+
+      const modeName = m.mode === "legal"
+        ? "Legale-proporzionale"
+        : (m.mode === "simple" ? `Semplificata (${m.simplePerc.toFixed(0)}%)` : "Linee guida Tribunale di Genova");
+
+      let assegnoText = "Nessun trasferimento";
+      let assegnoDir = "";
+      if (m.assegnoDa1a2 > 0.005) {
+        assegnoText = eur(m.assegnoDa1a2) + " / mese";
+        assegnoDir = "Coniuge 1 &rarr; Coniuge 2";
+      } else if (m.assegnoDa2a1 > 0.005) {
+        assegnoText = eur(m.assegnoDa2a1) + " / mese";
+        assegnoDir = "Coniuge 2 &rarr; Coniuge 1";
+      }
+
+      const speseRows = expenseItems.map((item, i) => {
+        const c1 = num(`c1_${i}`);
+        const c2 = num(`c2_${i}`);
+        return `<tr>
+          <td>${item.label}</td>
+          <td class="num">${c1 > 0 ? eur(c1) : "–"}</td>
+          <td class="num">${c2 > 0 ? eur(c2) : "–"}</td>
+          <td class="num bold">${(c1 + c2) > 0 ? eur(c1 + c2) : "–"}</td>
+        </tr>`;
+      }).join("");
+
+      const html = `<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<title>Report Mantenimento – ${genDate}</title>
+<style>
+  @page { size: A4 portrait; margin: 16mm 14mm 14mm 14mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9pt; color: #1a2e2a; background: #fff; }
+
+  /* ── HEADER ── */
+  .rpt-header { display: flex; align-items: flex-end; justify-content: space-between;
+    border-bottom: 3px solid #0b6e66; padding-bottom: 8px; margin-bottom: 18px; }
+  .rpt-title { font-size: 17pt; font-weight: 700; color: #0b6e66; letter-spacing: -0.4px; }
+  .rpt-subtitle { font-size: 9pt; color: #4a7d77; margin-top: 3px; }
+  .rpt-meta { text-align: right; font-size: 8pt; color: #777; line-height: 1.6; }
+
+  /* ── RESULT BANNER ── */
+  .banner { background: linear-gradient(135deg, #0b6e66 0%, #14b8a6 100%);
+    color: #fff; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px;
+    display: flex; justify-content: space-between; align-items: center; }
+  .banner-lbl { font-size: 8.5pt; opacity: 0.85; margin-bottom: 3px; }
+  .banner-dir { font-size: 11pt; font-weight: 700; }
+  .banner-amount { font-size: 22pt; font-weight: 700; text-align: right; }
+  .banner-sub { font-size: 8pt; opacity: 0.8; text-align: right; margin-top: 2px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 16px; break-inside: avoid; }
+  .section-title { font-size: 8.5pt; font-weight: 700; color: #0b6e66; text-transform: uppercase;
+    letter-spacing: 0.6px; border-bottom: 1.5px solid #b2d8d3; padding-bottom: 4px; margin-bottom: 10px; }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+  th { background: #0b6e66; color: #fff; text-align: left; padding: 5px 8px;
+    font-weight: 600; font-size: 8pt; }
+  td { padding: 4px 8px; border-bottom: 1px solid #e5efed; vertical-align: top; }
+  tr:nth-child(even) td { background: #f5faf9; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bold { font-weight: 700; }
+  .total-row td { background: #ddf0ec !important; font-weight: 700; border-top: 1.5px solid #74c3b9; }
+
+  /* ── TWO-COL LAYOUT ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* ── BALANCE CARDS ── */
+  .balance-row { display: flex; gap: 12px; margin-bottom: 16px; break-inside: avoid; }
+  .bal-card { flex: 1; border-radius: 7px; padding: 10px 12px; border: 1.5px solid; }
+  .bal-card.c1 { background: #eaf6f4; border-color: #74c3b9; }
+  .bal-card.c2 { background: #fef9ec; border-color: #f0c36d; }
+  .bal-card-title { font-size: 8pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 6px; }
+  .bal-card.c1 .bal-card-title { color: #0b6e66; }
+  .bal-card.c2 .bal-card-title { color: #c77a11; }
+  .bal-line { display: flex; justify-content: space-between; font-size: 8.5pt;
+    padding: 2.5px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .bal-line:last-child { border-bottom: none; font-weight: 700; padding-top: 5px; margin-top: 2px; }
+  .bal-lbl { color: #4a7a74; }
+  .bal-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .green { color: #0b6e66; }
+  .red { color: #c0392b; }
+  .orange { color: #c77a11; }
+
+  /* ── KPI BOXES ── */
+  .kpi-box { background: #f5faf9; border: 1.5px solid #b2d8d3; border-radius: 6px;
+    padding: 8px 10px; break-inside: avoid; }
+  .kpi-lbl { font-size: 7.5pt; color: #4a7d77; text-transform: uppercase; letter-spacing: 0.4px; }
+  .kpi-val { font-size: 13pt; font-weight: 700; margin-top: 2px; }
+  .kpi-val.ok { color: #0b6e66; }
+  .kpi-val.warn { color: #c77a11; }
+  .kpi-val.bad { color: #c0392b; }
+
+  /* ── NOTE & FOOTER ── */
+  .note-box { background: #f8fcfb; border-left: 3px solid #0b6e66;
+    padding: 8px 12px; font-size: 8pt; color: #444; line-height: 1.6; }
+  .note-box strong { color: #0b6e66; }
+  .footer { border-top: 1px solid #cde5e0; padding-top: 6px; margin-top: 20px;
+    font-size: 7.5pt; color: #888; text-align: center; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="rpt-header">
+  <div>
+    <div class="rpt-title">Calcolo Mantenimento Figli</div>
+    <div class="rpt-subtitle">Stima indicativa a supporto della negoziazione assistita</div>
+  </div>
+  <div class="rpt-meta">Generato il ${genDate}<br/>${genTime}</div>
+</div>
+
+<!-- ASSEGNO BANNER -->
+<div class="banner">
+  <div>
+    <div class="banner-lbl">Assegno mensile suggerito dal modello</div>
+    <div class="banner-dir">${assegnoDir || "Nessun trasferimento necessario"}</div>
+  </div>
+  <div>
+    <div class="banner-amount">${assegnoText}</div>
+    ${m.figli > 1 ? `<div class="banner-sub">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)} per figlio</div>` : ""}
+  </div>
+</div>
+
+<!-- PARAMETRI INPUT -->
+<div class="section">
+  <div class="section-title">Parametri di Input</div>
+  <div class="two-col">
+    <table>
+      <thead><tr><th colspan="2">Impostazioni Generali</th></tr></thead>
+      <tbody>
+        <tr><td>Modalità di calcolo</td><td>${modeName}</td></tr>
+        <tr><td>Base reddito</td><td>${m.incomeMode === "annual" ? "Annuale (÷12 per mensile)" : "Mensile"}</td></tr>
+        <tr><td>Numero figli</td><td>${m.figli}</td></tr>
+        <tr><td>Permanenza Coniuge 1</td><td>${m.perm1.toFixed(0)}%</td></tr>
+        <tr><td>Permanenza Coniuge 2</td><td>${m.perm2.toFixed(0)}%</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Voce</th><th class="num">Coniuge 1</th><th class="num">Coniuge 2</th></tr></thead>
+      <tbody>
+        <tr><td>Reddito netto${m.incomeMode === "annual" ? " annuo" : " mensile"}</td>
+            <td class="num">${eur(m.r1Raw)}</td><td class="num">${eur(m.r2Raw)}</td></tr>
+        ${m.incomeMode === "annual" ? `<tr><td>Reddito netto mensile (÷12)</td><td class="num">${eur(m.r1)}</td><td class="num">${eur(m.r2)}</td></tr>` : ""}
+        <tr><td>Assegno percepito</td><td class="num">${eur(m.aPerc1)}</td><td class="num">${eur(m.aPerc2)}</td></tr>
+        <tr><td>Assegno pagato</td><td class="num">${eur(m.aPag1)}</td><td class="num">${eur(m.aPag2)}</td></tr>
+        <tr><td>Assegni familiari / INPS</td><td class="num">${eur(m.aFam1)}</td><td class="num">${eur(m.aFam2)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SPESE -->
+<div class="section">
+  <div class="section-title">Voci di Spesa</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Voce</th>
+        <th class="num" style="width:110px">Coniuge 1 €/mese</th>
+        <th class="num" style="width:110px">Coniuge 2 €/mese</th>
+        <th class="num" style="width:110px">Totale €/mese</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${speseRows}
+      <tr class="total-row">
+        <td>TOTALE</td>
+        <td class="num">${eur(m.spese1)}</td>
+        <td class="num">${eur(m.spese2)}</td>
+        <td class="num">${eur(m.speseTot)}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ANALISI COMPARATIVA -->
+<div class="section">
+  <div class="section-title">Analisi Economica Comparativa</div>
+  <div class="balance-row">
+    <div class="bal-card c1">
+      <div class="bal-card-title">Coniuge 1</div>
+      <div class="bal-line"><span class="bal-lbl">Reddito netto mensile</span><span class="bal-val">${eur(m.r1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">+ Assegno percepito</span><span class="bal-val">+ ${eur(m.aPerc1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">+ Assegni familiari</span><span class="bal-val">+ ${eur(m.aFam1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">– Assegno pagato</span><span class="bal-val">– ${eur(m.aPag1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">– Spese dirette</span><span class="bal-val">– ${eur(m.spese1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">Disponibilità netta</span>
+        <span class="bal-val ${m.disp1 >= 0 ? 'green' : 'red'}">${eur(m.disp1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">Peso contributivo</span><span class="bal-val">${(m.peso1 * 100).toFixed(1)}%</span></div>
+      <div class="bal-line"><span class="bal-lbl">Disponibilità post-assegno</span>
+        <span class="bal-val ${m.post1 >= 0 ? 'green' : 'red'}">${eur(m.post1)}</span></div>
+    </div>
+    <div class="bal-card c2">
+      <div class="bal-card-title">Coniuge 2</div>
+      <div class="bal-line"><span class="bal-lbl">Reddito netto mensile</span><span class="bal-val">${eur(m.r2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">+ Assegno percepito</span><span class="bal-val">+ ${eur(m.aPerc2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">+ Assegni familiari</span><span class="bal-val">+ ${eur(m.aFam2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">– Assegno pagato</span><span class="bal-val">– ${eur(m.aPag2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">– Spese dirette</span><span class="bal-val">– ${eur(m.spese2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">Disponibilità netta</span>
+        <span class="bal-val ${m.disp2 >= 0 ? 'green' : 'red'}">${eur(m.disp2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">Peso contributivo</span><span class="bal-val">${(m.peso2 * 100).toFixed(1)}%</span></div>
+      <div class="bal-line"><span class="bal-lbl">Disponibilità post-assegno</span>
+        <span class="bal-val ${m.post2 >= 0 ? 'green' : 'red'}">${eur(m.post2)}</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="section">
+  <div class="section-title">Indicatori Chiave</div>
+  <div class="three-col">
+    <div class="kpi-box"><div class="kpi-lbl">Totale spese</div><div class="kpi-val warn">${eur(m.speseTot)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Fabbisogno figli stimato</div><div class="kpi-val warn">${eur(m.fabbisognoFigli)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Importo per figlio</div><div class="kpi-val warn">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Quota teorica Coniuge 1</div><div class="kpi-val ok">${eur(m.quotaTeorica1)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Quota teorica Coniuge 2</div><div class="kpi-val ok">${eur(m.quotaTeorica2)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Assegno suggerito</div>
+      <div class="kpi-val ${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? 'warn' : 'ok'}">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1))}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Post-assegno Coniuge 1</div>
+      <div class="kpi-val ${m.post1 >= 0 ? 'ok' : 'bad'}">${eur(m.post1)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Post-assegno Coniuge 2</div>
+      <div class="kpi-val ${m.post2 >= 0 ? 'ok' : 'bad'}">${eur(m.post2)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Quota diretta C1 / C2</div>
+      <div class="kpi-val ok" style="font-size:10pt">${eur(m.quotaDiretta1)} / ${eur(m.quotaDiretta2)}</div></div>
+  </div>
+</div>
+
+<!-- NOTE METODOLOGICHE -->
+<div class="note-box">
+  <strong>Note metodologiche</strong> — Documento generato automaticamente con finalità illustrativa e non costituisce parere legale.
+  Modalità di calcolo: <strong>${modeName}</strong>.
+  Il fabbisogno figli è stimato come il 35% delle spese totali inserite.
+  ${m.incomeMode === "annual" ? "I redditi inseriti in base annuale sono stati convertiti in mensili (÷12)." : ""}
+  I risultati dipendono esclusivamente dai dati immessi e non sostituiscono la valutazione di un professionista.
+</div>
+
+<div class="footer">Calcolatore Mantenimento Figli — Uso privato e riservato — ${genDate}</div>
+
+<script>window.onload = function(){ window.print(); };<\/script>
+</body>
+</html>`;
+
+      const win = window.open("", "_blank");
+      if (!win) {
+        alert("Il popup è stato bloccato dal browser. Consenti i popup per questo sito e riprova.");
         return;
       }
-
-      const topActionsWrap = document.getElementById("topActions");
-      const authWrap = document.getElementById("authMenuWrap");
-      const historyPanel = document.getElementById("cloudHistoryPanel");
-      const prevUiState = {
-        topActionsOpen: !!(topActionsWrap && topActionsWrap.classList.contains("is-open")),
-        authMenuOpen: !!(authWrap && authWrap.classList.contains("open")),
-        historyOpen: !!(historyPanel && historyPanel.open)
-      };
-
-      setTopActionsOpen(false);
-      setAuthMenuOpen(false);
-      if (historyPanel) historyPanel.open = false;
-      document.body.classList.add("pdf-exporting");
-
-      const prevZoom = getComputedStyle(document.documentElement).getPropertyValue("--ui-zoom").trim() || "1";
-      if (prevZoom !== "1") {
-        applyUiZoom(1);
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      } else {
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      }
-
-      const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
-      const fileName = `mantenimento-${ts}.pdf`;
-      const options = {
-        margin: [6, 6, 6, 6],
-        filename: fileName,
-        image: { type: "jpeg", quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
-        pagebreak: { mode: ["css", "legacy"] }
-      };
-
-      try {
-        const worker = window.html2pdf().from(source).set(options);
-        const blob = await worker.toPdf().output("blob");
-
-        if (window.showSaveFilePicker) {
-          const handle = await window.showSaveFilePicker({
-            suggestedName: fileName,
-            types: [{ description: "PDF Document", accept: { "application/pdf": [".pdf"] } }]
-          });
-          const writable = await handle.createWritable();
-          await writable.write(blob);
-          await writable.close();
-          setAuthStatus("PDF generato e salvato nella destinazione scelta.");
-          return;
-        }
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        setAuthStatus("PDF generato e scaricato automaticamente.");
-      } catch (err) {
-        setAuthStatus(`Generazione PDF fallita: ${err.message || err}`, true);
-      } finally {
-        if (prevZoom !== "1") {
-          applyUiZoom(prevZoom);
-        }
-        document.body.classList.remove("pdf-exporting");
-        setTopActionsOpen(prevUiState.topActionsOpen);
-        setAuthMenuOpen(prevUiState.authMenuOpen);
-        if (historyPanel) historyPanel.open = prevUiState.historyOpen;
-      }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
     }
 
     async function exportJson() {
@@ -3167,8 +3357,8 @@
       e.target.value = "";
     });
 
-    document.getElementById("btnPdf").addEventListener("click", async () => {
-      await exportPdfDirect();
+    document.getElementById("btnPdf").addEventListener("click", () => {
+      exportPdfDirect();
     });
 
     document.getElementById("btnAddExpenseItem").addEventListener("click", () => {
