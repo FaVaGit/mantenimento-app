@@ -3105,12 +3105,57 @@
 
   /* ── RESULT BANNER ── */
   .banner { background: linear-gradient(135deg, #0b6e66 0%, #14b8a6 100%);
-    color: #fff; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px;
+    color: #fff; border-radius: 8px; padding: 14px 18px; margin-bottom: 14px;
     display: flex; justify-content: space-between; align-items: center; }
   .banner-lbl { font-size: 8.5pt; opacity: 0.85; margin-bottom: 3px; }
   .banner-dir { font-size: 11pt; font-weight: 700; }
   .banner-amount { font-size: 22pt; font-weight: 700; text-align: right; }
   .banner-sub { font-size: 8pt; opacity: 0.8; text-align: right; margin-top: 2px; }
+
+  /* ── LIVE PANEL ── */
+  .live-panel { border: 1.5px solid rgba(167,198,191,0.6); border-radius: 12px;
+    background: linear-gradient(160deg,#f4faf8,#eef7f4); padding: 12px 16px;
+    margin-bottom: 16px; break-inside: avoid; }
+  .live-panel-title { font-size: 8pt; font-weight: 700; color: #1a4e49;
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+  .live-net-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .live-net-card { flex: 1; background: #fff; border: 1.5px solid #b2d8d3;
+    border-radius: 8px; padding: 8px 12px; }
+  .live-net-label { font-size: 7.5pt; color: #506e6a; margin-bottom: 4px; }
+  .live-net-value { font-size: 13pt; font-weight: 700; }
+  .live-net-value.c1 { color: #0b6e66; }
+  .live-net-value.c2 { color: #c77a11; }
+
+  /* ── TRACK VISUALIZATION ── */
+  .track-wrap { position: relative; padding: 0 56px; margin-bottom: 4px; }
+  .track-figures { display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 4px; }
+  .track-fig { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .fig-bubble { width: 46px; height: 46px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; }
+  .fig-bubble.c1 { background: #e6f4f2; border: 2px solid #74c3b9; }
+  .fig-bubble.c2 { background: #fef3e0; border: 2px solid #f0c36d; }
+  .fig-label { font-size: 7.5pt; font-weight: 700; color: #506e6a; }
+  .track-badge { flex: 1; text-align: center; padding: 0 10px 6px; }
+  .track-badge-inner { display: inline-block; background: #fff;
+    border: 2px solid #c9e6e1; border-radius: 20px;
+    padding: 6px 14px; font-size: 10pt; font-weight: 700; color: #1a4e49;
+    white-space: nowrap; }
+  .track-bar-row { position: relative; height: 14px; border-radius: 7px; overflow: hidden;
+    background: linear-gradient(to right, #74c3b9 0%, #74c3b9 50%, #f0c36d 50%, #f0c36d 100%); }
+  .track-marker { position: absolute; top: 50%; transform: translate(-50%,-50%);
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #c77a11; border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.28); z-index: 2; }
+  .track-labels { display: flex; justify-content: space-between;
+    font-size: 7.5pt; color: #74c3b9; font-weight: 700; margin-top: 3px; }
+  .track-labels span:last-child { color: #c77a11; }
+
+  /* ── ASSEGNO PILL ── */
+  .assegno-pill { background: #fff; border: 1.5px solid #b2d8d3; border-radius: 10px;
+    padding: 8px 12px; margin-top: 10px; }
+  .assegno-lbl { font-size: 7.5pt; color: #506e6a; margin-bottom: 3px; }
+  .assegno-val { font-size: 12pt; font-weight: 700; color: #1a4e49; }
 
   /* ── SECTIONS ── */
   .section { margin-bottom: 16px; break-inside: avoid; }
@@ -3193,7 +3238,88 @@
   </div>
 </div>
 
-<!-- PARAMETRI INPUT -->
+<!-- LIVE PANEL (replica del blocco visivo dell'app) -->
+<div class="live-panel">
+  <div class="live-panel-title">Impatto in Tempo Reale sul Netto</div>
+  <div class="live-net-row">
+    <div class="live-net-card">
+      <div class="live-net-label">Netto disponibile Coniuge 1</div>
+      <div class="live-net-value c1">${eur(m.disp1)}</div>
+    </div>
+    <div class="live-net-card">
+      <div class="live-net-label">Netto disponibile Coniuge 2</div>
+      <div class="live-net-value c2">${eur(m.disp2)}</div>
+    </div>
+  </div>
+
+  <!-- Track con figure e badge centrale -->
+  <div style="border:1.5px solid rgba(167,198,191,0.5);border-radius:10px;background:#fff;padding:12px 16px;">
+    <div class="track-figures">
+      <!-- Figura C1 -->
+      <div class="track-fig">
+        <div class="fig-bubble c1">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="9" r="5" fill="#0b6e66" opacity="0.85"/>
+            <path d="M5 24c0-4.97 4.03-9 9-9s9 4.03 9 9" stroke="#0b6e66" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.85"/>
+            ${m.disp1 >= m.disp2
+              ? `<circle cx="11.5" cy="9" r="1" fill="#fff"/><circle cx="16.5" cy="9" r="1" fill="#fff"/>
+                 <path d="M11 12.5 Q14 15 17 12.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round" fill="none"/>`
+              : `<circle cx="11.5" cy="9" r="1" fill="#fff"/><circle cx="16.5" cy="9" r="1" fill="#fff"/>
+                 <path d="M11 14 Q14 11.5 17 14" stroke="#fff" stroke-width="1.2" stroke-linecap="round" fill="none"/>`
+            }
+          </svg>
+        </div>
+        <div class="fig-label">C1</div>
+      </div>
+
+      <!-- Badge centrale -->
+      <div class="track-badge">
+        <div class="track-badge-inner">
+          ${(() => {
+            const diff = m.disp1 - m.disp2;
+            const absDiff = Math.abs(diff);
+            if (absDiff < 0.5) return `Parità | Delta ${eur(0)}`;
+            const winner = diff > 0 ? "C1" : "C2";
+            return `Vantaggio netto: ${winner} | Delta ${eur(absDiff)}`;
+          })()}
+        </div>
+      </div>
+
+      <!-- Figura C2 -->
+      <div class="track-fig">
+        <div class="fig-bubble c2">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="9" r="5" fill="#c77a11" opacity="0.85"/>
+            <path d="M5 24c0-4.97 4.03-9 9-9s9 4.03 9 9" stroke="#c77a11" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.85"/>
+            ${m.disp2 >= m.disp1
+              ? `<circle cx="11.5" cy="9" r="1" fill="#fff"/><circle cx="16.5" cy="9" r="1" fill="#fff"/>
+                 <path d="M11 12.5 Q14 15 17 12.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round" fill="none"/>`
+              : `<circle cx="11.5" cy="9" r="1" fill="#fff"/><circle cx="16.5" cy="9" r="1" fill="#fff"/>
+                 <path d="M11 14 Q14 11.5 17 14" stroke="#fff" stroke-width="1.2" stroke-linecap="round" fill="none"/>`
+            }
+          </svg>
+        </div>
+        <div class="fig-label">C2</div>
+      </div>
+    </div>
+
+    <!-- Barra del track -->
+    <div class="track-bar-row">
+      <div class="track-marker" style="left:${Math.min(95, Math.max(5,
+        (m.disp1 + m.disp2) > 0
+          ? Math.round(m.disp1 / (m.disp1 + m.disp2) * 100)
+          : 50
+      ))}%"></div>
+    </div>
+    <div class="track-labels"><span>C1</span><span>C2</span></div>
+  </div>
+
+  <!-- Assegno suggerito -->
+  <div class="assegno-pill">
+    <div class="assegno-lbl">Assegno suggerito</div>
+    <div class="assegno-val">${assegnoDir ? `${assegnoDir}: ${assegnoText}` : "Nessun trasferimento suggerito"}</div>
+  </div>
+</div>
 <div class="section">
   <div class="section-title">Parametri di Input</div>
   <div class="two-col">
