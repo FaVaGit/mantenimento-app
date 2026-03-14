@@ -683,6 +683,76 @@
       font-size: 1.02rem;
     }
 
+    .live-diff {
+      grid-column: 1 / -1;
+      border: 1px solid #d4ddd8;
+      border-radius: 12px;
+      background: #f3f8f7;
+      padding: 8px;
+    }
+
+    .live-diff-head {
+      font-size: 0.82rem;
+      color: #2d4b48;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .live-diff-bar {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      background: #dfe9e6;
+      border: 1px solid #c8d7d3;
+    }
+
+    .live-diff-c1 {
+      background: linear-gradient(90deg, #0f766e, #149a8f);
+      height: 100%;
+    }
+
+    .live-diff-c2 {
+      background: linear-gradient(90deg, #d97706, #e8a03f);
+      height: 100%;
+    }
+
+    .live-diff-meta {
+      margin-top: 6px;
+      font-size: 0.82rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid #d6ddd5;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .history-item small {
+      color: #4b615f;
+      display: block;
+    }
+
+    .history-item button {
+      padding: 6px 10px;
+      font-size: 0.82rem;
+    }
+
     .live-row {
       font-size: 0.85rem;
       display: flex;
@@ -870,8 +940,13 @@
                   <button class="btn-secondary" id="btnLogoutKeyLock" type="button">Logout</button>
                   <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva profilo cloud</button>
                   <button class="btn-secondary" id="btnLoadMyScenario" type="button">Carica profilo cloud</button>
+                  <button class="btn-secondary" id="btnHistoryMyScenario" type="button">Storico modifiche</button>
                 </div>
                 <div id="authStatus" class="auth-status">Non autenticato.</div>
+                <details id="cloudHistoryPanel" class="is-hidden" style="margin-top:8px">
+                  <summary>Storico modifiche cloud</summary>
+                  <div id="cloudHistoryList" class="note" style="margin-top:8px"></div>
+                </details>
               </div>
             </div>
           </div>
@@ -1075,6 +1150,8 @@
     const rowsSpese = document.getElementById("rowsSpese");
     const STORAGE_DEFAULT_KEY = "appMantenimentoDefaultState";
     const KEYLOCK_PROFILE_TABLE = "keylock_profiles";
+    const CLOUD_PROFILE_FORMAT = "keylock-cloud-profile-v2";
+    const CLOUD_HISTORY_MAX = 24;
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
     const SUPABASE_ANON_KEY = String(window.KEYLOCK_SUPABASE_ANON_KEY || "").trim();
     const supabaseClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -1092,6 +1169,10 @@
       username: null,
       userId: null,
       keyBits: null
+    };
+    const cloudProfileSession = {
+      loaded: null,
+      history: []
     };
     let authFlowInProgress = false;
     let authRateLimitedUntilTs = 0;
@@ -1132,6 +1213,75 @@
 
     function setJsonStore(key, value) {
       localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function safeJsonClone(v) {
+      try {
+        return JSON.parse(JSON.stringify(v));
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function statesEqual(a, b) {
+      try {
+        return JSON.stringify(a) === JSON.stringify(b);
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function normalizeCloudProfileDoc(decoded, fallbackUpdatedAt = null) {
+      if (decoded && decoded.format === CLOUD_PROFILE_FORMAT && decoded.current && decoded.current.base && Array.isArray(decoded.current.spese)) {
+        const hist = Array.isArray(decoded.history) ? decoded.history : [];
+        return {
+          format: CLOUD_PROFILE_FORMAT,
+          current: decoded.current,
+          history: hist,
+          updatedAt: decoded.updatedAt || fallbackUpdatedAt || new Date().toISOString()
+        };
+      }
+
+      if (decoded && decoded.base && Array.isArray(decoded.spese)) {
+        return {
+          format: CLOUD_PROFILE_FORMAT,
+          current: decoded,
+          history: [],
+          updatedAt: fallbackUpdatedAt || new Date().toISOString()
+        };
+      }
+
+      throw new Error("Profilo cloud non valido");
+    }
+
+    function renderCloudHistoryPanel() {
+      const panel = document.getElementById("cloudHistoryPanel");
+      const list = document.getElementById("cloudHistoryList");
+      if (!panel || !list) return;
+
+      if (!authSession.username) {
+        panel.classList.add("is-hidden");
+        list.innerHTML = "";
+        return;
+      }
+
+      panel.classList.remove("is-hidden");
+
+      if (!cloudProfileSession.loaded || !Array.isArray(cloudProfileSession.history) || !cloudProfileSession.history.length) {
+        list.innerHTML = "Nessuna versione storica disponibile al momento.";
+        return;
+      }
+
+      const rows = [...cloudProfileSession.history]
+        .reverse()
+        .map((entry, idx) => {
+          const ts = entry && entry.savedAt ? new Date(entry.savedAt).toLocaleString("it-IT") : "Data non disponibile";
+          const originalIndex = cloudProfileSession.history.length - 1 - idx;
+          return `<div class="history-item"><div><strong>Versione ${idx + 1}</strong><small>${ts}</small></div><button class="btn-secondary" type="button" data-history-idx="${originalIndex}">Ripristina</button></div>`;
+        })
+        .join("");
+
+      list.innerHTML = `<div class="history-list">${rows}</div>`;
     }
 
     function normalizeUsername(value) {
@@ -1492,9 +1642,12 @@
       }
 
       const loginMsg = await completeAuthSession(username, password, postLogin.result.data.user);
-      setAuthStatus(signUpRateLimited
-        ? `Rate limit registrazione rilevato, ma accesso effettuato: ${loginMsg}`
-        : `Utente ${username} registrato e login effettuato.`);
+      if (signUpRateLimited) {
+        setAuthStatus(`Rate limit registrazione rilevato, ma accesso effettuato: ${loginMsg}`);
+      } else {
+        setAuthStatus(`Utente ${username} registrato e login effettuato.`);
+      }
+      await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
       } finally {
         authFlowInProgress = false;
       }
@@ -1534,6 +1687,7 @@
 
       const loginMsg = await completeAuthSession(username, password, signIn.result.data.user);
       setAuthStatus(loginMsg);
+      await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
       } finally {
         authFlowInProgress = false;
       }
@@ -1546,7 +1700,10 @@
       authSession.username = null;
       authSession.userId = null;
       authSession.keyBits = null;
+      cloudProfileSession.loaded = null;
+      cloudProfileSession.history = [];
       updateAuthUi();
+      renderCloudHistoryPanel();
       setAuthStatus("Logout eseguito.");
     }
 
@@ -1556,7 +1713,50 @@
         return;
       }
 
-      const encrypted = await encryptStateForKey(serializeState(), authSession.keyBits);
+      const currentState = serializeState();
+      let existingDoc = null;
+      let existingUpdatedAt = null;
+
+      const existingRes = await supabaseClient
+        .from(KEYLOCK_PROFILE_TABLE)
+        .select("scenario_cipher, updated_at")
+        .eq("user_id", authSession.userId)
+        .maybeSingle();
+
+      if (existingRes.error) {
+        setAuthStatus(`Salvataggio profilo fallito: ${existingRes.error.message}`, true);
+        return;
+      }
+
+      if (existingRes.data && existingRes.data.scenario_cipher) {
+        existingUpdatedAt = existingRes.data.updated_at || null;
+        try {
+          const decodedExisting = await decryptStateForKey(existingRes.data.scenario_cipher, authSession.keyBits);
+          existingDoc = normalizeCloudProfileDoc(decodedExisting, existingUpdatedAt);
+        } catch (_) {
+          existingDoc = null;
+        }
+      }
+
+      let history = existingDoc && Array.isArray(existingDoc.history) ? [...existingDoc.history] : [];
+      const previousCurrent = existingDoc ? existingDoc.current : null;
+      if (previousCurrent && !statesEqual(previousCurrent, currentState)) {
+        history.push({
+          savedAt: existingDoc.updatedAt || existingUpdatedAt || new Date().toISOString(),
+          state: safeJsonClone(previousCurrent)
+        });
+      }
+
+      history = history.slice(-CLOUD_HISTORY_MAX);
+
+      const cloudDoc = {
+        format: CLOUD_PROFILE_FORMAT,
+        current: currentState,
+        history,
+        updatedAt: new Date().toISOString()
+      };
+
+      const encrypted = await encryptStateForKey(cloudDoc, authSession.keyBits);
       const { error } = await supabaseClient
         .from(KEYLOCK_PROFILE_TABLE)
         .upsert({
@@ -1571,36 +1771,50 @@
         return;
       }
 
-      setAuthStatus("Profilo cloud salvato.");
+      cloudProfileSession.loaded = cloudDoc;
+      cloudProfileSession.history = history;
+      renderCloudHistoryPanel();
+      setAuthStatus(`Profilo cloud salvato. Versioni storiche: ${history.length}.`);
     }
 
-    async function loadScenarioForLoggedUser() {
+    async function loadScenarioForLoggedUser(options = {}) {
       if (!authSession.username || !authSession.userId || !authSession.keyBits) {
         setAuthStatus("Effettua prima il login.", true);
-        return;
+        return false;
       }
 
       const { data, error } = await supabaseClient
         .from(KEYLOCK_PROFILE_TABLE)
-        .select("scenario_cipher")
+        .select("scenario_cipher, updated_at")
         .eq("user_id", authSession.userId)
         .maybeSingle();
 
       if (error) {
         setAuthStatus(`Caricamento profilo fallito: ${error.message}`, true);
-        return;
+        return false;
       }
       if (!data || !data.scenario_cipher) {
-        setAuthStatus("Nessun profilo cloud salvato per questo utente.", true);
-        return;
+        cloudProfileSession.loaded = null;
+        cloudProfileSession.history = [];
+        renderCloudHistoryPanel();
+        if (!options.silentNoData) setAuthStatus("Nessun profilo cloud salvato per questo utente.", true);
+        return false;
       }
 
       try {
-        const state = await decryptStateForKey(data.scenario_cipher, authSession.keyBits);
-        applyState(state);
-        setAuthStatus("Profilo cloud caricato.");
+        const decoded = await decryptStateForKey(data.scenario_cipher, authSession.keyBits);
+        const doc = normalizeCloudProfileDoc(decoded, data.updated_at || null);
+        cloudProfileSession.loaded = doc;
+        cloudProfileSession.history = Array.isArray(doc.history) ? doc.history : [];
+        applyState(doc.current);
+        renderCloudHistoryPanel();
+        setAuthStatus(options.fromLogin
+          ? `Login effettuato e ultimo profilo cloud caricato. Versioni storiche: ${cloudProfileSession.history.length}.`
+          : `Profilo cloud caricato. Versioni storiche: ${cloudProfileSession.history.length}.`);
+        return true;
       } catch (_) {
         setAuthStatus("Impossibile decifrare il profilo: verifica username/password.", true);
+        return false;
       }
     }
 
@@ -1811,6 +2025,18 @@
       const entrate2 = m.r2 + m.aPerc2 + m.aFam2;
       const uscite1 = m.match12 + m.esternoPag1 + m.spese1;
       const uscite2 = m.match21 + m.esternoPag2 + m.spese2;
+      const diffDisp = m.disp1 - m.disp2;
+      const absDiffDisp = Math.abs(diffDisp);
+      const losingSpouse = diffDisp > 0 ? 2 : (diffDisp < 0 ? 1 : 0);
+      const totalAbs = Math.max(1, Math.abs(m.disp1) + Math.abs(m.disp2));
+      const bar1 = Math.max(8, Math.round((Math.abs(m.disp1) / totalAbs) * 100));
+      const bar2 = Math.max(8, 100 - bar1);
+      const leaderText = diffDisp === 0
+        ? "Netti equivalenti"
+        : `Vantaggio Coniuge ${diffDisp > 0 ? 1 : 2}: ${eur(absDiffDisp)}`;
+      const lossText = losingSpouse === 0
+        ? "Nessun coniuge in perdita rispetto all'altro"
+        : `In perdita relativa: Coniuge ${losingSpouse}`;
 
       liveNet.innerHTML = `
         <div class="live-k">
@@ -1820,6 +2046,17 @@
         <div class="live-k">
           Netto disponibile Coniuge 2
           <strong class="${m.disp2 >= 0 ? "ok" : "bad"}">${eur(m.disp2)}</strong>
+        </div>
+        <div class="live-diff">
+          <div class="live-diff-head">Differenza netti rimanenti</div>
+          <div class="live-diff-bar">
+            <div class="live-diff-c1" style="width:${bar1}%"></div>
+            <div class="live-diff-c2" style="width:${bar2}%"></div>
+          </div>
+          <div class="live-diff-meta">
+            <strong class="${diffDisp === 0 ? "warn" : "ok"}">${leaderText}</strong>
+            <strong class="${losingSpouse === 0 ? "warn" : "bad"}">${lossText}</strong>
+          </div>
         </div>
       `;
 
@@ -2110,6 +2347,24 @@
 
     document.getElementById("btnLoadMyScenario").addEventListener("click", async () => {
       await loadScenarioForLoggedUser();
+    });
+
+    document.getElementById("btnHistoryMyScenario").addEventListener("click", () => {
+      const panel = document.getElementById("cloudHistoryPanel");
+      if (!panel) return;
+      renderCloudHistoryPanel();
+      panel.open = !panel.open;
+    });
+
+    document.getElementById("cloudHistoryList").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-history-idx]");
+      if (!btn) return;
+      const idx = Number(btn.getAttribute("data-history-idx"));
+      if (!Number.isInteger(idx) || idx < 0 || idx >= cloudProfileSession.history.length) return;
+      const entry = cloudProfileSession.history[idx];
+      if (!entry || !entry.state) return;
+      applyState(entry.state);
+      setAuthStatus("Versione storica ripristinata nel form. Salva profilo cloud per renderla corrente.");
     });
 
     document.addEventListener("input", (e) => {
