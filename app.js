@@ -803,7 +803,7 @@ const defaultExpenseItems = [
           : `Profilo cloud caricato. Versioni storiche: ${cloudProfileSession.history.length}.`);
         return true;
       } catch (_) {
-        setAuthStatus("Impossibile decifrare il profilo: verifica username/password.", true);
+        setAuthStatus("Impossibile decifrare il profilo: credenziali errate o formato profilo non compatibile.", true);
         return false;
       }
     }
@@ -996,18 +996,109 @@ const defaultExpenseItems = [
       };
     }
 
-    function computeModel() {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/calculate", false);
-      xhr.setRequestHeader("Content-Type", "application/json");
-      xhr.send(JSON.stringify(collectCalculationPayload()));
+    function computeModelLocal(payload) {
+      const incomeMode = payload.incomeMode || "monthly";
+      const incomeDivisor = incomeMode === "annual" ? 12 : 1;
+      const r1Raw = Number(payload.r1Raw || 0);
+      const r2Raw = Number(payload.r2Raw || 0);
+      const r1 = r1Raw / incomeDivisor;
+      const r2 = r2Raw / incomeDivisor;
+      const figli = Math.max(1, Math.round(Number(payload.figli || 0)));
+      const perm1 = Math.min(100, Math.max(0, Number(payload.perm1 || 0)));
+      const perm2 = 100 - perm1;
+      const mode = payload.mode || "legal";
+      const simplePerc = Math.min(100, Math.max(0, Number(payload.simplePerc || 0)));
 
-      if (xhr.status >= 200 && xhr.status < 300) {
-        const body = JSON.parse(xhr.responseText || "{}");
-        if (body && body.ok && body.model) return body.model;
+      const aPerc1 = Number(payload.aPerc1 || 0);
+      const aPag1 = Number(payload.aPag1 || 0);
+      const aPerc2 = Number(payload.aPerc2 || 0);
+      const aPag2 = Number(payload.aPag2 || 0);
+      const aFam1 = Number(payload.aFam1 || 0);
+      const aFam2 = Number(payload.aFam2 || 0);
+
+      const match12 = Math.min(aPag1, aPerc2);
+      const match21 = Math.min(aPag2, aPerc1);
+      const esternoPag1 = Math.max(0, aPag1 - match12);
+      const esternoPag2 = Math.max(0, aPag2 - match21);
+
+      const spese1 = (payload.c1Spese || []).reduce((acc, v) => acc + Number(v || 0), 0);
+      const spese2 = (payload.c2Spese || []).reduce((acc, v) => acc + Number(v || 0), 0);
+      const speseTot = spese1 + spese2;
+
+      const disp1 = r1 + aPerc1 + aFam1 - aPag1 - spese1;
+      const disp2 = r2 + aPerc2 + aFam2 - aPag2 - spese2;
+
+      const dispPos1 = Math.max(0, disp1);
+      const dispPos2 = Math.max(0, disp2);
+      const dispPosTot = dispPos1 + dispPos2;
+
+      const peso1 = dispPosTot > 0 ? dispPos1 / dispPosTot : 0.5;
+      const peso2 = 1 - peso1;
+
+      const fabbisognoFigli = speseTot * (QUOTA_MANTENIMENTO_PERC / 100);
+      const quotaTeorica1 = fabbisognoFigli * peso1;
+      const quotaTeorica2 = fabbisognoFigli * peso2;
+      const quotaDiretta1 = fabbisognoFigli * (perm1 / 100);
+      const quotaDiretta2 = fabbisognoFigli * (perm2 / 100);
+      const saldo1 = quotaTeorica1 - quotaDiretta1;
+      const saldo2 = quotaTeorica2 - quotaDiretta2;
+      const costoGiornalieroFiglio = fabbisognoFigli / 30;
+      const collocatario = perm1 >= perm2 ? 1 : 2;
+
+      let assegnoDa1a2 = Math.max(0, saldo1);
+      let assegnoDa2a1 = Math.max(0, saldo2);
+
+      if (mode === "simple") {
+        const diffNetti = Math.abs(disp1 - disp2);
+        const assegnoSemplificato = diffNetti * (simplePerc / 100);
+        assegnoDa1a2 = disp1 > disp2 ? assegnoSemplificato : 0;
+        assegnoDa2a1 = disp2 > disp1 ? assegnoSemplificato : 0;
+      } else if (mode === "genova") {
+        const nonCollocatario = collocatario === 1 ? 2 : 1;
+        const quotaTeoricaNonColl = nonCollocatario === 1 ? quotaTeorica1 : quotaTeorica2;
+        const giorniPermanenzaNonColl = nonCollocatario === 1 ? (perm1 / 100) * 30 : (perm2 / 100) * 30;
+        const quotaDirettaNonColl = costoGiornalieroFiglio * giorniPermanenzaNonColl;
+        const contributoIndiretto = Math.max(0, quotaTeoricaNonColl - quotaDirettaNonColl);
+        assegnoDa1a2 = nonCollocatario === 1 ? contributoIndiretto : 0;
+        assegnoDa2a1 = nonCollocatario === 2 ? contributoIndiretto : 0;
       }
 
-      throw new Error("Calcolo backend non disponibile. Avvia il server Node (npm run dev).");
+      const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
+      const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
+
+      return {
+        r1, r2, r1Raw, r2Raw, incomeMode, figli, perm1, perm2,
+        aPerc1, aPag1, aPerc2, aPag2, aFam1, aFam2,
+        match12, match21, esternoPag1, esternoPag2,
+        spese1, spese2, speseTot,
+        disp1, disp2, peso1, peso2,
+        mode, simplePerc,
+        collocatario, costoGiornalieroFiglio,
+        fabbisognoFigli, quotaTeorica1, quotaTeorica2,
+        quotaDiretta1, quotaDiretta2,
+        saldo1, saldo2,
+        assegnoDa1a2, assegnoDa2a1,
+        post1, post2
+      };
+    }
+
+    function computeModel() {
+      const payload = collectCalculationPayload();
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/calculate", false);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify(payload));
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const body = JSON.parse(xhr.responseText || "{}");
+          if (body && body.ok && body.model) return body.model;
+        }
+      } catch (_) {
+        // Fallback handled below.
+      }
+
+      return computeModelLocal(payload);
     }
 
     function c1n() { return (document.getElementById("nome1").value || "").trim() || "Coniuge 1"; }
