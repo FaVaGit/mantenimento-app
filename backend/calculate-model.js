@@ -1,0 +1,109 @@
+'use strict';
+
+const QUOTA_MANTENIMENTO_PERC = 35;
+
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function calculateModel(input) {
+  const incomeMode = String(input.incomeMode || 'monthly');
+  const incomeDivisor = incomeMode === 'annual' ? 12 : 1;
+
+  const r1Raw = toNumber(input.r1Raw);
+  const r2Raw = toNumber(input.r2Raw);
+  const r1 = r1Raw / incomeDivisor;
+  const r2 = r2Raw / incomeDivisor;
+
+  const figli = Math.max(1, Math.round(toNumber(input.figli)));
+  const perm1 = clamp(toNumber(input.perm1), 0, 100);
+  const perm2 = 100 - perm1;
+  const mode = String(input.mode || 'legal');
+  const simplePerc = clamp(toNumber(input.simplePerc), 0, 100);
+
+  const aPerc1 = toNumber(input.aPerc1);
+  const aPag1 = toNumber(input.aPag1);
+  const aPerc2 = toNumber(input.aPerc2);
+  const aPag2 = toNumber(input.aPag2);
+  const aFam1 = toNumber(input.aFam1);
+  const aFam2 = toNumber(input.aFam2);
+
+  const match12 = Math.min(aPag1, aPerc2);
+  const match21 = Math.min(aPag2, aPerc1);
+  const esternoPag1 = Math.max(0, aPag1 - match12);
+  const esternoPag2 = Math.max(0, aPag2 - match21);
+
+  const c1Spese = Array.isArray(input.c1Spese) ? input.c1Spese : [];
+  const c2Spese = Array.isArray(input.c2Spese) ? input.c2Spese : [];
+  const spese1 = c1Spese.reduce((acc, n) => acc + toNumber(n), 0);
+  const spese2 = c2Spese.reduce((acc, n) => acc + toNumber(n), 0);
+  const speseTot = spese1 + spese2;
+
+  const disp1 = r1 + aPerc1 + aFam1 - aPag1 - spese1;
+  const disp2 = r2 + aPerc2 + aFam2 - aPag2 - spese2;
+
+  const dispPos1 = Math.max(0, disp1);
+  const dispPos2 = Math.max(0, disp2);
+  const dispPosTot = dispPos1 + dispPos2;
+
+  const peso1 = dispPosTot > 0 ? dispPos1 / dispPosTot : 0.5;
+  const peso2 = 1 - peso1;
+
+  const fabbisognoFigli = speseTot * (QUOTA_MANTENIMENTO_PERC / 100);
+
+  const quotaTeorica1 = fabbisognoFigli * peso1;
+  const quotaTeorica2 = fabbisognoFigli * peso2;
+
+  const quotaDiretta1 = fabbisognoFigli * (perm1 / 100);
+  const quotaDiretta2 = fabbisognoFigli * (perm2 / 100);
+
+  const saldo1 = quotaTeorica1 - quotaDiretta1;
+  const saldo2 = quotaTeorica2 - quotaDiretta2;
+  const costoGiornalieroFiglio = fabbisognoFigli / 30;
+  const collocatario = perm1 >= perm2 ? 1 : 2;
+
+  let assegnoDa1a2 = Math.max(0, saldo1);
+  let assegnoDa2a1 = Math.max(0, saldo2);
+
+  if (mode === 'simple') {
+    const diffNetti = Math.abs(disp1 - disp2);
+    const assegnoSemplificato = diffNetti * (simplePerc / 100);
+    assegnoDa1a2 = disp1 > disp2 ? assegnoSemplificato : 0;
+    assegnoDa2a1 = disp2 > disp1 ? assegnoSemplificato : 0;
+  } else if (mode === 'genova') {
+    const nonCollocatario = collocatario === 1 ? 2 : 1;
+    const quotaTeoricaNonColl = nonCollocatario === 1 ? quotaTeorica1 : quotaTeorica2;
+    const giorniPermanenzaNonColl = nonCollocatario === 1 ? (perm1 / 100) * 30 : (perm2 / 100) * 30;
+    const quotaDirettaNonColl = costoGiornalieroFiglio * giorniPermanenzaNonColl;
+    const contributoIndiretto = Math.max(0, quotaTeoricaNonColl - quotaDirettaNonColl);
+    assegnoDa1a2 = nonCollocatario === 1 ? contributoIndiretto : 0;
+    assegnoDa2a1 = nonCollocatario === 2 ? contributoIndiretto : 0;
+  }
+
+  const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
+  const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
+
+  return {
+    r1, r2, r1Raw, r2Raw, incomeMode, figli, perm1, perm2,
+    aPerc1, aPag1, aPerc2, aPag2, aFam1, aFam2,
+    match12, match21, esternoPag1, esternoPag2,
+    spese1, spese2, speseTot,
+    disp1, disp2, peso1, peso2,
+    mode, simplePerc,
+    collocatario, costoGiornalieroFiglio,
+    fabbisognoFigli, quotaTeorica1, quotaTeorica2,
+    quotaDiretta1, quotaDiretta2,
+    saldo1, saldo2,
+    assegnoDa1a2, assegnoDa2a1,
+    post1, post2
+  };
+}
+
+module.exports = {
+  calculateModel
+};

@@ -1,76 +1,74 @@
 # Calcolatore Mantenimento Figli
 
-Applicazione web standalone per il calcolo orientativo dell'assegno di mantenimento.
+Applicazione web per il calcolo orientativo dell'assegno di mantenimento con architettura separata frontend/backend.
 
-## Contenuto del repository
-- `index.html`: applicazione completa, eseguibile direttamente nel browser
-- `supabase-config.js`: configurazione client per autenticazione/profile cloud KeyLock
-- `supabase_schema.sql`: script SQL per tabella profilo cloud e policy RLS
-- `LICENSE`: licenza MIT
+## Nuova architettura
+- `frontend/public/index.html`: UI
+- `frontend/public/app.js`: logica frontend (render, eventi, PDF)
+- `backend/server.js`: server Node/Express
+- `backend/calculate-model.js`: formula di calcolo server-side (`/api/calculate`)
+- `scripts/build-frontend.mjs`: minificazione frontend (`app.min.js`)
+- `supabase_schema.sql`: schema DB per KeyLock
 
-## Esecuzione locale
-1. Apri `index.html` con un browser moderno.
-2. Inserisci redditi, permanenze e spese dei due coniugi.
-3. Il risultato si aggiorna in tempo reale.
+## Perche questa separazione
+- Il frontend non contiene piu la formula principale in chiaro: il calcolo viene fatto da backend via API.
+- Il JS client e modulare (non inline) e puo essere minificato per distribuzione.
 
-## KeyLock multi-device
-L'app usa Supabase per registrazione/login e per il profilo cloud cifrato dell'utente.
+Nota importante:
+Nessuna applicazione web puo essere resa "non copiabile" al 100% lato browser. La protezione reale si ottiene spostando la logica sensibile sul server e distribuendo solo client minimizzato.
 
-### Deploy pubblico con GitHub Pages
-GitHub Pages puo ospitare solo il frontend statico.
-Per avere KeyLock multi-device funzionante sull'URL pubblico serve un progetto Supabase ospitato.
+## Avvio locale
+1. Installa dipendenze:
 
-Passi minimi:
-1. Crea un progetto Supabase.
-2. In Supabase SQL Editor esegui lo script `supabase_schema.sql`.
-3. In `Authentication > Providers > Email` disattiva la conferma email.
-4. Inserisci URL progetto e anon key pubblica in `supabase-config.js`.
-5. Pubblica normalmente `index.html` su GitHub Pages.
-
-### Configurazione attuale
-`supabase-config.js` contiene gia URL progetto e publishable key.
-Non inserire mai nel frontend password progetto o direct connection string PostgreSQL.
-
-## Funzioni principali
-- Modalita `Legale-proporzionale`
-- Modalita `Semplificata: differenza netti x %`
-- Registrazione/login KeyLock multi-device con profilo cloud cifrato
-- Salvataggio locale dei dati iniziali nel browser
-- Export e import JSON
-- Export PDF tramite stampa del browser
-- Interfaccia responsive per desktop e mobile
-
-## Publish statica
-L'app non richiede backend, build o dipendenze.
-Può essere pubblicata direttamente su:
-- GitHub Pages
-- Netlify
-- Vercel come sito statico
-- qualunque web server statico
-
-## Publish su GitHub Pages
-1. Crea un nuovo repository vuoto su GitHub.
-2. Apri un terminale nella cartella del progetto.
-3. Esegui:
-
-```powershell
-git init --initial-branch=main
-git add .
-git commit -m "Initial publish"
-git remote add origin https://github.com/<utente>/<repo>.git
-git push -u origin main
+```bash
+npm install
 ```
 
-4. Su GitHub vai in `Settings > Pages`.
-5. In `Build and deployment`, seleziona `Deploy from a branch`.
-6. Scegli branch `main` e cartella `/ (root)`.
-7. L'app sarà pubblicata all'URL:
+2. Avvio sviluppo:
+
+```bash
+npm run dev
+```
+
+3. Apri:
 
 ```text
-https://<utente>.github.io/<repo>/
+http://localhost:3000
 ```
 
+## Build frontend minificato
+
+```bash
+npm run build:frontend
+```
+
+Il server serve automaticamente `app.min.js` se presente, altrimenti `app.js`.
+
+## Avvio produzione locale
+
+```bash
+npm start
+```
+
+`npm start` esegue build frontend + avvio server.
+
+## Endpoint backend
+- `POST /api/calculate`: calcolo modello mantenimento
+- `GET /api/health`: health check
+
+## KeyLock multi-device (Supabase)
+Il login cloud resta lato frontend e usa `supabase-config.js` (chiave anon pubblica).
+Non inserire nel frontend segreti server o credenziali DB.
+
+## Deploy
+Con la nuova architettura non e piu un sito statico puro: serve un runtime Node.js.
+
+Opzioni tipiche:
+- Render
+- Railway
+- Fly.io
+- VPS con Node + reverse proxy
+
 ## Note
-- Strumento orientativo, non sostituisce una valutazione legale o professionale.
-- Il profilo cloud KeyLock e cifrato lato client prima del salvataggio su Supabase.
-- I dati restano nel browser dell'utilizzatore, salvo export esplicito in JSON o salvataggio cloud del profilo.
+- Strumento orientativo: non sostituisce valutazione legale/professionale.
+- Per ulteriore hardening: rate limit API, auth server-side, logging audit, WAF/CDN.

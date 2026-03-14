@@ -1,0 +1,18 @@
+{
+  "name": "mantenimento-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Frontend + backend architecture for the mantenimento calculator",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node backend/server.js",
+    "build:frontend": "node scripts/build-frontend.mjs",
+    "start": "npm run build:frontend && node backend/server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
