@@ -1846,16 +1846,20 @@ const defaultExpenseItems = [
       const entrate2 = m.r2 + m.aPerc2 + m.aFam2;
       const uscite1 = m.match12 + m.esternoPag1 + m.spese1;
       const uscite2 = m.match21 + m.esternoPag2 + m.spese2;
-      const diffDisp = m.disp1 - m.disp2;
+      const hasSuggestedSupport = Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0.005;
+      const shownDisp1 = hasSuggestedSupport ? m.post1 : m.disp1;
+      const shownDisp2 = hasSuggestedSupport ? m.post2 : m.disp2;
+      const diffDisp = shownDisp1 - shownDisp2;
       const absDiffDisp = Math.abs(diffDisp);
+
       liveNet.innerHTML = `
         <div class="live-k">
           ${msg("liveNetAvailablePerson", { spouse: c1n() })}
-          <strong class="${m.disp1 >= 0 ? "ok" : "bad"}">${eur(m.disp1)}</strong>
+          <strong class="${shownDisp1 >= 0 ? "ok" : "bad"}">${eur(shownDisp1)}</strong>
         </div>
         <div class="live-k">
           ${msg("liveNetAvailablePerson", { spouse: c2n() })}
-          <strong class="${m.disp2 >= 0 ? "ok" : "bad"}">${eur(m.disp2)}</strong>
+          <strong class="${shownDisp2 >= 0 ? "ok" : "bad"}">${eur(shownDisp2)}</strong>
         </div>
         <div class="live-diff">
           <div class="live-fabric-wrap">
@@ -1875,6 +1879,8 @@ const defaultExpenseItems = [
             <div class="live-row"><span>${tr("livePaidExternal")}</span><strong class="warn">${eur(m.esternoPag1)}</strong></div>
             <div class="live-row"><span>${tr("liveTotalExpensesEntered")}</span><strong class="warn">${eur(m.spese1)}</strong></div>
             <div class="live-row"><span>${tr("liveTotalOutflows")}</span><strong class="warn">${eur(uscite1)}</strong></div>
+            ${hasSuggestedSupport ? `<div class="live-row"><span>${tr("pdfSuggestedSupport")}</span><strong class="warn">-${eur(m.assegnoDa1a2)}${m.assegnoDa2a1 > 0.005 ? ` / +${eur(m.assegnoDa2a1)}` : ""}</strong></div>` : ""}
+            <div class="live-row"><span>${tr("pdfPostSupport")}</span><strong class="${shownDisp1 >= 0 ? "ok" : "bad"}">${eur(shownDisp1)}</strong></div>
           </div>
           <div class="live-col">
             <h4>${c2n()}</h4>
@@ -1883,6 +1889,8 @@ const defaultExpenseItems = [
             <div class="live-row"><span>${tr("livePaidExternal")}</span><strong class="warn">${eur(m.esternoPag2)}</strong></div>
             <div class="live-row"><span>${tr("liveTotalExpensesEntered")}</span><strong class="warn">${eur(m.spese2)}</strong></div>
             <div class="live-row"><span>${tr("liveTotalOutflows")}</span><strong class="warn">${eur(uscite2)}</strong></div>
+            ${hasSuggestedSupport ? `<div class="live-row"><span>${tr("pdfSuggestedSupport")}</span><strong class="warn">-${eur(m.assegnoDa2a1)}${m.assegnoDa1a2 > 0.005 ? ` / +${eur(m.assegnoDa1a2)}` : ""}</strong></div>` : ""}
+            <div class="live-row"><span>${tr("pdfPostSupport")}</span><strong class="${shownDisp2 >= 0 ? "ok" : "bad"}">${eur(shownDisp2)}</strong></div>
           </div>
         </div>
       `;
@@ -2023,51 +2031,68 @@ const defaultExpenseItems = [
 
       }
 
-      const badgeDiameter = isNarrow ? 96 : Math.max(98, Math.min(122, Math.round(w * 0.22)));
-      const badgeRadius = badgeDiameter / 2;
-      const badgeCenterY = isNarrow ? 60 : 58;
-      const badgeInnerW = badgeDiameter - 18;
-      const badgeLine1 = statusText;
-      const badgeLine2 = `${tr("pdfDelta")} ${eur(absDiffDisp)}`;
+      const reservedForFigures = (figDiameter * 2) + (figMargin * 2) + 16;
+      const badgeAvailableW = Math.max(132, Math.min(w - 20, w - reservedForFigures));
+      const badgeW = Math.min(500, badgeAvailableW);
+      const badgeX = (w - badgeW) / 2;
+      const badgeText = `${statusText} | ${tr("pdfDelta")} ${eur(absDiffDisp)}`;
+      const badgeMaxFontSize = isNarrow ? 14 : (w < 560 ? 18 : 22);
+      const badgeMinFontSize = isNarrow ? 10 : 10;
+      const badgeInnerW = badgeW - 28;
+      const badgeBaseHeight = isNarrow ? 42 : (w < 560 ? 48 : 54);
+
+      let badgeFontSize = badgeMaxFontSize;
+      let badgeProbe = new window.fabric.Textbox(badgeText, {
+        width: badgeInnerW,
+        fontSize: badgeFontSize,
+        fontFamily: "Candara",
+        fontWeight: "700",
+        textAlign: "center",
+        lineHeight: 1.05
+      });
+      while (badgeProbe.height > (badgeBaseHeight - 8) && badgeFontSize > badgeMinFontSize) {
+        badgeFontSize -= 1;
+        badgeProbe = new window.fabric.Textbox(badgeText, {
+          width: badgeInnerW,
+          fontSize: badgeFontSize,
+          fontFamily: "Candara",
+          fontWeight: "700",
+          textAlign: "center",
+          lineHeight: 1.05
+        });
+      }
 
       addOutcomeFigure(figMargin, figTop, 1, roleForSpouse(1));
       addOutcomeFigure(w - figMargin - figDiameter, figTop, 2, roleForSpouse(2));
-      fc.add(new window.fabric.Circle({
-        left: centerX - badgeRadius,
-        top: badgeCenterY - badgeRadius,
-        radius: badgeRadius,
+      const badgeHeight = Math.max(badgeBaseHeight, Math.ceil(badgeProbe.height) + 10);
+      fc.add(new window.fabric.Rect({
+        left: badgeX,
+        top: 20,
+        width: badgeW,
+        height: badgeHeight,
+        rx: 18,
+        ry: 18,
         fill: diffDisp === 0
-          ? grad(centerX - badgeRadius, badgeCenterY - badgeRadius, centerX - badgeRadius, badgeCenterY + badgeRadius, [{ offset: 0, color: "#ffffff" }, { offset: 1, color: "#d6ebe6" }])
+          ? grad(badgeX, 20, badgeX, 20 + badgeHeight, [{ offset: 0, color: "#ffffff" }, { offset: 1, color: "#d6ebe6" }])
           : (diffDisp > 0
-              ? grad(centerX - badgeRadius, badgeCenterY - badgeRadius, centerX - badgeRadius, badgeCenterY + badgeRadius, [{ offset: 0, color: "#f4fffc" }, { offset: 1, color: "#a9ddd2" }])
-              : grad(centerX - badgeRadius, badgeCenterY - badgeRadius, centerX - badgeRadius, badgeCenterY + badgeRadius, [{ offset: 0, color: "#fffaf0" }, { offset: 1, color: "#f1cd93" }])
+              ? grad(badgeX, 20, badgeX, 20 + badgeHeight, [{ offset: 0, color: "#f4fffc" }, { offset: 1, color: "#a9ddd2" }])
+              : grad(badgeX, 20, badgeX, 20 + badgeHeight, [{ offset: 0, color: "#fffaf0" }, { offset: 1, color: "#f1cd93" }])
             ),
         stroke: diffDisp === 0 ? "#98b8b3" : (diffDisp > 0 ? "#7bbdb0" : "#d4a864"),
-        strokeWidth: 1.5,
+        strokeWidth: 1.4,
         shadow: "0 4px 10px rgba(0,0,0,0.12)"
       }));
-      fc.add(new window.fabric.Textbox(badgeLine1, {
-        left: centerX,
-        top: badgeCenterY - 21,
+      fc.add(new window.fabric.Textbox(badgeText, {
+        left: badgeX + (badgeW / 2),
+        top: 20 + ((badgeHeight - badgeProbe.height) / 2),
         width: badgeInnerW,
         originX: "center",
         textAlign: "center",
         lineHeight: 1.05,
-        fontSize: isNarrow ? 10 : 11,
+        fontSize: badgeFontSize,
         fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
         fontFamily: "Candara",
         fontWeight: "700"
-      }));
-      fc.add(new window.fabric.Textbox(badgeLine2, {
-        left: centerX,
-        top: badgeCenterY + 7,
-        width: badgeInnerW,
-        originX: "center",
-        textAlign: "center",
-        fontSize: isNarrow ? 10 : 12,
-        fill: diffDisp === 0 ? "#2f5551" : (diffDisp > 0 ? "#0f5c56" : "#7a4b0b"),
-        fontFamily: "Candara",
-        fontWeight: "800"
       }));
 
       const trackLeft = 26;
