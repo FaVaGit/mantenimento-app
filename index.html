@@ -1363,6 +1363,7 @@
         padding: 8px 9px;
       }
       .kpi-grid,
+      .kpi,
       .live-grid {
         grid-template-columns: 1fr;
       }
@@ -1453,6 +1454,13 @@
       .top-actions-menu button {
         font-size: 0.84rem;
       }
+      /* donate + coffee responsive */
+      .donate-banner { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 14px; }
+      .donate-buttons { width: 100%; justify-content: center; }
+      .btn-coffee-hero { font-size: 0.78rem; padding: 6px 10px; justify-content: center; }
+      .coffee-float { bottom: 12px; right: 12px; }
+      .coffee-float-card { width: min(200px, calc(100vw - 32px)); }
+      .coffee-float-btn { width: 42px; height: 42px; font-size: 1.3rem; }
     }
 
     @media print {
@@ -3024,14 +3032,6 @@
           strokeLineCap: "round"
         }));
 
-        fc.add(new window.fabric.Text(`C${spouseId}`, {
-          left: cx - 10,
-          top: cy + 16,
-          fontSize: 13,
-          fill: palette.ink,
-          fontFamily: "Candara",
-          fontWeight: "700"
-        }));
       }
 
       const badgeW = Math.min(520, Math.max(300, w - 220));
@@ -3130,21 +3130,50 @@
         shadow: "0 2px 7px rgba(0,0,0,0.24)"
       }));
 
-      fc.add(new window.fabric.Text(c1n().slice(0, 5), {
-        left: 26,
-        top: 123,
-        fontSize: 13,
-        fill: "#145b55",
-        fontFamily: "Candara",
-        fontWeight: "700"
+      // Side labels: full names, anchored to edges, with adaptive font size.
+      const sideLabelTop = centerY + 21;
+      const sideLabelMaxW = Math.max(58, trackWidth / 2 - 34);
+      const sideBaseFont = 13;
+      const sideFontFamily = "Candara";
+      const sideFontWeight = "700";
+
+      const leftName = c1n();
+      const leftProbe = new window.fabric.Text(leftName, {
+        fontSize: sideBaseFont,
+        fontFamily: sideFontFamily,
+        fontWeight: sideFontWeight
+      });
+      const leftFont = leftProbe.width <= sideLabelMaxW
+        ? sideBaseFont
+        : Math.max(10, Math.floor(sideBaseFont * sideLabelMaxW / leftProbe.width));
+
+      const rightName = c2n();
+      const rightProbe = new window.fabric.Text(rightName, {
+        fontSize: sideBaseFont,
+        fontFamily: sideFontFamily,
+        fontWeight: sideFontWeight
+      });
+      const rightFont = rightProbe.width <= sideLabelMaxW
+        ? sideBaseFont
+        : Math.max(10, Math.floor(sideBaseFont * sideLabelMaxW / rightProbe.width));
+
+      fc.add(new window.fabric.Text(leftName, {
+        left: trackLeft,
+        top: sideLabelTop,
+        originX: "left",
+        fontSize: leftFont,
+        fill: "#0f4e49",
+        fontFamily: sideFontFamily,
+        fontWeight: sideFontWeight
       }));
-      fc.add(new window.fabric.Text(c2n().slice(0, 5), {
-        left: w - 41,
-        top: 123,
-        fontSize: 13,
-        fill: "#8a580f",
-        fontFamily: "Candara",
-        fontWeight: "700"
+      fc.add(new window.fabric.Text(rightName, {
+        left: trackLeft + trackWidth,
+        top: sideLabelTop,
+        originX: "right",
+        fontSize: rightFont,
+        fill: "#7c4b09",
+        fontFamily: sideFontFamily,
+        fontWeight: sideFontWeight
       }));
 
       fc.renderAll();
