@@ -900,7 +900,60 @@
 
     @media (max-width: 640px) {
       .wrap { margin: 12px auto; padding: 0 8px 14px; }
-      .content { padding: 10px; }
+      .hero {
+        padding: 16px 14px;
+        border-radius: 14px;
+      }
+      .hero h1 {
+        margin-bottom: 7px;
+        font-size: 1.22rem;
+        letter-spacing: 0.2px;
+      }
+      .hero p {
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      .content { padding: 11px; }
+      .card h2 {
+        padding: 11px 12px;
+        font-size: 0.96rem;
+      }
+      .toolbar {
+        gap: 6px;
+      }
+      .toolbar button {
+        flex: 1 1 calc(50% - 6px);
+        min-width: 0;
+      }
+      input[type="number"],
+      input[type="text"],
+      input[type="password"],
+      select {
+        font-size: 0.93rem;
+        padding: 8px 9px;
+      }
+      .kpi-grid,
+      .live-grid {
+        grid-template-columns: 1fr;
+      }
+      .result-pill {
+        padding: 11px;
+      }
+      .result-title {
+        font-size: 0.98rem;
+      }
+      .result-value {
+        font-size: 1.2rem;
+      }
+      .live-row {
+        font-size: 0.82rem;
+      }
+      .live-row strong {
+        font-size: 0.88rem;
+      }
+      .note {
+        font-size: 0.8rem;
+      }
       .live-columns { grid-template-columns: 1fr; }
       .shared-grid { grid-template-columns: 1fr; }
       .spouse-grid { grid-template-columns: 1fr; }
@@ -949,6 +1002,9 @@
         position: static;
         margin-top: 8px;
         min-width: 0;
+      }
+      .top-actions-menu button {
+        font-size: 0.84rem;
       }
     }
 
