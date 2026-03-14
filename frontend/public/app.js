@@ -31,9 +31,68 @@ const defaultExpenseItems = [
     const CLOUD_PROFILE_FORMAT = "keylock-cloud-profile-v2";
     const CLOUD_HISTORY_MAX = 24;
     const UI_ZOOM_KEY = "keylock_ui_zoom";
+    const UI_LANG_KEY = "keylock_ui_lang";
+    const UI_CURRENCY_KEY = "keylock_ui_currency";
     const UI_ZOOM_MIN = 0.9;
     const UI_ZOOM_MAX = 1.5;
     const UI_ZOOM_STEP = 0.1;
+    const SUPPORTED_LANGS = ["it", "en"];
+    const SUPPORTED_CURRENCIES = ["EUR", "USD", "GBP", "CHF"];
+    const CURRENCY_RATES = { EUR: 1, USD: 1.09, GBP: 0.86, CHF: 0.96 };
+    const I18N = {
+      it: {
+        title: "Calcolatore Mantenimento Figli",
+        heroTitle: "Calcolatore Assegno di Mantenimento",
+        heroSubtitle: "Modello di calcolo orientativo adattato al <strong>reddito netto mensile o annuale</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.",
+        quickActions: "Azioni rapide",
+        btnReset: "Reset valori",
+        btnExport: "Esporta JSON cifrato",
+        btnImport: "Carica JSON cifrato",
+        btnPdf: "Genera e scarica PDF",
+        btnZoomReset: "Reset",
+        btnZoomOutTitle: "Riduci zoom",
+        btnZoomInTitle: "Aumenta zoom",
+        btnZoomResetTitle: "Ripristina zoom",
+        lang: "Lingua",
+        currency: "Valuta",
+        inputsTitle: "Input",
+        resultsTitle: "Risultati",
+        howCalc: "Come viene calcolato",
+        orientative: "Questo strumento e solo orientativo e non sostituisce una valutazione legale/professionale del caso concreto.",
+        authLogin: "KeyLock Login",
+        modeGuidelinePrefix: "Riferimento modalita selezionata:",
+        modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
+        redditoAnnuale: "Reddito annuale netto",
+        redditoMensile: "Reddito mensile netto",
+        coffeeHero: "Offrimi un caffè"
+      },
+      en: {
+        title: "Child Support Calculator",
+        heroTitle: "Child Support Estimate Calculator",
+        heroSubtitle: "Indicative calculation model based on <strong>monthly or yearly net income</strong> with separate expense input for <strong>Spouse 1</strong> and <strong>Spouse 2</strong>.",
+        quickActions: "Quick actions",
+        btnReset: "Reset values",
+        btnExport: "Export encrypted JSON",
+        btnImport: "Import encrypted JSON",
+        btnPdf: "Generate and download PDF",
+        btnZoomReset: "Reset",
+        btnZoomOutTitle: "Zoom out",
+        btnZoomInTitle: "Zoom in",
+        btnZoomResetTitle: "Reset zoom",
+        lang: "Language",
+        currency: "Currency",
+        inputsTitle: "Inputs",
+        resultsTitle: "Results",
+        howCalc: "How it is calculated",
+        orientative: "This tool is indicative only and does not replace legal/professional assessment of the specific case.",
+        authLogin: "KeyLock Login",
+        modeGuidelinePrefix: "Selected mode reference:",
+        modeGuidelineLink: "Genoa Court guidelines (PDF)",
+        redditoAnnuale: "Annual net income",
+        redditoMensile: "Monthly net income",
+        coffeeHero: "Buy me a coffee"
+      }
+    };
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
     const SUPABASE_ANON_KEY = String(window.KEYLOCK_SUPABASE_ANON_KEY || "").trim();
     const supabaseClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -60,6 +119,23 @@ const defaultExpenseItems = [
     let authFlowInProgress = false;
     let authRateLimitedUntilTs = 0;
     let incomeModeLast = "monthly";
+    let currentLang = "it";
+    let currentCurrency = "EUR";
+
+    function tr(key) {
+      const table = I18N[currentLang] || I18N.it;
+      return table[key] || I18N.it[key] || key;
+    }
+
+    function getCurrentLocale() {
+      return currentLang === "en" ? "en-US" : "it-IT";
+    }
+
+    function convertedMoney(v) {
+      const n = Number(v || 0);
+      const rate = CURRENCY_RATES[currentCurrency] || 1;
+      return n * rate;
+    }
 
     function normalizeUiZoom(value) {
       const n = Number(value);
@@ -104,6 +180,100 @@ const defaultExpenseItems = [
       const defaultZoom = window.matchMedia && window.matchMedia("(max-width: 640px)").matches ? 1.1 : 1;
       const base = stored == null ? defaultZoom : Number(stored);
       return setUiZoom(base, stored == null);
+    }
+
+    function initPreferences() {
+      try {
+        const storedLang = String(localStorage.getItem(UI_LANG_KEY) || "it").toLowerCase();
+        currentLang = SUPPORTED_LANGS.includes(storedLang) ? storedLang : "it";
+      } catch (_) {
+        currentLang = "it";
+      }
+
+      try {
+        const storedCurrency = String(localStorage.getItem(UI_CURRENCY_KEY) || "EUR").toUpperCase();
+        currentCurrency = SUPPORTED_CURRENCIES.includes(storedCurrency) ? storedCurrency : "EUR";
+      } catch (_) {
+        currentCurrency = "EUR";
+      }
+
+      const langSelect = document.getElementById("langSelect");
+      const currencySelect = document.getElementById("currencySelect");
+      if (langSelect) langSelect.value = currentLang;
+      if (currencySelect) currencySelect.value = currentCurrency;
+    }
+
+    function applyStaticTranslations() {
+      document.documentElement.lang = currentLang;
+      document.title = tr("title");
+
+      const heroTitle = document.querySelector(".hero h1");
+      const heroSubtitle = document.querySelector(".hero p");
+      if (heroTitle) heroTitle.textContent = tr("heroTitle");
+      if (heroSubtitle) heroSubtitle.innerHTML = tr("heroSubtitle");
+
+      const quickActions = document.querySelector(".top-actions-trigger");
+      if (quickActions) quickActions.textContent = tr("quickActions");
+
+      const btnReset = document.getElementById("btnReset");
+      const btnExport = document.getElementById("btnExportJson");
+      const btnImport = document.getElementById("btnImportJson");
+      const btnPdf = document.getElementById("btnPdf");
+      const btnZoomReset = document.getElementById("btnZoomReset");
+      const btnZoomOut = document.getElementById("btnZoomOut");
+      const btnZoomIn = document.getElementById("btnZoomIn");
+      const lblLang = document.getElementById("lblLang");
+      const lblCurrency = document.getElementById("lblCurrency");
+      const coffeeHero = document.querySelector(".btn-coffee-hero");
+      const calcMode = document.getElementById("calcMode");
+      const incomeMode = document.getElementById("incomeMode");
+      const cardTitles = document.querySelectorAll(".card h2");
+      const calcSummary = document.querySelector("details summary");
+      const orientativeNote = document.querySelectorAll(".card .content > p.note")[0];
+
+      if (btnReset) btnReset.textContent = tr("btnReset");
+      if (btnExport) btnExport.textContent = tr("btnExport");
+      if (btnImport) btnImport.textContent = tr("btnImport");
+      if (btnPdf) btnPdf.textContent = tr("btnPdf");
+      if (btnZoomReset) btnZoomReset.textContent = tr("btnZoomReset");
+      if (btnZoomOut) btnZoomOut.title = tr("btnZoomOutTitle");
+      if (btnZoomIn) btnZoomIn.title = tr("btnZoomInTitle");
+      if (btnZoomReset) btnZoomReset.title = tr("btnZoomResetTitle");
+      if (lblLang) lblLang.textContent = tr("lang");
+      if (lblCurrency) lblCurrency.textContent = tr("currency");
+      if (coffeeHero) {
+        coffeeHero.title = tr("coffeeHero");
+        coffeeHero.innerHTML = "&#9749; " + tr("coffeeHero");
+      }
+      if (calcMode) {
+        const legal = calcMode.querySelector("option[value='legal']");
+        const simple = calcMode.querySelector("option[value='simple']");
+        const genova = calcMode.querySelector("option[value='genova']");
+        if (currentLang === "en") {
+          if (legal) legal.textContent = "Legal-proportional (recommended)";
+          if (simple) simple.textContent = "Simplified: net difference x %";
+          if (genova) genova.textContent = "Genoa Court guidelines";
+        } else {
+          if (legal) legal.textContent = "Legale-proporzionale (consigliata)";
+          if (simple) simple.textContent = "Semplificata: differenza netti x %";
+          if (genova) genova.textContent = "Linee guida Tribunale di Genova";
+        }
+      }
+      if (incomeMode) {
+        const monthly = incomeMode.querySelector("option[value='monthly']");
+        const annual = incomeMode.querySelector("option[value='annual']");
+        if (currentLang === "en") {
+          if (monthly) monthly.textContent = "Monthly income";
+          if (annual) annual.textContent = "Yearly income (conversion /12)";
+        } else {
+          if (monthly) monthly.textContent = "Reddito mensile";
+          if (annual) annual.textContent = "Reddito annuale (conversione /12)";
+        }
+      }
+      if (cardTitles[0]) cardTitles[0].textContent = tr("inputsTitle");
+      if (cardTitles[1]) cardTitles[1].textContent = tr("resultsTitle");
+      if (calcSummary) calcSummary.textContent = tr("howCalc");
+      if (orientativeNote) orientativeNote.textContent = tr("orientative");
     }
 
     function setTopActionsOpen(open) {
@@ -153,17 +323,17 @@ const defaultExpenseItems = [
     }
 
     function eur(v) {
-      const n = Number(v || 0);
-      return new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(n);
+      const n = convertedMoney(v);
+      return new Intl.NumberFormat(getCurrentLocale(), { style: "currency", currency: currentCurrency }).format(n);
     }
 
     function eurTiny(v) {
-      const n = Number(v || 0);
-      const short = new Intl.NumberFormat("it-IT", {
+      const n = convertedMoney(v);
+      const short = new Intl.NumberFormat(getCurrentLocale(), {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
       }).format(n);
-      return `${short} EUR`;
+      return `${short} ${currentCurrency}`;
     }
 
     function escapeHtml(value) {
@@ -524,7 +694,7 @@ const defaultExpenseItems = [
       if (sessionActions) sessionActions.classList.toggle("is-hidden", !logged);
       if (toggleBtn) {
         toggleBtn.classList.toggle("logged", logged);
-        toggleBtn.querySelector("span").textContent = logged ? `Utente: ${authSession.username}` : "KeyLock Login";
+        toggleBtn.querySelector("span").textContent = logged ? `Utente: ${authSession.username}` : tr("authLogin");
       }
 
       document.getElementById("btnRegisterKeyLock").disabled = logged;
@@ -1032,7 +1202,9 @@ const defaultExpenseItems = [
       const redditoHint1 = document.getElementById("hintReddito1");
       const redditoHint2 = document.getElementById("hintReddito2");
       const annual = incomeMode === "annual";
-      const labelText = annual ? "Reddito annuale netto (EUR)" : "Reddito mensile netto (EUR)";
+      const labelText = annual
+        ? `${tr("redditoAnnuale")} (${currentCurrency})`
+        : `${tr("redditoMensile")} (${currentCurrency})`;
       const hintText1 = annual
         ? "Entrate nette annuali del Coniuge 1: il sistema converte automaticamente in quota mensile (/12)."
         : "Entrate nette mensili disponibili del Coniuge 1.";
@@ -1047,7 +1219,7 @@ const defaultExpenseItems = [
       const guideline = document.getElementById("modeGuideline");
       if (guideline) {
         if (mode === "genova") {
-          guideline.innerHTML = "Riferimento modalita selezionata: <a href=\"https://www.ufficigiudiziarigenova.it/documentazione/D_112851.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">Linee guida del Tribunale di Genova (PDF)</a>.";
+          guideline.innerHTML = `${tr("modeGuidelinePrefix")} <a href=\"https://www.ufficigiudiziarigenova.it/documentazione/D_112851.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">${tr("modeGuidelineLink")}</a>.`;
           guideline.style.display = "block";
         } else {
           guideline.innerHTML = "";
@@ -1189,8 +1361,8 @@ const defaultExpenseItems = [
       const th2 = document.getElementById("thSpese2");
       const lp1 = document.getElementById("lblPerm1");
       const lp2 = document.getElementById("lblPerm2");
-      if (th1) th1.textContent = c1n() + " (EUR)";
-      if (th2) th2.textContent = c2n() + " (EUR)";
+      if (th1) th1.textContent = `${c1n()} (${currentCurrency})`;
+      if (th2) th2.textContent = `${c2n()} (${currentCurrency})`;
       if (lp1) lp1.textContent = c1n();
       if (lp2) lp2.textContent = c2n();
     }
@@ -2344,7 +2516,32 @@ const defaultExpenseItems = [
       }
     });
 
+    document.getElementById("langSelect").addEventListener("change", (e) => {
+      const next = String(e.target.value || "it").toLowerCase();
+      currentLang = SUPPORTED_LANGS.includes(next) ? next : "it";
+      try {
+        localStorage.setItem(UI_LANG_KEY, currentLang);
+      } catch (_) {}
+      applyStaticTranslations();
+      updateModeUi();
+      updateSpouseLabels();
+      renderAll();
+    });
+
+    document.getElementById("currencySelect").addEventListener("change", (e) => {
+      const next = String(e.target.value || "EUR").toUpperCase();
+      currentCurrency = SUPPORTED_CURRENCIES.includes(next) ? next : "EUR";
+      try {
+        localStorage.setItem(UI_CURRENCY_KEY, currentCurrency);
+      } catch (_) {}
+      updateModeUi();
+      updateSpouseLabels();
+      renderAll();
+    });
+
     populateSuggestedExpenseOptions();
+    initPreferences();
+    applyStaticTranslations();
     buildExpenseRows();
     initUiZoom();
     initTopActionsMenu();
