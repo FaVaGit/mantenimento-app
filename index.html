@@ -1117,7 +1117,7 @@
     <section class="hero">
       <h1>Calcolatore Assegno di Mantenimento</h1>
       <p>
-        Modello di calcolo orientativo adattato al <strong>reddito mensile netto</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
+        Modello di calcolo orientativo adattato al <strong>reddito netto mensile o annuale</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
       </p>
       <div class="hero-tools">
         <div class="top-actions" id="topActions" tabindex="0">
@@ -1410,6 +1410,7 @@
     let netDiffFabricCanvas = null;
     let authFlowInProgress = false;
     let authRateLimitedUntilTs = 0;
+    let incomeModeLast = "monthly";
 
     function normalizeUiZoom(value) {
       const n = Number(value);
@@ -2149,6 +2150,23 @@
       return expenseItems.reduce((acc, _, idx) => acc + num(`${prefix}_${idx}`), 0);
     }
 
+    function convertIncomeValuesForModeChange(prevMode, nextMode) {
+      if (!prevMode || !nextMode || prevMode === nextMode) return;
+      const factor = prevMode === "monthly" && nextMode === "annual"
+        ? 12
+        : (prevMode === "annual" && nextMode === "monthly" ? 1 / 12 : 1);
+      if (factor === 1) return;
+
+      ["reddito1", "reddito2"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const raw = Number(el.value);
+        if (!Number.isFinite(raw)) return;
+        const converted = Math.round((raw * factor) * 100) / 100;
+        el.value = String(converted);
+      });
+    }
+
     function updateModeUi() {
       const mode = document.getElementById("calcMode").value || "legal";
       const incomeMode = document.getElementById("incomeMode").value || "monthly";
@@ -2652,6 +2670,8 @@
 
     function applyState(state) {
       hydrateState(state);
+      incomeModeLast = document.getElementById("incomeMode").value || "monthly";
+      updateModeUi();
       renderAll();
     }
 
@@ -2917,6 +2937,11 @@
 
     document.addEventListener("change", (e) => {
       if (e.target && (e.target.id === "calcMode" || e.target.id === "incomeMode")) {
+        if (e.target.id === "incomeMode") {
+          const nextMode = document.getElementById("incomeMode").value || "monthly";
+          convertIncomeValuesForModeChange(incomeModeLast, nextMode);
+          incomeModeLast = nextMode;
+        }
         updateModeUi();
         renderAll();
       }
@@ -2928,6 +2953,7 @@
     updateAuthUi();
     renderCloudHistoryPanel();
     syncPermanenza();
+    incomeModeLast = document.getElementById("incomeMode").value || "monthly";
     updateModeUi();
     renderAll();
   </script>
