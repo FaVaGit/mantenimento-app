@@ -3006,25 +3006,35 @@
         const cx = left + figRadius;
         const cy = top + figRadius;
 
-        // Person icon centered inside the bubble.
+        // Person icon: larger proportions to occupy most of the bubble area.
+        const headR = figRadius * 0.29;
+        const headTop = cy - (figRadius * 0.64);
+        const bodyW = figRadius * 0.74;
+        const bodyH = figRadius * 0.88;
+        const bodyLeft = cx - (bodyW / 2);
+        const bodyTop = cy - (figRadius * 0.20);
+        const bodyRound = figRadius * 0.24;
+
         fc.add(new window.fabric.Circle({
-          left: cx - (8 * scale),
-          top: cy - (19 * scale),
-          radius: 8 * scale,
+          left: cx - headR,
+          top: headTop,
+          radius: headR,
           fill: palette.ink
         }));
         fc.add(new window.fabric.Rect({
-          left: cx - (9 * scale),
-          top: cy - (9 * scale),
-          width: 18 * scale,
-          height: 20 * scale,
-          rx: 6 * scale,
-          ry: 6 * scale,
+          left: bodyLeft,
+          top: bodyTop,
+          width: bodyW,
+          height: bodyH,
+          rx: bodyRound,
+          ry: bodyRound,
           fill: palette.ink
         }));
 
-        fc.add(new window.fabric.Circle({ left: cx - (4.6 * scale), top: cy - (16.5 * scale), radius: 1.2 * scale, fill: "#ffffff" }));
-        fc.add(new window.fabric.Circle({ left: cx + (2.6 * scale), top: cy - (16.5 * scale), radius: 1.2 * scale, fill: "#ffffff" }));
+        const eyeR = Math.max(1, figRadius * 0.04);
+        const eyeY = headTop + (headR * 0.84);
+        fc.add(new window.fabric.Circle({ left: cx - (headR * 0.60), top: eyeY, radius: eyeR, fill: "#ffffff" }));
+        fc.add(new window.fabric.Circle({ left: cx + (headR * 0.24), top: eyeY, radius: eyeR, fill: "#ffffff" }));
 
         const mouthPath = role === "winner"
           ? "M 0 0 Q 5.5 5.5 11 0"
@@ -3032,11 +3042,11 @@
             ? "M 0 4.2 Q 5.5 -1.2 11 4.2"
             : "M 0 2.2 L 11 2.2";
         fc.add(new window.fabric.Path(mouthPath, {
-          left: cx - (5.5 * scale),
-          top: cy - (10 * scale),
+          left: cx - (5.5 * scale * 1.18),
+          top: cy - (figRadius * 0.24),
           fill: "",
           stroke: "#ffffff",
-          strokeWidth: Math.max(1, 1.3 * scale),
+          strokeWidth: Math.max(1.1, 1.45 * scale),
           strokeLineCap: "round"
         }));
 
