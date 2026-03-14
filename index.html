@@ -34,7 +34,8 @@
     }
 
     .wrap {
-      max-width: 1120px;
+      max-width: none;
+      width: 100%;
       margin: 22px auto;
       padding: 0 14px 22px;
       animation: fadeIn 520ms ease;
@@ -884,9 +885,9 @@
                   </div>
                   <div class="field">
                     <label for="cloudGistId" class="label-row">Gist ID cache cloud
-                      <span class="hint" title="Se vuoto, viene creato automaticamente al primo salvataggio cloud.">i</span>
+                      <span class="hint" title="Opzionale: se vuoto, il sistema prova a trovarlo automaticamente dal token GitHub.">i</span>
                     </label>
-                    <input id="cloudGistId" type="text" autocomplete="off" placeholder="auto al primo salvataggio" />
+                    <input id="cloudGistId" type="text" autocomplete="off" placeholder="opzionale: auto-rilevato" />
                   </div>
                   <div class="field">
                     <label class="label-row">Operazioni cloud
@@ -930,7 +931,7 @@
               </label>
               <input id="numFigli" type="number" min="1" step="1" value="1" />
             </div>
-            <div class="field">
+            <div class="field" id="simplePercField">
               <label for="simplePerc" class="label-row">Percentuale semplificata (%)
                 <span class="hint" title="Usata solo nella modalita semplificata: importo = differenza netti x percentuale.">i</span>
               </label>
@@ -1391,6 +1392,30 @@
       return { gistId: created.id, doc: initial };
     }
 
+    async function findKeyLockGistByUsername(token, username) {
+      const gists = await githubApiRequest("GET", "https://api.github.com/gists?per_page=100", token);
+      if (!Array.isArray(gists)) return null;
+
+      // First pass: select likely KeyLock cache gists by filename/description.
+      const candidates = gists.filter((g) => {
+        const hasKeylockFile = !!(g.files && g.files[KEYLOCK_GIST_FILENAME]);
+        const desc = String(g.description || "").toLowerCase();
+        return hasKeylockFile || desc.includes("keylock") || desc.includes("mantenimento");
+      });
+
+      for (const gist of candidates) {
+        try {
+          const { gistId, doc } = await readGistCacheDoc(token, gist.id);
+          if ((doc.users && doc.users[username]) || (doc.profiles && doc.profiles[username])) {
+            return gistId;
+          }
+        } catch (_) {
+          // Ignore malformed/unreachable gist and continue scanning.
+        }
+      }
+      return null;
+    }
+
     async function writeGistCacheDoc(token, gistId, doc) {
       await githubApiRequest("PATCH", `https://api.github.com/gists/${gistId}`, token, {
         files: {
@@ -1495,7 +1520,13 @@
 
       if (!user) {
         const token = text("cloudGithubToken");
-        const gistId = text("cloudGistId");
+        let gistId = text("cloudGistId");
+        if (token && !gistId) {
+          gistId = await findKeyLockGistByUsername(token, username) || "";
+          if (gistId) {
+            document.getElementById("cloudGistId").value = gistId;
+          }
+        }
         if (token && gistId) {
           try {
             const { doc } = await readGistCacheDoc(token, gistId);
@@ -1512,7 +1543,7 @@
       }
 
       if (!user) {
-        setAuthStatus("Utente non trovato. Per accesso da altro dispositivo, inserisci Token GitHub e Gist ID.", true);
+        setAuthStatus("Utente non trovato. Inserisci il token GitHub: il Gist viene cercato automaticamente.", true);
         return;
       }
 
@@ -1583,7 +1614,11 @@
         return;
       }
       try {
-        const { gistId, doc } = await ensureGistCacheDoc(token, text("cloudGistId"));
+        let gistIdHint = text("cloudGistId");
+        if (!gistIdHint) {
+          gistIdHint = await findKeyLockGistByUsername(token, authSession.username) || "";
+        }
+        const { gistId, doc } = await ensureGistCacheDoc(token, gistIdHint);
         const state = toStateWithCloudData(serializeState());
         const encrypted = await encryptStateForKey(state, authSession.keyBits);
         doc.profiles[authSession.username] = {
@@ -1604,9 +1639,19 @@
         return;
       }
       const token = text("cloudGithubToken");
-      const gistId = text("cloudGistId");
-      if (!token || !gistId) {
-        setAuthStatus("Inserisci token GitHub e Gist ID per caricare dal cloud.", true);
+      let gistId = text("cloudGistId");
+      if (!token) {
+        setAuthStatus("Inserisci token GitHub per caricare dal cloud.", true);
+        return;
+      }
+      if (!gistId) {
+        gistId = await findKeyLockGistByUsername(token, authSession.username) || "";
+        if (gistId) {
+          document.getElementById("cloudGistId").value = gistId;
+        }
+      }
+      if (!gistId) {
+        setAuthStatus("Nessun Gist cloud trovato per questo utente con il token fornito.", true);
         return;
       }
       try {
@@ -1700,8 +1745,10 @@
       const mode = document.getElementById("calcMode").value || "legal";
       const incomeMode = document.getElementById("incomeMode").value || "monthly";
       const simplePerc = document.getElementById("simplePerc");
+      const simplePercField = document.getElementById("simplePercField");
       const isSimple = mode === "simple";
       simplePerc.disabled = !isSimple;
+      if (simplePercField) simplePercField.classList.toggle("is-hidden", !isSimple);
       simplePerc.title = isSimple
         ? "Percentuale usata nella formula semplificata."
         : "Campo inattivo: viene usato solo nella modalita semplificata.";
