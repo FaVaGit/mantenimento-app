@@ -3058,19 +3058,35 @@
       const badgeX = (w - badgeW) / 2;
       const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
       const badgeMaxFontSize = isNarrow ? 16 : (w < 560 ? 24 : 28);
+      const badgeMinFontSize = isNarrow ? 12 : 10;
       const badgeInnerW = badgeW - 36;
+      const badgeBaseHeight = isNarrow ? 46 : (w < 560 ? 56 : 62);
 
-      // Measure actual text width at max font size, then scale down if needed
-      const _probe = new window.fabric.Text(badgeText, {
-        fontSize: badgeMaxFontSize, fontFamily: "Candara", fontWeight: "700"
+      // Allow multiline on narrow screens: shrink font only if needed, then grow badge height if text still wraps.
+      let badgeFontSize = badgeMaxFontSize;
+      let badgeProbe = new window.fabric.Textbox(badgeText, {
+        width: badgeInnerW,
+        fontSize: badgeFontSize,
+        fontFamily: "Candara",
+        fontWeight: "700",
+        textAlign: "center",
+        lineHeight: 1.05
       });
-      const badgeFontSize = _probe.width <= badgeInnerW
-        ? badgeMaxFontSize
-        : Math.max(10, Math.floor(badgeMaxFontSize * badgeInnerW / _probe.width));
+      while (badgeProbe.height > (badgeBaseHeight - 10) && badgeFontSize > badgeMinFontSize) {
+        badgeFontSize -= 1;
+        badgeProbe = new window.fabric.Textbox(badgeText, {
+          width: badgeInnerW,
+          fontSize: badgeFontSize,
+          fontFamily: "Candara",
+          fontWeight: "700",
+          textAlign: "center",
+          lineHeight: 1.05
+        });
+      }
 
       addOutcomeFigure(figMargin, figTop, 1, roleForSpouse(1));
       addOutcomeFigure(w - figMargin - figDiameter, figTop, 2, roleForSpouse(2));
-      const badgeHeight = isNarrow ? 46 : (w < 560 ? 56 : 62);
+      const badgeHeight = Math.max(badgeBaseHeight, Math.ceil(badgeProbe.height) + 10);
       fc.add(new window.fabric.Rect({
         left: badgeX,
         top: 18,
@@ -3082,10 +3098,13 @@
         stroke: diffDisp === 0 ? "#98b8b3" : (diffDisp > 0 ? "#8ec3b9" : "#d9b47e"),
         strokeWidth: 1
       }));
-      fc.add(new window.fabric.Text(badgeText, {
+      fc.add(new window.fabric.Textbox(badgeText, {
         left: badgeX + badgeW / 2,
-        top: 18 + (badgeHeight - badgeFontSize) / 2,
+        top: 18 + (badgeHeight - badgeProbe.height) / 2,
+        width: badgeInnerW,
         originX: "center",
+        textAlign: "center",
+        lineHeight: 1.05,
         fontSize: badgeFontSize,
         fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
         fontFamily: "Candara",
