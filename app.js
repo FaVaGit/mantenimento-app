@@ -461,6 +461,7 @@ const defaultExpenseItems = [
     let incomeModeLast = "monthly";
     let currentLang = "it";
     let currentCurrency = "EUR";
+    const CALC_API_BASE = String(window.KEYLOCK_CALC_API_BASE || "").trim().replace(/\/+$/, "");
 
     function tr(key) {
       const table = I18N[currentLang] || I18N.it;
@@ -483,6 +484,42 @@ const defaultExpenseItems = [
       const n = Number(v || 0);
       const rate = CURRENCY_RATES[currentCurrency] || 1;
       return n * rate;
+    }
+
+    function resolveCalculationApiUrl() {
+      if (CALC_API_BASE) return `${CALC_API_BASE}/api/calculate`;
+      const host = String((window.location && window.location.hostname) || "").toLowerCase();
+      if (host === "localhost" || host === "127.0.0.1") return "/api/calculate";
+      return null;
+    }
+
+    function patchFabricTextBaselineTypo() {
+      if (!window.fabric || !window.fabric.Text || !window.fabric.Text.prototype) return;
+      const proto = window.fabric.Text.prototype;
+      if (proto.__keylockBaselinePatched) return;
+
+      // Fabric 5 in this bundle uses the non-standard baseline value "alphabetical".
+      proto._setTextStyles = function(ctx, styleDeclaration, forMeasuring) {
+        if (!ctx) return;
+        ctx.textBaseline = "alphabetic";
+        if (this.path) {
+          switch (this.pathAlign) {
+            case "center":
+              ctx.textBaseline = "middle";
+              break;
+            case "ascender":
+              ctx.textBaseline = "top";
+              break;
+            case "descender":
+              ctx.textBaseline = "bottom";
+              break;
+            default:
+              break;
+          }
+        }
+        ctx.font = this._getFontDeclaration(styleDeclaration, forMeasuring);
+      };
+      proto.__keylockBaselinePatched = true;
     }
 
     function normalizeUiZoom(value) {
@@ -1746,18 +1783,21 @@ const defaultExpenseItems = [
 
     function computeModel() {
       const payload = collectCalculationPayload();
-      try {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/calculate", false);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.send(JSON.stringify(payload));
+      const apiUrl = resolveCalculationApiUrl();
+      if (apiUrl) {
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", apiUrl, false);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.send(JSON.stringify(payload));
 
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const body = JSON.parse(xhr.responseText || "{}");
-          if (body && body.ok && body.model) return body.model;
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const body = JSON.parse(xhr.responseText || "{}");
+            if (body && body.ok && body.model) return body.model;
+          }
+        } catch (_) {
+          // Fallback handled below.
         }
-      } catch (_) {
-        // Fallback handled below.
       }
 
       return computeModelLocal(payload);
@@ -2958,6 +2998,7 @@ const defaultExpenseItems = [
 
     populateSuggestedExpenseOptions();
     initPreferences();
+    patchFabricTextBaselineTypo();
     applyStaticTranslations();
     buildExpenseRows();
     initUiZoom();
