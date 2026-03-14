@@ -812,34 +812,48 @@
 
     .live-diff {
       grid-column: 1 / -1;
-      border: 1px solid #d4ddd8;
-      border-radius: 12px;
-      background: linear-gradient(160deg, #f4faf8, #edf7f4);
-      padding: 8px;
+      border: 1px solid #c8dcd7;
+      border-radius: 14px;
+      background:
+        radial-gradient(140% 120% at 0% 0%, rgba(205, 234, 227, 0.38), transparent 52%),
+        radial-gradient(120% 110% at 100% 0%, rgba(248, 224, 186, 0.32), transparent 58%),
+        linear-gradient(162deg, #f3faf8, #e9f5f2);
+      padding: 10px;
     }
 
     .live-fabric-wrap {
       margin-top: 0;
-      border: 1px solid #bdd4cf;
-      border-radius: 12px;
-      padding: 10px;
-      background: linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(240, 249, 246, 0.9));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      border: 1px solid #b4d0ca;
+      border-radius: 14px;
+      padding: 12px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(239, 249, 246, 0.93));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.98),
+        0 8px 18px rgba(24, 73, 67, 0.1);
     }
 
     .live-fabric-caption {
-      font-size: 0.9rem;
-      color: #234c48;
-      margin-bottom: 8px;
+      font-size: 1.02rem;
+      color: #1f4844;
+      margin-bottom: 4px;
       font-weight: 800;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.3px;
+    }
+
+    .live-fabric-sub {
+      font-size: 0.9rem;
+      color: #3f605c;
+      margin-bottom: 10px;
     }
 
     .live-fabric-canvas {
       width: 100%;
       max-width: 100%;
       display: block;
-      border-radius: 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(167, 198, 191, 0.45);
+      background: linear-gradient(180deg, rgba(250, 254, 253, 0.95), rgba(239, 248, 245, 0.9));
     }
 
     .history-list {
@@ -1019,6 +1033,13 @@
       }
       .note {
         font-size: 0.88rem;
+      }
+      .live-fabric-caption {
+        font-size: 0.98rem;
+      }
+      .live-fabric-sub {
+        font-size: 0.88rem;
+        margin-bottom: 8px;
       }
       .live-columns { grid-template-columns: 1fr; }
       .shared-grid { grid-template-columns: 1fr; }
@@ -2293,7 +2314,8 @@
         <div class="live-diff">
           <div class="live-fabric-wrap">
             <div class="live-fabric-caption">Visualizzazione comparativa</div>
-            <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="136"></canvas>
+            <div class="live-fabric-sub">Bilanciamento visivo dei netti: posizione del marker e intensita del divario tra i coniugi.</div>
+            <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="186"></canvas>
           </div>
         </div>
       `;
@@ -2328,7 +2350,7 @@
       if (!canvasEl) return;
 
       const w = Math.max(280, Math.round(canvasEl.parentElement.clientWidth - 16));
-      const h = 136;
+      const h = 186;
       canvasEl.width = w;
       canvasEl.height = h;
 
@@ -2341,89 +2363,177 @@
       netDiffFabricCanvas = fc;
 
       const centerX = w / 2;
-      const centerY = 82;
-      const radius = Math.min(48, Math.max(36, (w * 0.15)));
+      const centerY = 142;
+      const radius = Math.min(56, Math.max(42, (w * 0.17)));
       const totalAbs = Math.max(1, Math.abs(m.disp1) + Math.abs(m.disp2));
       const shift = (diffDisp / totalAbs) * (radius * 1.5);
       const pointerX = Math.max(centerX - radius * 1.6, Math.min(centerX + radius * 1.6, centerX + shift));
 
       fc.add(new window.fabric.Rect({
-        left: 10,
-        top: 16,
-        width: w - 20,
-        height: 98,
-        rx: 14,
-        ry: 14,
-        fill: "#f8fcfb",
-        stroke: "#bfd5d0",
+        left: 8,
+        top: 8,
+        width: w - 16,
+        height: h - 16,
+        rx: 16,
+        ry: 16,
+        fill: "#f7fcfb",
+        stroke: "#b8d2cd",
         strokeWidth: 1
       }));
 
-      const trackLeft = 24;
-      const trackWidth = w - 48;
-
-      fc.add(new window.fabric.Rect({
-        left: trackLeft,
-        top: centerY - 8,
-        width: trackWidth,
-        height: 16,
-        rx: 8,
-        ry: 8,
-        fill: "#e5efec"
-      }));
-
-      fc.add(new window.fabric.Rect({
-        left: trackLeft,
-        top: centerY - 8,
-        width: trackWidth / 2,
-        height: 16,
-        rx: 8,
-        ry: 8,
-        fill: "#cae7df"
-      }));
-      fc.add(new window.fabric.Rect({
-        left: centerX,
-        top: centerY - 8,
-        width: trackWidth / 2,
-        height: 16,
-        rx: 8,
-        ry: 8,
-        fill: "#f1ddbf"
-      }));
-
-      fc.add(new window.fabric.Rect({
-        left: centerX - 1,
-        top: centerY - 13,
-        width: 2,
-        height: 26,
-        fill: "#98b9b2"
+      fc.add(new window.fabric.Circle({
+        left: 16,
+        top: 12,
+        radius: 50,
+        fill: "rgba(89, 165, 152, 0.12)",
+        selectable: false
       }));
 
       fc.add(new window.fabric.Circle({
-        left: pointerX - 11,
-        top: centerY - 11,
-        radius: 11,
-        fill: diffDisp >= 0 ? "#0b6e66" : "#c77a11",
-        stroke: "#ffffff",
-        strokeWidth: 3,
-        shadow: "0 2px 5px rgba(0,0,0,0.22)"
+        left: w - 96,
+        top: 10,
+        radius: 44,
+        fill: "rgba(220, 163, 78, 0.16)",
+        selectable: false
       }));
 
       const statusText = diffDisp === 0
         ? "Netti equivalenti"
         : `Vantaggio netto: C${diffDisp > 0 ? 1 : 2}`;
-      fc.add(new window.fabric.Text(statusText, {
-        left: 24,
-        top: 28,
-        fontSize: 13,
-        fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#8a5a11"),
+
+      const badgeW = Math.min(352, Math.max(220, w - 64));
+      const badgeX = (w - badgeW) / 2;
+      const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
+      const badgeFontSize = w < 360 ? 12 : 14;
+      fc.add(new window.fabric.Rect({
+        left: badgeX,
+        top: 18,
+        width: badgeW,
+        height: 34,
+        rx: 17,
+        ry: 17,
+        fill: "#ffffff",
+        stroke: diffDisp === 0 ? "#98b8b3" : (diffDisp > 0 ? "#8ec3b9" : "#d9b47e"),
+        strokeWidth: 1
+      }));
+
+      fc.add(new window.fabric.Text(badgeText, {
+        left: badgeX + 14,
+        top: w < 360 ? 29 : 27,
+        fontSize: badgeFontSize,
+        fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
         fontFamily: "Candara",
         fontWeight: "700"
       }));
 
+      const cardTop = 62;
+      const cardH = 46;
+      const cardGap = 18;
+      const cardW = Math.min(180, Math.max(118, (w - (cardGap + 56)) / 2));
+      const leftCardX = 20;
+      const rightCardX = w - cardW - 20;
+
+      fc.add(new window.fabric.Rect({
+        left: leftCardX,
+        top: cardTop,
+        width: cardW,
+        height: cardH,
+        rx: 12,
+        ry: 12,
+        fill: "#e8f5f1",
+        stroke: "#bad9d2",
+        strokeWidth: 1
+      }));
+      fc.add(new window.fabric.Rect({
+        left: rightCardX,
+        top: cardTop,
+        width: cardW,
+        height: cardH,
+        rx: 12,
+        ry: 12,
+        fill: "#f7eddc",
+        stroke: "#e3c79d",
+        strokeWidth: 1
+      }));
+
+      fc.add(new window.fabric.Text(`C1  ${eurTiny(m.disp1)}`, {
+        left: leftCardX + 10,
+        top: cardTop + 15,
+        fontSize: 15,
+        fill: "#0d625a",
+        fontFamily: "Candara",
+        fontWeight: "700"
+      }));
+      fc.add(new window.fabric.Text(`C2  ${eurTiny(m.disp2)}`, {
+        left: rightCardX + 10,
+        top: cardTop + 15,
+        fontSize: 15,
+        fill: "#8a5a10",
+        fontFamily: "Candara",
+        fontWeight: "700"
+      }));
+
+      const trackLeft = 26;
+      const trackWidth = w - 52;
+
+      fc.add(new window.fabric.Rect({
+        left: trackLeft,
+        top: centerY - 9,
+        width: trackWidth,
+        height: 18,
+        rx: 9,
+        ry: 9,
+        fill: "#e5efec"
+      }));
+
+      fc.add(new window.fabric.Rect({
+        left: trackLeft,
+        top: centerY - 9,
+        width: trackWidth / 2,
+        height: 18,
+        rx: 9,
+        ry: 9,
+        fill: "#bfe3da"
+      }));
+      fc.add(new window.fabric.Rect({
+        left: centerX,
+        top: centerY - 9,
+        width: trackWidth / 2,
+        height: 18,
+        rx: 9,
+        ry: 9,
+        fill: "#efd7b0"
+      }));
+
+      fc.add(new window.fabric.Rect({
+        left: centerX - 1,
+        top: centerY - 16,
+        width: 2,
+        height: 32,
+        fill: "#98b9b2"
+      }));
+
+      fc.add(new window.fabric.Circle({
+        left: pointerX - 16,
+        top: centerY - 16,
+        radius: 16,
+        fill: diffDisp >= 0 ? "rgba(11, 110, 102, 0.18)" : "rgba(199, 122, 17, 0.22)",
+        selectable: false
+      }));
+
+      fc.add(new window.fabric.Circle({
+        left: pointerX - 12,
+        top: centerY - 12,
+        radius: 12,
+        fill: diffDisp >= 0 ? "#0b6e66" : "#c77a11",
+        stroke: "#ffffff",
+        strokeWidth: 3,
+        shadow: "0 2px 7px rgba(0,0,0,0.24)"
+      }));
+
       fc.add(new window.fabric.Text("C1", {
         left: 26,
-        top: 62,
+        top: 156,
         fontSize: 13,
         fill: "#145b55",
         fontFamily: "Candara",
@@ -2431,18 +2541,9 @@
       }));
       fc.add(new window.fabric.Text("C2", {
         left: w - 41,
-        top: 62,
+        top: 156,
         fontSize: 13,
         fill: "#8a580f",
-        fontFamily: "Candara",
-        fontWeight: "700"
-      }));
-
-      fc.add(new window.fabric.Text(`Delta: ${eur(absDiffDisp)}`, {
-        left: 24,
-        top: 101,
-        fontSize: 13,
-        fill: "#244645",
         fontFamily: "Candara",
         fontWeight: "700"
       }));
