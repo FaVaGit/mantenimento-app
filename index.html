@@ -1504,13 +1504,15 @@
         options: { data: { username } }
       });
 
+      let signUpRateLimited = false;
+
       if (signUpRes.error) {
         const signUpMsg = String(signUpRes.error.message || "").toLowerCase();
         if (signUpMsg.includes("already") || signUpMsg.includes("registered")) {
           // User already exists: continue with login flow.
         } else if (signUpMsg.includes("rate limit") || signUpMsg.includes("email rate")) {
-          setAuthStatus("Registrazione temporaneamente bloccata da rate limit email di Supabase. Attendi qualche minuto e riprova.", true);
-          return;
+          // Continue with login attempt: if user already exists this still works.
+          signUpRateLimited = true;
         } else {
           setAuthStatus(`Registrazione fallita: ${signUpRes.error.message}`, true);
           return;
@@ -1519,6 +1521,10 @@
 
       const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
       if (signInRes.error || !signInRes.data.user) {
+        if (signUpRateLimited) {
+          setAuthStatus("Rate limit Supabase sulla registrazione: se l'utente esiste usa Login; se e nuovo attendi qualche minuto e riprova Registrati.", true);
+          return;
+        }
         setAuthStatus("Registrazione eseguita ma login non completato. In Supabase disattiva la conferma email per usare KeyLock con solo utente/password.", true);
         return;
       }
@@ -1538,7 +1544,11 @@
       }
 
       updateAuthUi();
-      setAuthStatus(loginMsg);
+      if (signUpRateLimited) {
+        setAuthStatus(`Rate limit registrazione rilevato, ma login effettuato come ${username}.`);
+      } else {
+        setAuthStatus(loginMsg);
+      }
     }
 
     async function loginKeyLockUser() {
