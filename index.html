@@ -3214,8 +3214,13 @@
   .total-row td { background: #ddf0ec !important; font-weight: 700; border-top: 1.5px solid #74c3b9; }
 
   /* ── TWO-COL LAYOUT ── */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1.85fr; gap: 14px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* Bigger numbers in the financial data table (right column) */
+  .data-table td.num { font-size: 11pt; font-weight: 600; color: #1a2e2a; }
+  .data-table th { font-size: 8pt; }
+  .data-table th.num { text-align: right; }
 
   /* ── BALANCE CARDS ── */
   .balance-row { display: flex; gap: 12px; margin-bottom: 16px; break-inside: avoid; }
@@ -3269,14 +3274,21 @@
 
 <!-- ASSEGNO BANNER -->
 <div class="banner">
+  ${assegnoDir ? `
   <div>
     <div class="banner-lbl">Assegno mensile suggerito dal modello</div>
-    <div class="banner-dir">${assegnoDir || "Nessun trasferimento necessario"}</div>
+    <div class="banner-dir">${assegnoDir}</div>
   </div>
   <div>
     <div class="banner-amount">${assegnoText}</div>
     ${m.figli > 1 ? `<div class="banner-sub">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)} per figlio</div>` : ""}
   </div>
+  ` : `
+  <div style="width:100%;text-align:center;padding:4px 0;">
+    <div class="banner-lbl" style="font-size:9pt;margin-bottom:6px;">Assegno mensile suggerito dal modello</div>
+    <div class="banner-dir" style="font-size:14pt;">✓ Nessun assegno di mantenimento necessario</div>
+  </div>
+  `}
 </div>
 
 <!-- LIVE PANEL (replica del blocco visivo dell'app) -->
@@ -3356,10 +3368,11 @@
   </div>
 
   <!-- Assegno suggerito -->
+  ${assegnoDir ? `
   <div class="assegno-pill">
     <div class="assegno-lbl">Assegno suggerito</div>
-    <div class="assegno-val">${assegnoDir ? `${assegnoDir}: ${assegnoText}` : "Nessun trasferimento suggerito"}</div>
-  </div>
+    <div class="assegno-val">${assegnoDir}: ${assegnoText}</div>
+  </div>` : ""}
 </div>
 <div class="section">
   <div class="section-title">Parametri di Input</div>
@@ -3374,7 +3387,7 @@
         <tr><td>Permanenza ${c2n()}</td><td>${m.perm2.toFixed(0)}%</td></tr>
       </tbody>
     </table>
-    <table>
+    <table class="data-table">
       <thead><tr><th>Voce</th><th class="num">${c1n()}</th><th class="num">${c2n()}</th></tr></thead>
       <tbody>
         <tr><td>Reddito netto${m.incomeMode === "annual" ? " annuo" : " mensile"}</td>
