@@ -1304,6 +1304,32 @@
       return out;
     }
 
+    function decodeBytesFlexible(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return null;
+
+      // Try classic/URL-safe base64 first.
+      try {
+        let b64 = raw.replace(/-/g, "+").replace(/_/g, "/");
+        while (b64.length % 4 !== 0) b64 += "=";
+        const bytes = base64ToBytes(b64);
+        if (bytes && bytes.length) return bytes;
+      } catch (_) {
+        // Continue with hex fallback.
+      }
+
+      // Fallback for hex-encoded payloads.
+      if (/^[0-9a-f]+$/i.test(raw) && raw.length % 2 === 0) {
+        const out = new Uint8Array(raw.length / 2);
+        for (let i = 0; i < raw.length; i += 2) {
+          out[i / 2] = parseInt(raw.slice(i, i + 2), 16);
+        }
+        return out;
+      }
+
+      return null;
+    }
+
     async function sha256Bytes(bytes) {
       const hash = await crypto.subtle.digest("SHA-256", bytes);
       return new Uint8Array(hash);
@@ -1343,8 +1369,11 @@
     }
 
     async function decryptStateForKey(payload, keyBits) {
-      const iv = base64ToBytes(payload.iv);
-      const data = base64ToBytes(payload.data);
+      const iv = decodeBytesFlexible(payload.iv);
+      const data = decodeBytesFlexible(payload.data);
+      if (!iv || !data || !iv.length || !data.length) {
+        throw new Error("Payload legacy non valido (iv/data non decodificabili)");
+      }
       const key = await crypto.subtle.importKey("raw", keyBits, "AES-GCM", false, ["decrypt"]);
       const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
       const textValue = new TextDecoder().decode(plain);
@@ -1591,8 +1620,11 @@
     function normalizeLegacyCipherPayload(rawPayload) {
       const candidates = collectNestedObjects(parseMaybeJsonObject(rawPayload));
       for (const c of candidates) {
-        if (c && c.iv && c.data) {
-          return { iv: c.iv, data: c.data };
+        if (c && c.iv && (c.data || c.ciphertext || c.cipherText || c.payload || c.encryptedData)) {
+          return { iv: c.iv, data: c.data || c.ciphertext || c.cipherText || c.payload || c.encryptedData };
+        }
+        if (c && c.nonce && (c.data || c.ciphertext || c.payload || c.encryptedData)) {
+          return { iv: c.nonce, data: c.data || c.ciphertext || c.payload || c.encryptedData };
         }
         if (c && c.cipher && c.cipher.iv && c.cipher.data) {
           return { iv: c.cipher.iv, data: c.cipher.data };
@@ -1606,6 +1638,32 @@
         if (c && c.cipherIv && c.cipherData) {
           return { iv: c.cipherIv, data: c.cipherData };
         }
+      }
+      return null;
+    }
+
+    function isLikelyLegacyStateObject(obj) {
+      if (!obj || typeof obj !== "object") return false;
+      const score = [
+        "numFigli", "perm1", "perm2", "calcMode", "incomeMode", "reddito1", "reddito2"
+      ].reduce((acc, k) => acc + (Object.prototype.hasOwnProperty.call(obj, k) ? 1 : 0), 0);
+      return score >= 3;
+    }
+
+    function extractLegacyPlainState(rawProfile, doc, username) {
+      const uname = normalizeUsername(username);
+      const direct = parseMaybeJsonObject(rawProfile);
+      if (isLikelyLegacyStateObject(direct)) return direct;
+      if (direct && isLikelyLegacyStateObject(direct.state)) return direct.state;
+      if (direct && isLikelyLegacyStateObject(direct.scenario)) return direct.scenario;
+
+      const objs = collectNestedObjects(doc, 7);
+      for (const obj of objs) {
+        const embeddedUser = normalizeUsername((obj && (obj.username || obj.user || obj.login || obj.handle)) || "");
+        if (embeddedUser && embeddedUser !== uname) continue;
+        if (isLikelyLegacyStateObject(obj)) return obj;
+        if (obj && isLikelyLegacyStateObject(obj.state)) return obj.state;
+        if (obj && isLikelyLegacyStateObject(obj.scenario)) return obj.scenario;
       }
       return null;
     }
@@ -1721,6 +1779,9 @@
           // Try next salt candidate.
         }
       }
+
+      const plainState = extractLegacyPlainState(rawProfile, doc, username);
+      if (plainState) return plainState;
 
       throw new Error("Profilo legacy trovato ma non decifrabile con la password indicata (metadati salt/verifier assenti o formato differente)");
     }
