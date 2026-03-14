@@ -2371,6 +2371,15 @@
       renderAll();
     }
 
+    function resetExpenseEditorFields() {
+      const select = document.getElementById("suggestedExpenseSelect");
+      const label = document.getElementById("customExpenseLabel");
+      const help = document.getElementById("customExpenseHelp");
+      if (select) select.value = "";
+      if (label) label.value = "";
+      if (help) help.value = "";
+    }
+
     function updateExpensePartials() {
       let partial1 = 0;
       let partial2 = 0;
@@ -3162,15 +3171,13 @@
 
     document.getElementById("btnAddExpenseItem").addEventListener("click", () => {
       document.getElementById("expenseItemEditor").classList.remove("is-hidden");
-      document.getElementById("suggestedExpenseSelect").value = "";
+      resetExpenseEditorFields();
       document.getElementById("customExpenseLabel").focus();
     });
 
     document.getElementById("btnCancelExpenseItem").addEventListener("click", () => {
       document.getElementById("expenseItemEditor").classList.add("is-hidden");
-      document.getElementById("suggestedExpenseSelect").value = "";
-      document.getElementById("customExpenseLabel").value = "";
-      document.getElementById("customExpenseHelp").value = "";
+      resetExpenseEditorFields();
     });
 
     document.getElementById("suggestedExpenseSelect").addEventListener("change", (e) => {
@@ -3208,9 +3215,7 @@
       updateExpensePartials();
       renderAll();
 
-      document.getElementById("customExpenseLabel").value = "";
-      document.getElementById("customExpenseHelp").value = "";
-      document.getElementById("suggestedExpenseSelect").value = "";
+      resetExpenseEditorFields();
       document.getElementById("expenseItemEditor").classList.add("is-hidden");
     });
 
