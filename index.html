@@ -139,6 +139,23 @@
       color: var(--muted);
     }
 
+    .perm-inline-field {
+      grid-column: 1 / -1;
+    }
+
+    .perm-inline-control {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr) 96px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .perm-inline-control input[type="number"] {
+      text-align: center;
+      padding: 8px 6px;
+      font-size: 0.9rem;
+    }
+
     .mode-guideline {
       margin-top: 6px;
       font-size: 0.78rem;
@@ -796,6 +813,14 @@
         flex-direction: column;
         align-items: flex-start;
       }
+      .perm-inline-control {
+        grid-template-columns: 78px minmax(0, 1fr) 78px;
+        gap: 6px;
+      }
+      .perm-inline-control input[type="number"] {
+        font-size: 0.84rem;
+        padding: 7px 5px;
+      }
     }
 
     @media print {
@@ -911,23 +936,15 @@
               </label>
               <input id="simplePerc" type="number" min="0" max="100" step="1" value="50" />
             </div>
-            <div class="field">
-              <label for="perm1" class="label-row">Permanenza figli presso Coniuge 1 (%)
-                <span class="hint" title="Percentuale di tempo in cui i figli stanno presso Coniuge 1 su base mensile.">i</span>
+            <div class="field perm-inline-field">
+              <label for="permSlider" class="label-row">Permanenza figli (% Coniuge 1 / Coniuge 2)
+                <span class="hint" title="Usa slider o caselle laterali: i due valori restano sempre complementari e sommano 100%.">i</span>
               </label>
-              <input id="perm1" type="number" min="0" max="100" step="1" value="40" />
-            </div>
-            <div class="field">
-              <label for="perm2" class="label-row">Permanenza figli presso Coniuge 2 (%)
-                <span class="hint" title="La somma con Coniuge 1 viene sempre mantenuta a 100%.">i</span>
-              </label>
-              <input id="perm2" type="number" min="0" max="100" step="1" value="60" />
-            </div>
-            <div class="field">
-              <label for="permSlider" class="label-row">Slider permanenza (Coniuge 1)
-                <span class="hint" title="Trascina per regolare la permanenza: il valore del Coniuge 2 si adatta automaticamente.">i</span>
-              </label>
-              <input id="permSlider" type="range" min="0" max="100" step="1" value="40" />
+              <div class="perm-inline-control">
+                <input id="perm1" type="number" min="0" max="100" step="1" value="40" aria-label="Permanenza figli presso Coniuge 1 (%)" />
+                <input id="permSlider" type="range" min="0" max="100" step="1" value="40" aria-label="Slider permanenza Coniuge 1" />
+                <input id="perm2" type="number" min="0" max="100" step="1" value="60" aria-label="Permanenza figli presso Coniuge 2 (%)" />
+              </div>
             </div>
           </div>
 
