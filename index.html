@@ -33,8 +33,8 @@
         radial-gradient(880px 460px at 105% -4%, #d8f2ec 0%, transparent 67%),
         linear-gradient(160deg, var(--bg-1), var(--bg-2) 62%, var(--bg-3));
       font-family: "Candara", "Gill Sans", "Trebuchet MS", sans-serif;
-      font-size: 16px;
-      line-height: 1.36;
+      font-size: 17px;
+      line-height: 1.42;
       min-height: 100vh;
     }
 
@@ -738,7 +738,7 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
     }
 
-    .kpi-item strong { display: block; font-size: 1.15rem; margin-top: 4px; }
+    .kpi-item strong { display: block; font-size: 1.28rem; margin-top: 4px; }
 
     .result-pill {
       border-radius: 14px;
@@ -749,7 +749,7 @@
     }
 
     .result-pill .big {
-      font-size: 1.36rem;
+      font-size: 1.58rem;
       font-weight: 800;
       margin-top: 6px;
     }
@@ -764,6 +764,7 @@
 
     .live-title {
       font-weight: 800;
+      font-size: 1.03rem;
       color: #1d3a38;
       margin-bottom: 8px;
     }
@@ -791,7 +792,7 @@
 
     .live-col h4 {
       margin: 0 0 8px;
-      font-size: 0.92rem;
+      font-size: 1rem;
       color: #264746;
     }
 
@@ -800,13 +801,13 @@
       border-radius: 10px;
       padding: 8px;
       background: linear-gradient(180deg, #ffffff, #f2f8f6);
-      font-size: 0.88rem;
+      font-size: 0.96rem;
     }
 
     .live-k strong {
       display: block;
       margin-top: 4px;
-      font-size: 1.02rem;
+      font-size: 1.24rem;
     }
 
     .live-diff {
@@ -819,17 +820,19 @@
 
     .live-fabric-wrap {
       margin-top: 0;
-      border: 1px dashed #b9d0cb;
+      border: 1px solid #bdd4cf;
       border-radius: 12px;
-      padding: 8px;
-      background: rgba(255, 255, 255, 0.75);
+      padding: 10px;
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(240, 249, 246, 0.9));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
     }
 
     .live-fabric-caption {
-      font-size: 0.78rem;
-      color: #30514d;
-      margin-bottom: 6px;
-      font-weight: 700;
+      font-size: 0.9rem;
+      color: #234c48;
+      margin-bottom: 8px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
     }
 
     .live-fabric-canvas {
@@ -866,12 +869,17 @@
     }
 
     .live-row {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       display: flex;
       justify-content: space-between;
       gap: 8px;
       padding: 5px 0;
       border-bottom: 1px dashed #d8ddd4;
+    }
+
+    .live-row strong {
+      font-size: 0.97rem;
+      font-weight: 800;
     }
 
     .live-row:last-child {
@@ -968,7 +976,7 @@
         letter-spacing: 0.2px;
       }
       .hero p {
-        font-size: 0.9rem;
+        font-size: 0.98rem;
         line-height: 1.45;
       }
       .content { padding: 11px; }
@@ -987,7 +995,7 @@
       input[type="text"],
       input[type="password"],
       select {
-        font-size: 0.93rem;
+        font-size: 1rem;
         padding: 8px 9px;
       }
       .kpi-grid,
@@ -1001,16 +1009,16 @@
         font-size: 0.98rem;
       }
       .result-value {
-        font-size: 1.2rem;
+        font-size: 1.34rem;
       }
       .live-row {
-        font-size: 0.82rem;
+        font-size: 0.9rem;
       }
       .live-row strong {
-        font-size: 0.88rem;
+        font-size: 1rem;
       }
       .note {
-        font-size: 0.8rem;
+        font-size: 0.88rem;
       }
       .live-columns { grid-template-columns: 1fr; }
       .shared-grid { grid-template-columns: 1fr; }
@@ -2285,7 +2293,7 @@
         <div class="live-diff">
           <div class="live-fabric-wrap">
             <div class="live-fabric-caption">Visualizzazione comparativa</div>
-            <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="118"></canvas>
+            <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="136"></canvas>
           </div>
         </div>
       `;
@@ -2320,7 +2328,7 @@
       if (!canvasEl) return;
 
       const w = Math.max(280, Math.round(canvasEl.parentElement.clientWidth - 16));
-      const h = 118;
+      const h = 136;
       canvasEl.width = w;
       canvasEl.height = h;
 
@@ -2333,82 +2341,110 @@
       netDiffFabricCanvas = fc;
 
       const centerX = w / 2;
-      const centerY = 62;
-      const radius = Math.min(44, Math.max(34, (w * 0.15)));
+      const centerY = 82;
+      const radius = Math.min(48, Math.max(36, (w * 0.15)));
       const totalAbs = Math.max(1, Math.abs(m.disp1) + Math.abs(m.disp2));
       const shift = (diffDisp / totalAbs) * (radius * 1.5);
       const pointerX = Math.max(centerX - radius * 1.6, Math.min(centerX + radius * 1.6, centerX + shift));
 
       fc.add(new window.fabric.Rect({
         left: 10,
-        top: 18,
+        top: 16,
         width: w - 20,
-        height: 78,
-        rx: 12,
-        ry: 12,
-        fill: "#f7fcfa",
-        stroke: "#c9ddd8",
+        height: 98,
+        rx: 14,
+        ry: 14,
+        fill: "#f8fcfb",
+        stroke: "#bfd5d0",
         strokeWidth: 1
       }));
 
+      const trackLeft = 24;
+      const trackWidth = w - 48;
+
       fc.add(new window.fabric.Rect({
-        left: 20,
-        top: centerY - 7,
-        width: (w - 40) / 2,
-        height: 14,
-        fill: "#d8efe9"
+        left: trackLeft,
+        top: centerY - 8,
+        width: trackWidth,
+        height: 16,
+        rx: 8,
+        ry: 8,
+        fill: "#e5efec"
+      }));
+
+      fc.add(new window.fabric.Rect({
+        left: trackLeft,
+        top: centerY - 8,
+        width: trackWidth / 2,
+        height: 16,
+        rx: 8,
+        ry: 8,
+        fill: "#cae7df"
       }));
       fc.add(new window.fabric.Rect({
         left: centerX,
-        top: centerY - 7,
-        width: (w - 40) / 2,
-        height: 14,
-        fill: "#f4e2c9"
+        top: centerY - 8,
+        width: trackWidth / 2,
+        height: 16,
+        rx: 8,
+        ry: 8,
+        fill: "#f1ddbf"
+      }));
+
+      fc.add(new window.fabric.Rect({
+        left: centerX - 1,
+        top: centerY - 13,
+        width: 2,
+        height: 26,
+        fill: "#98b9b2"
       }));
 
       fc.add(new window.fabric.Circle({
-        left: pointerX - 9,
-        top: centerY - 9,
-        radius: 9,
+        left: pointerX - 11,
+        top: centerY - 11,
+        radius: 11,
         fill: diffDisp >= 0 ? "#0b6e66" : "#c77a11",
         stroke: "#ffffff",
-        strokeWidth: 2,
-        shadow: "0 1px 3px rgba(0,0,0,0.18)"
+        strokeWidth: 3,
+        shadow: "0 2px 5px rgba(0,0,0,0.22)"
       }));
 
-      fc.add(new window.fabric.Text("C1", {
+      const statusText = diffDisp === 0
+        ? "Netti equivalenti"
+        : `Vantaggio netto: C${diffDisp > 0 ? 1 : 2}`;
+      fc.add(new window.fabric.Text(statusText, {
         left: 24,
-        top: 40,
-        fontSize: 12,
-        fill: "#145b55",
-        fontFamily: "Candara"
-      }));
-      fc.add(new window.fabric.Text("C2", {
-        left: w - 38,
-        top: 40,
-        fontSize: 12,
-        fill: "#8a580f",
-        fontFamily: "Candara"
-      }));
-
-      fc.add(new window.fabric.Text(`Delta: ${eur(absDiffDisp)}`, {
-        left: 20,
-        top: 77,
-        fontSize: 12,
-        fill: "#244645",
+        top: 28,
+        fontSize: 13,
+        fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#8a5a11"),
         fontFamily: "Candara",
         fontWeight: "700"
       }));
 
-      const lossText = diffDisp === 0
-        ? "Netti equivalenti"
-        : `In perdita relativa: C${diffDisp > 0 ? 2 : 1}`;
-      fc.add(new window.fabric.Text(lossText, {
-        left: 20,
-        top: 92,
-        fontSize: 10,
-        fill: diffDisp === 0 ? "#506f6c" : "#8d4b08",
-        fontFamily: "Candara"
+      fc.add(new window.fabric.Text("C1", {
+        left: 26,
+        top: 62,
+        fontSize: 13,
+        fill: "#145b55",
+        fontFamily: "Candara",
+        fontWeight: "700"
+      }));
+      fc.add(new window.fabric.Text("C2", {
+        left: w - 41,
+        top: 62,
+        fontSize: 13,
+        fill: "#8a580f",
+        fontFamily: "Candara",
+        fontWeight: "700"
+      }));
+
+      fc.add(new window.fabric.Text(`Delta: ${eur(absDiffDisp)}`, {
+        left: 24,
+        top: 101,
+        fontSize: 13,
+        fill: "#244645",
+        fontFamily: "Candara",
+        fontWeight: "700"
       }));
 
       fc.renderAll();
@@ -2418,35 +2454,65 @@
       const m = computeModel();
       const formulaNote = document.getElementById("formulaNote");
 
+      const modeName = m.mode === "legal"
+        ? "Legale-proporzionale"
+        : (m.mode === "simple" ? `Semplificata (${m.simplePerc.toFixed(0)}%)` : "Linee guida Tribunale di Genova");
+
+      let modeSpecific = "";
       if (m.mode === "simple") {
-        formulaNote.innerHTML = `
-          1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.
-          <br />2) Differenza netti = valore assoluto della differenza tra le due disponibilita nette.
-          <br />3) Assegno suggerito = differenza netti x ${m.simplePerc.toFixed(0)}%.
-          <br />4) Paga il coniuge con disponibilita netta maggiore all'altro coniuge.
-          ${m.incomeMode === "annual" ? "<br />Nota: reddito annuo convertito automaticamente in quota mensile (/12)." : ""}
+        modeSpecific = `
+          <br /><strong>Regola specifica modalita semplificata</strong>
+          <br />1) Differenza netti = |Disponibilita C1 - Disponibilita C2| = ${eur(Math.abs(m.disp1 - m.disp2))}.
+          <br />2) Assegno suggerito = differenza netti x ${m.simplePerc.toFixed(0)}%.
+          <br />3) Paga il coniuge con disponibilita netta maggiore.
         `;
       } else if (m.mode === "genova") {
-        formulaNote.innerHTML = `
-          1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.
-          <br />2) Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.
-          <br />3) Fabbisogno figli = totale spese familiari inserite x coefficiente tecnico fisso (35%).
-          <br />4) Genitore collocatario stimato = coniuge con permanenza maggiore (qui: Coniuge ${m.collocatario}).
-          <br />5) Quota diretta del non collocatario = costo giornaliero (${eur(m.costoGiornalieroFiglio)}) x giorni di permanenza presso non collocatario.
-          <br />6) Assegno suggerito = max(0, quota teorica non collocatario - quota diretta non collocatario).
-          ${m.incomeMode === "annual" ? "<br />Nota: reddito annuo convertito automaticamente in quota mensile (/12)." : ""}
+        const nonColl = m.collocatario === 1 ? 2 : 1;
+        modeSpecific = `
+          <br /><strong>Regola specifica linee guida Genova</strong>
+          <br />1) Collocatario stimato: Coniuge ${m.collocatario} (maggiore permanenza).
+          <br />2) Non collocatario: Coniuge ${nonColl}.
+          <br />3) Costo giornaliero medio figli = fabbisogno figli / 30 = ${eur(m.costoGiornalieroFiglio)}.
+          <br />4) Quota diretta non collocatario = costo giornaliero x giorni di permanenza presso non collocatario.
+          <br />5) Assegno suggerito = max(0, quota teorica non collocatario - quota diretta non collocatario).
         `;
       } else {
-        formulaNote.innerHTML = `
-          1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.
-          <br />2) Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.
-          <br />3) Fabbisogno figli = totale spese familiari inserite x coefficiente tecnico fisso (35%).
-          <br />4) Quota teorica per coniuge = fabbisogno figli x peso contributivo.
-          <br />5) Quota diretta per permanenza = fabbisogno figli x percentuale permanenza presso il coniuge.
-          <br />6) Assegno suggerito = differenza tra quota teorica e quota diretta.
-          ${m.incomeMode === "annual" ? "<br />Nota: reddito annuo convertito automaticamente in quota mensile (/12)." : ""}
+        modeSpecific = `
+          <br /><strong>Regola specifica modalita legale-proporzionale</strong>
+          <br />1) Quota teorica = fabbisogno figli x peso contributivo del coniuge.
+          <br />2) Quota diretta = fabbisogno figli x permanenza presso quel coniuge.
+          <br />3) Saldo = quota teorica - quota diretta.
+          <br />4) L'assegno e il saldo positivo del coniuge debitore verso l'altro.
         `;
       }
+
+      formulaNote.innerHTML = `
+        <strong>Impostazione generale del calcolo</strong>
+        <br />Modalita attiva: ${modeName}.
+        <br />Disponibilita netta C1 = reddito netto C1 + assegni percepiti C1 + assegni familiari C1 - assegni pagati C1 - spese C1.
+        <br />Disponibilita netta C2 = reddito netto C2 + assegni percepiti C2 + assegni familiari C2 - assegni pagati C2 - spese C2.
+        <br />Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.
+        <br />Fabbisogno figli stimato = totale spese inserite x 35%.
+
+        <br /><strong>Significato delle principali voci richieste in input</strong>
+        <br />- Reddito netto: entrata disponibile del coniuge (mensile oppure annuale, se selezionata base annuale).
+        <br />- Assegno percepito: importo ricevuto mensilmente dal coniuge.
+        <br />- Assegno pagato: importo versato mensilmente dal coniuge.
+        <br />- Assegni familiari/INPS: componenti assistenziali percepite.
+        <br />- Permanenza figli (%): ripartizione dei giorni medi mensili tra i due coniugi.
+        <br />- Spese per voce: costi mensili attribuiti a ciascun coniuge.
+
+        <br /><strong>Lettura dei risultati e KPI</strong>
+        <br />- Netto disponibile: situazione prima del nuovo assegno calcolato dal modello.
+        <br />- Totale spese inserite: somma C1 + C2 delle voci compilate.
+        <br />- Quota teorica: quota di fabbisogno figli attribuita in base al peso economico.
+        <br />- Post-assegno: netto disponibile dopo applicazione dell'assegno suggerito.
+        <br />- Importo per figlio: assegno mensile suggerito diviso per numero figli.
+        <br />- Assegno pagato esterno: quota pagata non compensata da assegni percepiti dell'altro coniuge (non accreditata all'altro).
+
+        ${modeSpecific}
+        ${m.incomeMode === "annual" ? "<br /><strong>Nota base reddito:</strong> i redditi annuali sono convertiti automaticamente in mensili (/12) prima di tutti i calcoli." : ""}
+      `;
 
       let mainText = "Nessun trasferimento suggerito";
       if (m.assegnoDa1a2 > 0.005) {
