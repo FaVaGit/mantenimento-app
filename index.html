@@ -871,43 +871,6 @@
                   <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva profilo cloud</button>
                   <button class="btn-secondary" id="btnLoadMyScenario" type="button">Carica profilo cloud</button>
                 </div>
-                <details id="legacyRecoveryBox">
-                  <summary>Recupero legacy (una tantum)</summary>
-                  <form id="legacyForm" autocomplete="on" onsubmit="return false;">
-                  <input type="text" name="username" autocomplete="username" style="display:none" tabindex="-1" aria-hidden="true" />
-                  <div class="auth-grid" style="margin-top:8px">
-                    <div class="field">
-                      <label for="legacyGithubToken" class="label-row">Token GitHub legacy
-                        <span class="hint" title="Solo per migrare vecchi dati KeyLock salvati su Gist.">i</span>
-                      </label>
-                      <input id="legacyGithubToken" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="ghp_..." />
-                    </div>
-                    <div class="field">
-                      <label for="legacyGistId" class="label-row">Gist ID legacy
-                        <span class="hint" title="ID del vecchio Gist usato dalla precedente versione.">i</span>
-                      </label>
-                      <input id="legacyGistId" type="text" autocomplete="off" placeholder="es. 9f3a..." />
-                    </div>
-                    <div class="field">
-                      <label for="legacyKeylockPass" class="label-row">Password legacy
-                        <span class="hint" title="Password usata nella vecchia versione per decifrare i dati.">i</span>
-                      </label>
-                      <input id="legacyKeylockPass" type="password" autocomplete="new-password" placeholder="password vecchio KeyLock" />
-                    </div>
-                  </div>
-                  <div class="toolbar" style="margin-top:8px">
-                                        <div class="field" style="grid-column:1/-1">
-                                          <label for="legacyOldUserId" class="label-row">Vecchio User ID Supabase (opzionale)
-                                            <span class="hint" title="UUID del vecchio account Supabase. Trovalo in: Supabase dashboard > Authentication > Users. Serve se i dati erano cifrati con una sessione precedente.">i</span>
-                                          </label>
-                                          <input id="legacyOldUserId" type="text" autocomplete="off" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:monospace;font-size:0.82rem" />
-                                        </div>
-                                      </div>
-                                      <div class="toolbar" style="margin-top:8px">
-                    <button class="btn-secondary" id="btnMigrateLegacy" type="submit">Importa dati legacy</button>
-                  </div>
-                  </form>
-                </details>
                 <div id="authStatus" class="auth-status">Non autenticato.</div>
               </div>
             </div>
@@ -1112,9 +1075,6 @@
     const rowsSpese = document.getElementById("rowsSpese");
     const STORAGE_DEFAULT_KEY = "appMantenimentoDefaultState";
     const KEYLOCK_PROFILE_TABLE = "keylock_profiles";
-    const LEGACY_KEYLOCK_USERS_KEY = "appMantenimentoKeyLockUsers";
-    const LEGACY_KEYLOCK_PROFILES_KEY = "appMantenimentoKeyLockProfiles";
-    const LEGACY_GIST_FILENAME = "keylock-cache.json";
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
     const SUPABASE_ANON_KEY = String(window.KEYLOCK_SUPABASE_ANON_KEY || "").trim();
     const supabaseClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -1160,19 +1120,6 @@
       return String(document.getElementById(id).value || "").trim();
     }
 
-    function uniqueNonEmptyStrings(values) {
-      const out = [];
-      const seen = new Set();
-      (values || []).forEach((v) => {
-        const s = String(v || "").trim();
-        if (!s) return;
-        if (seen.has(s)) return;
-        seen.add(s);
-        out.push(s);
-      });
-      return out;
-    }
-
     function getJsonStore(key, fallback) {
       const raw = localStorage.getItem(key);
       if (!raw) return fallback;
@@ -1195,44 +1142,11 @@
       return /^[a-z0-9._-]{3,40}$/.test(value);
     }
 
-    function isUuidLike(value) {
-      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || "").trim());
-    }
-
     const PRIMARY_PSEUDO_EMAIL_DOMAIN = "keylock-auth.app";
-    const LEGACY_PSEUDO_EMAIL_DOMAINS = ["keylock.app"];
-    const KEYLOCK_EMAIL_HINTS_KEY = "keylockEmailHints";
-
-    function getPreferredPseudoEmailHint(username) {
-      const hints = getJsonStore(KEYLOCK_EMAIL_HINTS_KEY, {});
-      return String(hints[normalizeUsername(username)] || "").trim().toLowerCase();
-    }
-
-    function savePreferredPseudoEmailHint(username, email) {
-      const uname = normalizeUsername(username);
-      const value = String(email || "").trim().toLowerCase();
-      if (!uname || !value) return;
-      const hints = getJsonStore(KEYLOCK_EMAIL_HINTS_KEY, {});
-      hints[uname] = value;
-      setJsonStore(KEYLOCK_EMAIL_HINTS_KEY, hints);
-    }
-
-    function buildPseudoEmailCandidates(username, includeLegacy = false) {
+    function buildPseudoEmailCandidates(username) {
       const base = normalizeUsername(username);
       const primary = `${base}@${PRIMARY_PSEUDO_EMAIL_DOMAIN}`;
-      const hint = getPreferredPseudoEmailHint(username);
-      const out = [];
-
-      if (hint && hint.includes("@")) out.push(hint);
-      out.push(primary);
-
-      if (includeLegacy) {
-        LEGACY_PSEUDO_EMAIL_DOMAINS.forEach((domain) => {
-          out.push(`${base}@${String(domain || "").trim().toLowerCase()}`);
-        });
-      }
-
-      return out.filter((v, i, arr) => v && arr.indexOf(v) === i);
+      return [primary];
     }
 
     function usernameToPseudoEmail(username) {
@@ -1277,14 +1191,12 @@
       return /invalid login credentials/i.test(String(msg || ""));
     }
 
-    async function signInWithPseudoEmailCandidates(username, password, options = {}) {
-      const includeLegacy = !!options.includeLegacy;
-      const emails = buildPseudoEmailCandidates(username, includeLegacy);
+    async function signInWithPseudoEmailCandidates(username, password) {
+      const emails = buildPseudoEmailCandidates(username);
       let lastErrorMessage = "";
       for (const email of emails) {
         const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
         if (!signInRes.error && signInRes.data && signInRes.data.user) {
-          savePreferredPseudoEmailHint(username, email);
           return { ok: true, email, result: signInRes, lastErrorMessage };
         }
 
@@ -1303,19 +1215,8 @@
       authSession.username = username;
       authSession.userId = user.id;
       authSession.keyBits = await deriveSessionKeyBits(password, user.id);
-
-      let loginMsg = `Login effettuato come ${username}.`;
-      try {
-        const migrated = await migrateLegacyLocalProfileIfPresent(username, password);
-        if (migrated) {
-          loginMsg = "Login effettuato e profilo legacy locale migrato nel cloud.";
-        }
-      } catch (_) {
-        // Non bloccare il login in caso di legacy profile non valido.
-      }
-
       updateAuthUi();
-      return loginMsg;
+      return `Login effettuato come ${username}.`;
     }
 
     function bytesToBase64(bytes) {
@@ -1416,9 +1317,7 @@
     async function decryptStateForKey(payload, keyBits) {
       const iv = decodeBytesFlexible(payload.iv);
       const data = decodeBytesFlexible(payload.data);
-      if (!iv || !data || !iv.length || !data.length) {
-        throw new Error("Payload legacy non valido (iv/data non decodificabili)");
-      }
+      if (!iv || !data || !iv.length || !data.length) throw new Error("Payload non valido (iv/data non decodificabili)");
       const key = await crypto.subtle.importKey("raw", keyBits, "AES-GCM", false, ["decrypt"]);
       const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
       const textValue = new TextDecoder().decode(plain);
@@ -1460,7 +1359,6 @@
       document.getElementById("btnLogoutKeyLock").disabled = !logged;
       document.getElementById("btnSaveMyScenario").disabled = !logged;
       document.getElementById("btnLoadMyScenario").disabled = !logged;
-      document.getElementById("btnMigrateLegacy").disabled = !logged;
 
       if (logged) {
         setAuthStatus("", false);
@@ -1532,597 +1430,6 @@
         }, { onConflict: "user_id" });
     }
 
-    async function migrateLegacyLocalProfileIfPresent(username, password) {
-      const users = getJsonStore(LEGACY_KEYLOCK_USERS_KEY, {});
-      const profiles = getJsonStore(LEGACY_KEYLOCK_PROFILES_KEY, {});
-      const user = users[username];
-      const payload = profiles[username];
-      if (!user || !payload || !payload.iv || !payload.data) {
-        return false;
-      }
-
-      const oldSalt = base64ToBytes(user.salt);
-      const oldKeyBits = await deriveKeyBits(password, oldSalt);
-      const oldVerifier = await sha256Bytes(oldKeyBits);
-      if (bytesToBase64(oldVerifier) !== user.verifier) {
-        return false;
-      }
-
-      const state = await decryptStateForKey(payload, oldKeyBits);
-      const reEncrypted = await encryptStateForKey(state, authSession.keyBits);
-      const { error } = await upsertEncryptedScenarioForSession(reEncrypted);
-      if (error) {
-        throw new Error(error.message);
-      }
-      return true;
-    }
-
-    async function githubApiLegacyRequest(method, url, token) {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Accept": "application/vnd.github+json",
-          "Authorization": `Bearer ${token}`,
-          "X-GitHub-Api-Version": "2022-11-28"
-        }
-      });
-      const txt = await res.text();
-      const data = txt ? (() => {
-        try { return JSON.parse(txt); } catch (_) { return null; }
-      })() : null;
-      if (!res.ok) {
-        const msg = data && data.message ? data.message : `HTTP ${res.status}`;
-        throw new Error(msg);
-      }
-      return data;
-    }
-
-    async function readLegacyGistDoc(token, gistId) {
-      const gist = await githubApiLegacyRequest("GET", `https://api.github.com/gists/${gistId}`, token);
-      const files = gist.files ? Object.values(gist.files) : [];
-      if (!files.length) return { users: {}, profiles: {} };
-
-      const merged = { users: {}, profiles: {} };
-
-      for (const file of files) {
-        const name = String(file.filename || "").toLowerCase();
-        const likelyJson = name.endsWith(".json") || name.includes("keylock") || name.includes("cache") || name.includes("profile");
-        if (!likelyJson) continue;
-
-        let content = file.content || "";
-        if (file.truncated && file.raw_url) {
-          const rawRes = await fetch(file.raw_url);
-          content = await rawRes.text();
-        }
-
-        let doc;
-        try {
-          doc = JSON.parse(content || "{}");
-        } catch (_) {
-          doc = null;
-        }
-        if (!doc || typeof doc !== "object") continue;
-
-        if (doc.users && typeof doc.users === "object") {
-          Object.assign(merged.users, doc.users);
-        }
-        if (doc.profiles && typeof doc.profiles === "object") {
-          Object.assign(merged.profiles, doc.profiles);
-        }
-
-        // Legacy variants may store the maps at top-level.
-        if (doc["keylockUsers"] && typeof doc["keylockUsers"] === "object") {
-          Object.assign(merged.users, doc["keylockUsers"]);
-        }
-        if (doc["keylockProfiles"] && typeof doc["keylockProfiles"] === "object") {
-          Object.assign(merged.profiles, doc["keylockProfiles"]);
-        }
-      }
-
-      return merged;
-    }
-
-    function parseMaybeJsonObject(value) {
-      if (!value) return null;
-      if (typeof value === "object") return value;
-      if (typeof value !== "string") return null;
-      try {
-        const parsed = JSON.parse(value);
-        return parsed && typeof parsed === "object" ? parsed : null;
-      } catch (_) {
-        return null;
-      }
-    }
-
-    function collectNestedObjects(root, maxDepth = 6) {
-      const out = [];
-      const seen = new WeakSet();
-
-      function walk(node, depth) {
-        if (!node || typeof node !== "object") return;
-        if (seen.has(node)) return;
-        seen.add(node);
-        out.push(node);
-        if (depth >= maxDepth) return;
-
-        if (Array.isArray(node)) {
-          node.forEach((item) => walk(item, depth + 1));
-          return;
-        }
-
-        Object.values(node).forEach((v) => {
-          const parsed = parseMaybeJsonObject(v);
-          if (parsed) {
-            walk(parsed, depth + 1);
-          }
-        });
-      }
-
-      walk(root, 0);
-      return out;
-    }
-
-    function normalizeLegacyCipherPayload(rawPayload) {
-      const candidates = collectNestedObjects(parseMaybeJsonObject(rawPayload));
-      for (const c of candidates) {
-        if (c && c.iv && (c.data || c.ciphertext || c.cipherText || c.payload || c.encryptedData)) {
-          return { iv: c.iv, data: c.data || c.ciphertext || c.cipherText || c.payload || c.encryptedData };
-        }
-        if (c && c.nonce && (c.data || c.ciphertext || c.payload || c.encryptedData)) {
-          return { iv: c.nonce, data: c.data || c.ciphertext || c.payload || c.encryptedData };
-        }
-        if (c && c.cipher && c.cipher.iv && c.cipher.data) {
-          return { iv: c.cipher.iv, data: c.cipher.data };
-        }
-        if (c && c.scenario_cipher && c.scenario_cipher.iv && c.scenario_cipher.data) {
-          return { iv: c.scenario_cipher.iv, data: c.scenario_cipher.data };
-        }
-        if (c && c.encrypted && c.encrypted.iv && c.encrypted.data) {
-          return { iv: c.encrypted.iv, data: c.encrypted.data };
-        }
-        if (c && c.cipherIv && c.cipherData) {
-          return { iv: c.cipherIv, data: c.cipherData };
-        }
-      }
-      return null;
-    }
-
-    function isLikelyLegacyStateObject(obj) {
-      if (!obj || typeof obj !== "object") return false;
-      const score = [
-        "numFigli", "perm1", "perm2", "calcMode", "incomeMode", "reddito1", "reddito2"
-      ].reduce((acc, k) => acc + (Object.prototype.hasOwnProperty.call(obj, k) ? 1 : 0), 0);
-      return score >= 3;
-    }
-
-    function extractLegacyPlainState(rawProfile, doc, username) {
-      const uname = normalizeUsername(username);
-      const direct = parseMaybeJsonObject(rawProfile);
-      if (isLikelyLegacyStateObject(direct)) return direct;
-      if (direct && isLikelyLegacyStateObject(direct.state)) return direct.state;
-      if (direct && isLikelyLegacyStateObject(direct.scenario)) return direct.scenario;
-
-      const objs = collectNestedObjects(doc, 7);
-      for (const obj of objs) {
-        const embeddedUser = normalizeUsername((obj && (obj.username || obj.user || obj.login || obj.handle)) || "");
-        if (embeddedUser && embeddedUser !== uname) continue;
-        if (isLikelyLegacyStateObject(obj)) return obj;
-        if (obj && isLikelyLegacyStateObject(obj.state)) return obj.state;
-        if (obj && isLikelyLegacyStateObject(obj.scenario)) return obj.scenario;
-      }
-      return null;
-    }
-
-    function extractLegacyUserRecord(userRecord, payload, doc, username) {
-      const out = userRecord && typeof userRecord === "object" ? { ...userRecord } : {};
-      const src = payload && typeof payload === "object" ? payload : {};
-      const uname = normalizeUsername(username);
-
-      if (!out.salt && src.salt) out.salt = src.salt;
-      if (!out.verifier && src.verifier) out.verifier = src.verifier;
-      if (!out.salt && src.keySalt) out.salt = src.keySalt;
-      if (!out.verifier && src.keyVerifier) out.verifier = src.keyVerifier;
-
-      if ((!out.salt || !out.verifier) && doc) {
-        const objs = collectNestedObjects(doc, 7);
-        for (const obj of objs) {
-          if (!obj || typeof obj !== "object") continue;
-          const embeddedUser = normalizeUsername(obj.username || obj.user || obj.login || obj.handle || "");
-          const sameUserOrUnknown = !embeddedUser || embeddedUser === uname;
-          if (!sameUserOrUnknown) continue;
-
-          if (!out.salt && (obj.salt || obj.keySalt)) out.salt = obj.salt || obj.keySalt;
-          if (!out.verifier && (obj.verifier || obj.keyVerifier)) out.verifier = obj.verifier || obj.keyVerifier;
-          if (out.salt && out.verifier) break;
-        }
-      }
-
-      if (!out.salt || !out.verifier) return null;
-      return out;
-    }
-
-    function findFallbackLegacyPayload(doc, username) {
-      const uname = normalizeUsername(username);
-      const objs = collectNestedObjects(doc, 7);
-      for (const obj of objs) {
-        const embeddedUser = normalizeUsername((obj && (obj.username || obj.user || obj.login || obj.handle)) || "");
-        if (embeddedUser && embeddedUser !== uname) continue;
-        const payload = normalizeLegacyCipherPayload(obj);
-        if (payload) return payload;
-      }
-      return null;
-    }
-
-    function safeBase64ToBytes(value) {
-      try {
-        const bytes = base64ToBytes(value);
-        return bytes && bytes.length ? bytes : null;
-      } catch (_) {
-        return null;
-      }
-    }
-
-    function collectSaltTextCandidates(userRecord, rawProfile, doc, username) {
-      const out = [];
-      const seen = new Set();
-      const saltFields = ["salt", "keySalt", "kdfSalt", "pbkdf2Salt", "userSalt", "legacySalt"];
-
-      const push = (v) => {
-        const val = String(v || "").trim();
-        if (!val) return;
-        if (seen.has(val)) return;
-        seen.add(val);
-        out.push(val);
-      };
-
-      saltFields.forEach((f) => {
-        if (userRecord && typeof userRecord === "object") push(userRecord[f]);
-        if (rawProfile && typeof rawProfile === "object") push(rawProfile[f]);
-      });
-
-      const uname = normalizeUsername(username);
-      const objs = collectNestedObjects(doc, 7);
-      objs.forEach((obj) => {
-        if (!obj || typeof obj !== "object") return;
-        const embeddedUser = normalizeUsername(obj.username || obj.user || obj.login || obj.handle || "");
-        if (embeddedUser && embeddedUser !== uname) return;
-        saltFields.forEach((f) => push(obj[f]));
-      });
-
-      return out;
-    }
-
-    async function decryptLegacyStateBestEffort(cipherPayload, password, username, userRecord, rawProfile, doc) {
-      const strictSalt = userRecord && userRecord.salt ? safeBase64ToBytes(userRecord.salt) : null;
-      if (strictSalt && userRecord && userRecord.verifier) {
-        const strictKeyBits = await deriveKeyBits(password, strictSalt);
-        const strictVerifier = await sha256Bytes(strictKeyBits);
-        if (bytesToBase64(strictVerifier) !== userRecord.verifier) {
-          throw new Error("Password legacy non valida");
-        }
-        return decryptStateForKey(cipherPayload, strictKeyBits);
-      }
-
-      const saltTextCandidates = collectSaltTextCandidates(userRecord, rawProfile, doc, username);
-      const saltByteCandidates = saltTextCandidates
-        .map((v) => safeBase64ToBytes(v))
-        .filter((v) => !!v);
-
-      // Deterministic fallback candidates for old variants.
-      const enc = new TextEncoder();
-      saltByteCandidates.push(await sha256Bytes(enc.encode(`keylock:${normalizeUsername(username)}`)));
-      saltByteCandidates.push(await sha256Bytes(enc.encode(normalizeUsername(username))));
-
-      for (const saltBytes of saltByteCandidates) {
-        try {
-          const keyBits = await deriveKeyBits(password, saltBytes);
-          const state = await decryptStateForKey(cipherPayload, keyBits);
-          if (state && typeof state === "object") {
-            return state;
-          }
-        } catch (_) {
-          // Try next salt candidate.
-        }
-      }
-
-      const plainState = extractLegacyPlainState(rawProfile, doc, username);
-      if (plainState) return plainState;
-
-      // Broader fallback: try sha256(password) directly as AES-GCM key.
-      const enc2 = new TextEncoder();
-      const pwdHash = await sha256Bytes(enc2.encode(password));
-      const directState = await tryDecryptWithKeyBytes(pwdHash, cipherPayload);
-      if (directState) return directState;
-
-      // Try every combination of deterministic salts × legacy PBKDF2 iteration counts.
-      const legacySalts = await Promise.all([
-        sha256Bytes(enc2.encode(`keylock:${normalizeUsername(username)}`)),
-        sha256Bytes(enc2.encode(normalizeUsername(username))),
-        sha256Bytes(enc2.encode(`appMantenimento:${normalizeUsername(username)}`)),
-        sha256Bytes(enc2.encode(`keylock-salt-${normalizeUsername(username)}`)),
-        sha256Bytes(enc2.encode(`mantenimento:${normalizeUsername(username)}`)),
-        Promise.resolve(enc2.encode(normalizeUsername(username))),
-        sha256Bytes(enc2.encode(password + normalizeUsername(username))),
-        sha256Bytes(enc2.encode(normalizeUsername(username) + password)),
-      ]);
-      for (const iters of [100000, 10000, 1000, 600000, 1]) {
-        for (const saltBytes of [...saltByteCandidates, ...legacySalts]) {
-          try {
-            const keyBits = await deriveKeyBits(password, saltBytes, iters);
-            const state = await decryptStateForKey(cipherPayload, keyBits);
-            if (state && typeof state === "object") return state;
-          } catch (_) {
-            // Continue.
-          }
-        }
-      }
-
-      throw new Error("Profilo legacy trovato ma non decifrabile con la password indicata (metadati salt/verifier assenti o formato differente)");
-    }
-
-    function findLegacyMapMatchByUsername(mapObj, username) {
-      if (!mapObj || typeof mapObj !== "object") return null;
-      const uname = normalizeUsername(username);
-      if (Object.prototype.hasOwnProperty.call(mapObj, uname)) {
-        return { key: uname, value: mapObj[uname] };
-      }
-
-      for (const [k, v] of Object.entries(mapObj)) {
-        if (normalizeUsername(k) === uname) {
-          return { key: k, value: v };
-        }
-        if (v && typeof v === "object") {
-          const embeddedUser = normalizeUsername(v.username || v.user || v.login || "");
-          if (embeddedUser && embeddedUser === uname) {
-            return { key: k, value: v };
-          }
-        }
-      }
-
-      return null;
-    }
-
-    function resolveLegacyUserAndProfile(doc, username) {
-      const userMatch = findLegacyMapMatchByUsername(doc.users, username);
-      const profileMatch = findLegacyMapMatchByUsername(doc.profiles, username);
-
-      let userRecord = userMatch && userMatch.value ? userMatch.value : null;
-      let payload = profileMatch && profileMatch.value ? profileMatch.value : null;
-
-      if (!payload && userMatch && userMatch.key && doc.profiles[userMatch.key]) {
-        payload = doc.profiles[userMatch.key];
-      }
-      if (!userRecord && profileMatch && profileMatch.key && doc.users[profileMatch.key]) {
-        userRecord = doc.users[profileMatch.key];
-      }
-
-      const cipherPayload = normalizeLegacyCipherPayload(payload) || findFallbackLegacyPayload(doc, username);
-      userRecord = extractLegacyUserRecord(userRecord, payload, doc, username);
-
-      return {
-        userRecord,
-        payload: cipherPayload,
-        rawProfile: payload,
-        userKey: userMatch ? userMatch.key : "",
-        profileKey: profileMatch ? profileMatch.key : ""
-      };
-    }
-
-    async function findLegacyGistByUsername(token, username) {
-      const gists = await githubApiLegacyRequest("GET", "https://api.github.com/gists?per_page=100", token);
-      if (!Array.isArray(gists)) return null;
-
-      for (const gist of gists) {
-        try {
-          const desc = String(gist.description || "").toLowerCase();
-          const hasLegacyHint = desc.includes("keylock") || desc.includes("mantenimento")
-            || !!(gist.files && gist.files[LEGACY_GIST_FILENAME]);
-          if (!hasLegacyHint) continue;
-
-          const doc = await readLegacyGistDoc(token, gist.id);
-          const match = resolveLegacyUserAndProfile(doc, username);
-          if (match.userRecord || match.payload) {
-            return gist.id;
-          }
-        } catch (_) {
-          // Ignore bad/unreadable gist and continue.
-        }
-      }
-      return null;
-    }
-
-    async function findLegacyUserRecordAcrossGists(token, username, excludeGistId = "") {
-      const gists = await githubApiLegacyRequest("GET", "https://api.github.com/gists?per_page=100", token);
-      if (!Array.isArray(gists)) return null;
-
-      const skipId = String(excludeGistId || "").trim();
-      for (const gist of gists) {
-        try {
-          if (skipId && gist.id === skipId) continue;
-          const doc = await readLegacyGistDoc(token, gist.id);
-          const match = resolveLegacyUserAndProfile(doc, username);
-          if (match.userRecord && match.userRecord.salt && match.userRecord.verifier) {
-            return match.userRecord;
-          }
-        } catch (_) {
-          // Ignore unreadable gist and continue.
-        }
-      }
-      return null;
-    }
-
-    async function migrateLegacyGistProfileForLoggedUser() {
-      if (!authSession.username || !authSession.userId || !authSession.keyBits) {
-        setAuthStatus("Effettua prima il login per importare i dati legacy.", true);
-        return;
-      }
-
-      const token = text("legacyGithubToken");
-      let gistId = text("legacyGistId");
-      const legacyPassword = text("legacyKeylockPass");
-      if (!token || !legacyPassword) {
-        setAuthStatus("Per il recupero legacy inserisci almeno token GitHub e password legacy.", true);
-        return;
-      }
-
-      if (!gistId) {
-        gistId = await findLegacyGistByUsername(token, authSession.username) || "";
-        if (gistId) {
-          document.getElementById("legacyGistId").value = gistId;
-        }
-      }
-      if (!gistId) {
-        setAuthStatus("Gist legacy non trovato automaticamente. Inserisci il Gist ID manualmente.", true);
-        return;
-      }
-
-      try {
-        console.log("[legacy] Lettura Gist:", gistId);
-        const doc = await readLegacyGistDoc(token, gistId);
-        console.log("[legacy] Chiavi top-level doc:", Object.keys(doc));
-        console.log("[legacy] Chiavi users:", Object.keys(doc.users || {}));
-        console.log("[legacy] Chiavi profiles:", Object.keys(doc.profiles || {}));
-
-        const rawProf = (doc.profiles || {})[authSession.username]
-          || (doc.profiles || {})[normalizeUsername(authSession.username)];
-        if (rawProf) {
-          console.log("[legacy] Campi profilo trovato:", Object.keys(rawProf));
-          Object.entries(rawProf).forEach(([k, v]) => {
-            if (v && typeof v === "object") {
-              console.log(`[legacy]   ${k} -> oggetto con campi:`, Object.keys(v));
-            } else {
-              console.log(`[legacy]   ${k}:`, typeof v === "string" ? v.slice(0, 40) : v);
-            }
-          });
-        } else {
-          console.warn("[legacy] Nessun profilo trovato per username:", authSession.username);
-        }
-
-        const match = resolveLegacyUserAndProfile(doc, authSession.username);
-        console.log("[legacy] userRecord trovato:", !!match.userRecord, match.userRecord ? Object.keys(match.userRecord) : "nessuno");
-        console.log("[legacy] payload cipher trovato:", !!match.payload, match.payload ? `iv:${String(match.payload.iv||'').slice(0,12)}... data:${String(match.payload.data||'').slice(0,12)}...` : "nessuno");
-        console.log("[legacy] rawProfile keys:", match.rawProfile ? Object.keys(match.rawProfile) : "nessuno");
-
-        let userRecord = match.userRecord;
-        const payload = match.payload;
-        if (!payload || !payload.iv || !payload.data) {
-          const userKeys = Object.keys(doc.users || {}).slice(0, 8).join(", ");
-          const profileKeys = Object.keys(doc.profiles || {}).slice(0, 8).join(", ");
-          throw new Error(`Nessun dato legacy trovato nel formato atteso. Chiavi users: [${userKeys || "vuoto"}] - chiavi profiles: [${profileKeys || "vuoto"}]`);
-        }
-
-        if (!userRecord || !userRecord.salt || !userRecord.verifier) {
-          console.warn("[legacy] salt/verifier assenti in userRecord, cerco in altri Gist...");
-          setAuthStatus("Metadati legacy mancanti nel Gist indicato: cerco salt/verifier in altri Gist del tuo account...");
-          const recoveredUserRecord = await findLegacyUserRecordAcrossGists(token, authSession.username, gistId);
-          if (recoveredUserRecord) {
-            console.log("[legacy] userRecord recuperato da altro Gist:", Object.keys(recoveredUserRecord));
-            userRecord = recoveredUserRecord;
-          } else {
-            console.warn("[legacy] Nessun userRecord trovato in nessun Gist.");
-          }
-        }
-
-        const passwordCandidates = uniqueNonEmptyStrings([
-          legacyPassword,
-          text("keylockPass")
-        ]);
-        console.log("[legacy] Password candidates:", passwordCandidates.length);
-
-        // Primary attempt: payload was saved with the current session key (Supabase era).
-        let state = null;
-        for (const pwd of passwordCandidates) {
-          try {
-            if (pwd === legacyPassword) {
-              state = await decryptStateForKey(payload, authSession.keyBits);
-            } else {
-              const currentSessionKey = await deriveSessionKeyBits(pwd, authSession.userId);
-              state = await decryptStateForKey(payload, currentSessionKey);
-            }
-            console.log("[legacy] Decifrato con chiave sessione corrente usando password candidate");
-            break;
-          } catch (_) {
-            // Continue with next password candidate.
-          }
-        }
-        if (!state) {
-          console.warn("[legacy] chiave sessione corrente non ha funzionato, provo oldUserId/best-effort...");
-        }
-
-          // Try with old user ID if provided by the user.
-          if (!state) {
-            const oldUserIdInput = String((document.getElementById("legacyOldUserId") || {}).value || "").trim();
-            if (oldUserIdInput) {
-              if (!isUuidLike(oldUserIdInput)) {
-                console.warn("[legacy] Vecchio User ID non valido (atteso UUID):", oldUserIdInput);
-                setAuthStatus("Il campo 'Vecchio User ID Supabase' richiede uno UUID (non il nome utente).", true);
-              } else {
-                let oldIdWorked = false;
-                for (const pwd of passwordCandidates) {
-                  try {
-                    const oldKeyBits = await deriveSessionKeyBits(pwd, oldUserIdInput);
-                    state = await decryptStateForKey(payload, oldKeyBits);
-                    console.log("[legacy] Decifrato con vecchio User ID:", oldUserIdInput);
-                    oldIdWorked = true;
-                    break;
-                  } catch (_) {
-                    // Continue with next password candidate.
-                  }
-                }
-                if (!oldIdWorked) {
-                  console.warn("[legacy] Vecchio User ID non ha funzionato:", oldUserIdInput);
-                }
-              }
-            }
-          }
-
-        if (!state) {
-          console.log("[legacy] Avvio decryptLegacyStateBestEffort - userRecord:", userRecord ? Object.keys(userRecord) : null);
-            for (const pwd of passwordCandidates) {
-              try {
-                state = await decryptLegacyStateBestEffort(
-                  payload,
-                  pwd,
-                  authSession.username,
-                  userRecord,
-                  match.rawProfile,
-                  doc
-                );
-                console.log("[legacy] Stato decifrato OK con best-effort, chiavi:", state ? Object.keys(state) : null);
-                break;
-              } catch (_) {
-                // Try next password candidate.
-              }
-            }
-            if (!state) {
-              throw new Error("Profilo legacy trovato ma non decifrabile con nessuna password candidata");
-            }
-        }
-        const reEncrypted = await encryptStateForKey(state, authSession.keyBits);
-        const { error } = await upsertEncryptedScenarioForSession(reEncrypted);
-        if (error) throw new Error(error.message);
-
-        setAuthStatus("Migrazione legacy completata: profilo importato nel nuovo cloud.");
-      } catch (err) {
-        // Diagnostic: show structure of profile payload to aid further debugging.
-        let diagStr = "";
-        try {
-          const rawProf = (doc.profiles || {})[authSession.username]
-            || (doc.profiles || {})[normalizeUsername(authSession.username)];
-          if (rawProf && typeof rawProf === "object") {
-            const topKeys = Object.keys(rawProf).join(", ") || "nessuna";
-            const nestedKeys = Object.values(rawProf)
-              .filter((v) => v && typeof v === "object")
-              .flatMap((v) => Object.keys(v))
-              .filter((v, i, a) => a.indexOf(v) === i)
-              .join(", ");
-            diagStr = ` | Campi profilo: [${topKeys}]${nestedKeys ? ` | Campi annidati: [${nestedKeys}]` : ""}`;
-          }
-        } catch (_) { }
-        setAuthStatus(`Migrazione legacy fallita: ${err.message}${diagStr}`, true);
-      }
-    }
-
     async function registerKeyLockUser() {
       if (!await ensureSupabaseReady("registrarti")) return;
       if (authFlowInProgress) {
@@ -2168,7 +1475,7 @@
         }
       }
 
-      const postLogin = await signInWithPseudoEmailCandidates(username, password, { includeLegacy: false });
+      const postLogin = await signInWithPseudoEmailCandidates(username, password);
       if (!postLogin.ok) {
         if (signUpRateLimited || isRateLimitAuthMessage(postLogin.lastErrorMessage)) {
           setAuthStatus("Rate limit Supabase su registrazione/login. Se l'utente esiste, attendi 1-2 minuti e riprova Login. Se e nuovo, attendi e riprova Registrati.", true);
@@ -2176,7 +1483,7 @@
         }
 
         if (isInvalidCredentialAuthMessage(postLogin.lastErrorMessage)) {
-          setAuthStatus("Registrazione non completata o credenziali non corrette. Riprova Login e, se necessario, usa Recupero legacy dopo l'accesso.", true);
+          setAuthStatus("Registrazione non completata o credenziali non corrette. Riprova Login.", true);
           return;
         }
 
@@ -2210,7 +1517,7 @@
         return;
       }
 
-      const signIn = await signInWithPseudoEmailCandidates(username, password, { includeLegacy: true });
+      const signIn = await signInWithPseudoEmailCandidates(username, password);
       if (!signIn.ok) {
         const loginMsg = String(signIn.lastErrorMessage || "");
         if (isRateLimitAuthMessage(loginMsg)) {
@@ -2226,11 +1533,7 @@
       }
 
       const loginMsg = await completeAuthSession(username, password, signIn.result.data.user);
-      if (signIn.email !== usernameToPseudoEmail(username)) {
-        setAuthStatus(`${loginMsg} Accesso effettuato tramite alias legacy.`);
-      } else {
-        setAuthStatus(loginMsg);
-      }
+      setAuthStatus(loginMsg);
       } finally {
         authFlowInProgress = false;
       }
@@ -2807,11 +2110,6 @@
 
     document.getElementById("btnLoadMyScenario").addEventListener("click", async () => {
       await loadScenarioForLoggedUser();
-    });
-
-    document.getElementById("legacyForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      await migrateLegacyGistProfileForLoggedUser();
     });
 
     document.addEventListener("input", (e) => {
