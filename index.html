@@ -913,6 +913,35 @@
       letter-spacing: 0.2px;
     }
 
+    .spese-actions {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .spese-actions button {
+      padding: 8px 12px;
+      font-size: 0.9rem;
+    }
+
+    .spese-editor {
+      border: 1px solid #c8d8d2;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: linear-gradient(170deg, rgba(245, 251, 249, 0.95), rgba(235, 246, 243, 0.95));
+    }
+
+    .spese-editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .spese-editor-grid .field:last-child {
+      grid-column: 1 / -1;
+    }
+
     .legal-footer {
       margin-top: 14px;
       padding: 10px 14px;
@@ -1043,6 +1072,9 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 2px;
+      }
+      .spese-editor-grid {
+        grid-template-columns: 1fr;
       }
       .spese-partial { font-size: 0.64rem; }
       .legal-footer {
@@ -1285,6 +1317,31 @@
             Elenco spese compilabili.
           </p>
 
+          <div class="spese-actions">
+            <button class="btn-secondary" id="btnAddExpenseItem" type="button">+ Aggiungi voce spesa</button>
+          </div>
+
+          <div class="spese-editor is-hidden" id="expenseItemEditor">
+            <div class="spese-editor-grid">
+              <div class="field">
+                <label for="customExpenseLabel" class="label-row">Nome voce spesa
+                  <span class="hint" title="Titolo che comparira nella tabella spese.">i</span>
+                </label>
+                <input id="customExpenseLabel" type="text" maxlength="80" placeholder="es. Ripetizioni private" />
+              </div>
+              <div class="field">
+                <label for="customExpenseHelp" class="label-row">Descrizione / nota
+                  <span class="hint" title="Breve descrizione della voce, mostrata nel tooltip informativo.">i</span>
+                </label>
+                <input id="customExpenseHelp" type="text" maxlength="180" placeholder="es. Costo mensile medio per supporto scolastico" />
+              </div>
+            </div>
+            <div class="toolbar" style="margin-top:8px">
+              <button class="btn-primary" id="btnCreateExpenseItem" type="button">Aggiungi voce</button>
+              <button class="btn-secondary" id="btnCancelExpenseItem" type="button">Annulla</button>
+            </div>
+          </div>
+
           <table class="spese-table" aria-label="Spese per coniuge">
             <thead>
               <tr>
@@ -1346,7 +1403,7 @@
   <script src="fabric.min.js"></script>
   <script src="html2pdf.bundle.min.js"></script>
   <script>
-    const expenseItems = [
+    const defaultExpenseItems = [
       { label: "Affitto", help: "Canone mensile di locazione dell'abitazione." },
       { label: "Mutuo casa", help: "Rata mensile del mutuo abitazione." },
       { label: "Casa (valore locativo)", help: "Valore locativo teorico della casa in uso, se rilevante." },
@@ -1361,6 +1418,7 @@
       { label: "Sport/attivita figli", help: "Costi medi mensili per sport e attivita extrascolastiche." },
       { label: "Altre", help: "Voce generica per altre spese mensili ordinarie non incluse sopra." }
     ];
+    let expenseItems = defaultExpenseItems.map((item) => ({ ...item }));
 
     const QUOTA_MANTENIMENTO_PERC = 35;
 
@@ -1496,6 +1554,23 @@
         maximumFractionDigits: 0
       }).format(n);
       return `${short} EUR`;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function normalizeExpenseItem(item, fallbackIdx = 0) {
+      const rawLabel = String(item && item.label ? item.label : "").trim();
+      const rawHelp = String(item && item.help ? item.help : "").trim();
+      const label = rawLabel || `Voce personalizzata ${fallbackIdx + 1}`;
+      const help = rawHelp || `Voce aggiunta manualmente: ${label}.`;
+      return { label, help };
     }
 
     function num(id) {
@@ -2115,9 +2190,11 @@
       rowsSpese.innerHTML = "";
       document.getElementById("speseCountNote").textContent = `Elenco spese compilabili: ${expenseItems.length} voci.`;
       expenseItems.forEach((item, idx) => {
+        const labelEsc = escapeHtml(item.label);
+        const helpEsc = escapeHtml(item.help);
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td><span class="label-row">${item.label}<span class="hint" title="${item.help}">i</span></span></td>
+          <td><span class="label-row">${labelEsc}<span class="hint" title="${helpEsc}">i</span></span></td>
           <td>
             <div class="spese-input-wrap">
               <input type="number" min="0" step="0.01" id="c1_${idx}" value="0" />
@@ -2132,6 +2209,20 @@
           </td>
         `;
         rowsSpese.appendChild(tr);
+      });
+    }
+
+    function snapshotExpenseValues() {
+      return expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
+    }
+
+    function restoreExpenseValues(values) {
+      if (!Array.isArray(values)) return;
+      values.forEach((row, i) => {
+        const c1 = document.getElementById(`c1_${i}`);
+        const c2 = document.getElementById(`c2_${i}`);
+        if (c1) c1.value = Number.isFinite(Number(row && row.c1)) ? Number(row.c1) : 0;
+        if (c2) c2.value = Number.isFinite(Number(row && row.c2)) ? Number(row.c2) : 0;
       });
     }
 
@@ -2844,7 +2935,8 @@
         assegnoFam2: num("assegnoFam2")
       };
       const spese = expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
-      return { base, spese };
+      const expenseItemsState = expenseItems.map((item) => ({ label: item.label, help: item.help }));
+      return { base, spese, expenseItems: expenseItemsState };
     }
 
     function hydrateState(state) {
@@ -2853,6 +2945,15 @@
         const el = document.getElementById(k);
         if (el) el.value = v;
       });
+      if (Array.isArray(state.expenseItems) && state.expenseItems.length) {
+        expenseItems = state.expenseItems.map((item, idx) => normalizeExpenseItem(item, idx));
+      } else {
+        expenseItems = defaultExpenseItems.map((item) => ({ ...item }));
+      }
+      while (expenseItems.length < state.spese.length) {
+        expenseItems.push(normalizeExpenseItem(null, expenseItems.length));
+      }
+      buildExpenseRows();
       syncPermanenza();
       state.spese.forEach((row, i) => {
         const c1 = document.getElementById(`c1_${i}`);
@@ -2892,6 +2993,39 @@
 
     document.getElementById("btnPdf").addEventListener("click", async () => {
       await exportPdfDirect();
+    });
+
+    document.getElementById("btnAddExpenseItem").addEventListener("click", () => {
+      document.getElementById("expenseItemEditor").classList.remove("is-hidden");
+      document.getElementById("customExpenseLabel").focus();
+    });
+
+    document.getElementById("btnCancelExpenseItem").addEventListener("click", () => {
+      document.getElementById("expenseItemEditor").classList.add("is-hidden");
+      document.getElementById("customExpenseLabel").value = "";
+      document.getElementById("customExpenseHelp").value = "";
+    });
+
+    document.getElementById("btnCreateExpenseItem").addEventListener("click", () => {
+      const labelRaw = document.getElementById("customExpenseLabel").value;
+      const helpRaw = document.getElementById("customExpenseHelp").value;
+      const label = String(labelRaw || "").trim();
+      const help = String(helpRaw || "").trim();
+      if (!label) {
+        alert("Inserisci il nome della voce spesa.");
+        return;
+      }
+
+      const currentValues = snapshotExpenseValues();
+      expenseItems.push(normalizeExpenseItem({ label, help }, expenseItems.length));
+      buildExpenseRows();
+      restoreExpenseValues(currentValues);
+      updateExpensePartials();
+      renderAll();
+
+      document.getElementById("customExpenseLabel").value = "";
+      document.getElementById("customExpenseHelp").value = "";
+      document.getElementById("expenseItemEditor").classList.add("is-hidden");
     });
 
     document.getElementById("btnZoomOut").addEventListener("click", () => {
