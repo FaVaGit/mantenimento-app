@@ -1160,6 +1160,19 @@
       return String(document.getElementById(id).value || "").trim();
     }
 
+    function uniqueNonEmptyStrings(values) {
+      const out = [];
+      const seen = new Set();
+      (values || []).forEach((v) => {
+        const s = String(v || "").trim();
+        if (!s) return;
+        if (seen.has(s)) return;
+        seen.add(s);
+        out.push(s);
+      });
+      return out;
+    }
+
     function getJsonStore(key, fallback) {
       const raw = localStorage.getItem(key);
       if (!raw) return fallback;
@@ -2010,13 +2023,30 @@
           }
         }
 
+        const passwordCandidates = uniqueNonEmptyStrings([
+          legacyPassword,
+          text("keylockPass")
+        ]);
+        console.log("[legacy] Password candidates:", passwordCandidates.length);
+
         // Primary attempt: payload was saved with the current session key (Supabase era).
         let state = null;
-        try {
-          state = await decryptStateForKey(payload, authSession.keyBits);
-          console.log("[legacy] Decifrato con authSession.keyBits (sessione corrente) OK");
-        } catch (_) {
-          console.warn("[legacy] authSession.keyBits non ha funzionato, provo best-effort...");
+        for (const pwd of passwordCandidates) {
+          try {
+            if (pwd === legacyPassword) {
+              state = await decryptStateForKey(payload, authSession.keyBits);
+            } else {
+              const currentSessionKey = await deriveSessionKeyBits(pwd, authSession.userId);
+              state = await decryptStateForKey(payload, currentSessionKey);
+            }
+            console.log("[legacy] Decifrato con chiave sessione corrente usando password candidate");
+            break;
+          } catch (_) {
+            // Continue with next password candidate.
+          }
+        }
+        if (!state) {
+          console.warn("[legacy] chiave sessione corrente non ha funzionato, provo oldUserId/best-effort...");
         }
 
           // Try with old user ID if provided by the user.
@@ -2027,11 +2057,19 @@
                 console.warn("[legacy] Vecchio User ID non valido (atteso UUID):", oldUserIdInput);
                 setAuthStatus("Il campo 'Vecchio User ID Supabase' richiede uno UUID (non il nome utente).", true);
               } else {
-                try {
-                  const oldKeyBits = await deriveSessionKeyBits(legacyPassword, oldUserIdInput);
-                  state = await decryptStateForKey(payload, oldKeyBits);
-                  console.log("[legacy] Decifrato con vecchio User ID:", oldUserIdInput);
-                } catch (_) {
+                let oldIdWorked = false;
+                for (const pwd of passwordCandidates) {
+                  try {
+                    const oldKeyBits = await deriveSessionKeyBits(pwd, oldUserIdInput);
+                    state = await decryptStateForKey(payload, oldKeyBits);
+                    console.log("[legacy] Decifrato con vecchio User ID:", oldUserIdInput);
+                    oldIdWorked = true;
+                    break;
+                  } catch (_) {
+                    // Continue with next password candidate.
+                  }
+                }
+                if (!oldIdWorked) {
                   console.warn("[legacy] Vecchio User ID non ha funzionato:", oldUserIdInput);
                 }
               }
@@ -2040,15 +2078,25 @@
 
         if (!state) {
           console.log("[legacy] Avvio decryptLegacyStateBestEffort - userRecord:", userRecord ? Object.keys(userRecord) : null);
-          state = await decryptLegacyStateBestEffort(
-            payload,
-            legacyPassword,
-            authSession.username,
-            userRecord,
-            match.rawProfile,
-            doc
-          );
-          console.log("[legacy] Stato decifrato OK con best-effort, chiavi:", state ? Object.keys(state) : null);
+            for (const pwd of passwordCandidates) {
+              try {
+                state = await decryptLegacyStateBestEffort(
+                  payload,
+                  pwd,
+                  authSession.username,
+                  userRecord,
+                  match.rawProfile,
+                  doc
+                );
+                console.log("[legacy] Stato decifrato OK con best-effort, chiavi:", state ? Object.keys(state) : null);
+                break;
+              } catch (_) {
+                // Try next password candidate.
+              }
+            }
+            if (!state) {
+              throw new Error("Profilo legacy trovato ma non decifrabile con nessuna password candidata");
+            }
         }
         const reEncrypted = await encryptStateForKey(state, authSession.keyBits);
         const { error } = await upsertEncryptedScenarioForSession(reEncrypted);
