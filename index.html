@@ -2978,6 +2978,12 @@
         return "equal";
       }
 
+      const isNarrow = w < 400;
+      const figRadius = isNarrow ? 30 : 38;
+      const figDiameter = figRadius * 2;
+      const figMargin = isNarrow ? 8 : 20;
+      const figTop = isNarrow ? 14 : 10;
+
       function addOutcomeFigure(left, top, spouseId, role) {
         const palette = role === "winner"
           ? { bg: "#ddf2ec", stroke: "#9ccfc2", ink: "#0d625a" }
@@ -2985,38 +2991,40 @@
             ? { bg: "#f8ecd9", stroke: "#dfbf8f", ink: "#8a580f" }
             : { bg: "#eaf2f0", stroke: "#bfd2cd", ink: "#3d5c59" };
 
+        const scale = figRadius / 38;
+
         fc.add(new window.fabric.Circle({
           left,
           top,
-          radius: 38,
+          radius: figRadius,
           fill: palette.bg,
           stroke: palette.stroke,
           strokeWidth: 1.5,
           shadow: "0 2px 6px rgba(0,0,0,0.10)"
         }));
 
-        const cx = left + 38;
-        const cy = top + 38;
+        const cx = left + figRadius;
+        const cy = top + figRadius;
 
         // Person icon centered inside the bubble.
         fc.add(new window.fabric.Circle({
-          left: cx - 8,
-          top: cy - 19,
-          radius: 8,
+          left: cx - (8 * scale),
+          top: cy - (19 * scale),
+          radius: 8 * scale,
           fill: palette.ink
         }));
         fc.add(new window.fabric.Rect({
-          left: cx - 9,
-          top: cy - 9,
-          width: 18,
-          height: 20,
-          rx: 6,
-          ry: 6,
+          left: cx - (9 * scale),
+          top: cy - (9 * scale),
+          width: 18 * scale,
+          height: 20 * scale,
+          rx: 6 * scale,
+          ry: 6 * scale,
           fill: palette.ink
         }));
 
-        fc.add(new window.fabric.Circle({ left: cx - 4.6, top: cy - 16.5, radius: 1.2, fill: "#ffffff" }));
-        fc.add(new window.fabric.Circle({ left: cx + 2.6, top: cy - 16.5, radius: 1.2, fill: "#ffffff" }));
+        fc.add(new window.fabric.Circle({ left: cx - (4.6 * scale), top: cy - (16.5 * scale), radius: 1.2 * scale, fill: "#ffffff" }));
+        fc.add(new window.fabric.Circle({ left: cx + (2.6 * scale), top: cy - (16.5 * scale), radius: 1.2 * scale, fill: "#ffffff" }));
 
         const mouthPath = role === "winner"
           ? "M 0 0 Q 5.5 5.5 11 0"
@@ -3024,20 +3032,22 @@
             ? "M 0 4.2 Q 5.5 -1.2 11 4.2"
             : "M 0 2.2 L 11 2.2";
         fc.add(new window.fabric.Path(mouthPath, {
-          left: cx - 5.5,
-          top: cy - 10,
+          left: cx - (5.5 * scale),
+          top: cy - (10 * scale),
           fill: "",
           stroke: "#ffffff",
-          strokeWidth: 1.3,
+          strokeWidth: Math.max(1, 1.3 * scale),
           strokeLineCap: "round"
         }));
 
       }
 
-      const badgeW = Math.min(520, Math.max(300, w - 220));
+      const reservedForFigures = (figDiameter * 2) + (figMargin * 2) + 16;
+      const badgeAvailableW = Math.max(120, Math.min(w - 20, w - reservedForFigures));
+      const badgeW = Math.min(520, badgeAvailableW);
       const badgeX = (w - badgeW) / 2;
       const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
-      const badgeMaxFontSize = w < 560 ? 24 : 28;
+      const badgeMaxFontSize = isNarrow ? 16 : (w < 560 ? 24 : 28);
       const badgeInnerW = badgeW - 36;
 
       // Measure actual text width at max font size, then scale down if needed
@@ -3048,9 +3058,9 @@
         ? badgeMaxFontSize
         : Math.max(10, Math.floor(badgeMaxFontSize * badgeInnerW / _probe.width));
 
-      addOutcomeFigure(20, 10, 1, roleForSpouse(1));
-      addOutcomeFigure(w - 96, 10, 2, roleForSpouse(2));
-      const badgeHeight = w < 560 ? 56 : 62;
+      addOutcomeFigure(figMargin, figTop, 1, roleForSpouse(1));
+      addOutcomeFigure(w - figMargin - figDiameter, figTop, 2, roleForSpouse(2));
+      const badgeHeight = isNarrow ? 46 : (w < 560 ? 56 : 62);
       fc.add(new window.fabric.Rect({
         left: badgeX,
         top: 18,
