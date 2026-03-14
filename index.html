@@ -371,13 +371,6 @@
       gap: 8px;
     }
 
-    .auth-grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
     .auth-status {
       margin-top: 8px;
       font-size: 0.83rem;
@@ -788,7 +781,6 @@
       .spouse-grid { grid-template-columns: 1fr; }
       .top-inputs { grid-template-columns: 1fr; }
       .auth-grid { grid-template-columns: 1fr; }
-      .auth-grid-3 { grid-template-columns: 1fr; }
       .auth-menu-wrap { display: block; }
       .auth-toggle { width: 100%; justify-content: center; }
       .auth-dropdown {
@@ -852,17 +844,17 @@
             </button>
             <div class="auth-dropdown" id="authDropdown">
               <div class="auth-box">
-                <div class="auth-head">KeyLock Utente</div>
+                <div class="auth-head">KeyLock Cloud</div>
                 <div id="authLoginSection" class="auth-grid">
                   <div class="field">
                     <label for="keylockUser" class="label-row">Utente
-                      <span class="hint" title="Nome utente univoco per accedere ai dati personali sul browser corrente.">i</span>
+                      <span class="hint" title="Nome utente univoco per accedere e sincronizzare i dati su piu dispositivi.">i</span>
                     </label>
                     <input id="keylockUser" type="text" autocomplete="username" placeholder="es. favagit" />
                   </div>
                   <div class="field">
                     <label for="keylockPass" class="label-row">Password KeyLock
-                      <span class="hint" title="Password usata per login e cifratura locale del tuo scenario salvato.">i</span>
+                      <span class="hint" title="Password usata per login e cifratura del profilo sincronizzato.">i</span>
                     </label>
                     <input id="keylockPass" type="password" autocomplete="current-password" placeholder="min 6 caratteri" />
                   </div>
@@ -873,31 +865,8 @@
                 </div>
                 <div id="authSessionActions" class="toolbar is-hidden">
                   <button class="btn-secondary" id="btnLogoutKeyLock" type="button">Logout</button>
-                  <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva mia situazione</button>
-                  <button class="btn-secondary" id="btnLoadMyScenario" type="button">Ricarica mia situazione</button>
-                </div>
-                <div class="auth-grid-3">
-                  <div class="field">
-                    <label for="cloudGithubToken" class="label-row">Token GitHub (scope gist)
-                      <span class="hint" title="Personal Access Token GitHub con permesso gist per salvare/caricare la cache cloud cifrata.">i</span>
-                    </label>
-                    <input id="cloudGithubToken" type="password" autocomplete="off" placeholder="ghp_..." />
-                  </div>
-                  <div class="field">
-                    <label for="cloudGistId" class="label-row">Gist ID cache cloud
-                      <span class="hint" title="Opzionale: se vuoto, il sistema prova a trovarlo automaticamente dal token GitHub.">i</span>
-                    </label>
-                    <input id="cloudGistId" type="text" autocomplete="off" placeholder="opzionale: auto-rilevato" />
-                  </div>
-                  <div class="field">
-                    <label class="label-row">Operazioni cloud
-                      <span class="hint" title="La cache cloud e per utente KeyLock e resta cifrata: puo essere usata da dispositivi diversi.">i</span>
-                    </label>
-                    <div class="toolbar" style="margin-top:0">
-                      <button class="btn-secondary" id="btnCloudSaveScenario" type="button">Salva su cloud</button>
-                      <button class="btn-secondary" id="btnCloudLoadScenario" type="button">Carica da cloud</button>
-                    </div>
-                  </div>
+                  <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva profilo cloud</button>
+                  <button class="btn-secondary" id="btnLoadMyScenario" type="button">Carica profilo cloud</button>
                 </div>
                 <div id="authStatus" class="auth-status">Non autenticato.</div>
               </div>
@@ -1079,6 +1048,8 @@
     </footer>
   </div>
 
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const expenseItems = [
       { label: "Affitto", help: "Canone mensile di locazione dell'abitazione." },
@@ -1100,11 +1071,23 @@
 
     const rowsSpese = document.getElementById("rowsSpese");
     const STORAGE_DEFAULT_KEY = "appMantenimentoDefaultState";
-    const KEYLOCK_USERS_KEY = "appMantenimentoKeyLockUsers";
-    const KEYLOCK_PROFILES_KEY = "appMantenimentoKeyLockProfiles";
-    const KEYLOCK_GIST_FILENAME = "keylock-cache.json";
+    const KEYLOCK_PROFILE_TABLE = "keylock_profiles";
+    const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
+    const SUPABASE_ANON_KEY = String(window.KEYLOCK_SUPABASE_ANON_KEY || "").trim();
+    const supabaseClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
+      && !SUPABASE_URL.includes("YOUR_PROJECT")
+      && !SUPABASE_ANON_KEY.includes("YOUR_PUBLIC_ANON_KEY")
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+              persistSession: false,
+              autoRefreshToken: false,
+              detectSessionInUrl: false
+            }
+          })
+        : null;
     const authSession = {
       username: null,
+      userId: null,
       keyBits: null
     };
 
@@ -1146,37 +1129,16 @@
       localStorage.setItem(key, JSON.stringify(value));
     }
 
-    function getCloudFormData() {
-      return {
-        token: text("cloudGithubToken"),
-        gistId: text("cloudGistId")
-      };
-    }
-
-    function applyCloudFormData(data) {
-      const tokenEl = document.getElementById("cloudGithubToken");
-      const gistEl = document.getElementById("cloudGistId");
-      const cfg = data && typeof data === "object" ? data : {};
-      if (tokenEl) tokenEl.value = String(cfg.token || "");
-      if (gistEl) gistEl.value = String(cfg.gistId || "");
-    }
-
-    function toStateWithCloudData(state) {
-      const cloud = getCloudFormData();
-      if (!cloud.token && !cloud.gistId) {
-        return state;
-      }
-      return {
-        ...state,
-        keylockCloud: {
-          token: cloud.token,
-          gistId: cloud.gistId
-        }
-      };
-    }
-
     function normalizeUsername(value) {
       return String(value || "").trim().toLowerCase();
+    }
+
+    function isValidUsername(value) {
+      return /^[a-z0-9._-]{3,40}$/.test(value);
+    }
+
+    function usernameToPseudoEmail(username) {
+      return `${normalizeUsername(username)}@keylock.local`;
     }
 
     function bytesToBase64(bytes) {
@@ -1246,11 +1208,9 @@
     function setAuthStatus(message, isError = false) {
       const el = document.getElementById("authStatus");
       if (!el) return;
-      const logged = !!authSession.username;
       el.classList.toggle("error", !!isError);
 
-      // Keep status area clean when logged in: show only errors.
-      if (logged && !isError) {
+      if (!message) {
         el.textContent = "";
         el.style.display = "none";
         return;
@@ -1280,8 +1240,6 @@
       document.getElementById("btnLogoutKeyLock").disabled = !logged;
       document.getElementById("btnSaveMyScenario").disabled = !logged;
       document.getElementById("btnLoadMyScenario").disabled = !logged;
-      document.getElementById("btnCloudSaveScenario").disabled = !logged;
-      document.getElementById("btnCloudLoadScenario").disabled = !logged;
 
       if (logged) {
         setAuthStatus("", false);
@@ -1324,354 +1282,149 @@
       });
     }
 
-    async function githubApiRequest(method, url, token, body) {
-      const headers = {
-        "Accept": "application/vnd.github+json",
-        "Authorization": `Bearer ${token}`,
-        "X-GitHub-Api-Version": "2022-11-28"
-      };
-      if (body) headers["Content-Type"] = "application/json";
-      const res = await fetch(url, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined
-      });
-      const txt = await res.text();
-      const data = txt ? (() => {
-        try { return JSON.parse(txt); } catch (_) { return null; }
-      })() : null;
-      if (!res.ok) {
-        const msg = data && data.message ? data.message : `HTTP ${res.status}`;
-        throw new Error(msg);
+    async function deriveSessionKeyBits(password, userId) {
+      const enc = new TextEncoder();
+      const salt = await sha256Bytes(enc.encode(`keylock:${userId}`));
+      return deriveKeyBits(password, salt);
+    }
+
+    async function ensureSupabaseReady(actionLabel) {
+      if (!(window.crypto && window.crypto.subtle)) {
+        setAuthStatus("KeyLock non supportato da questo browser.", true);
+        return false;
       }
-      return data;
-    }
-
-    function normalizeCloudDoc(doc) {
-      let out = doc;
-      if (!out || typeof out !== "object") out = { version: 2, users: {}, profiles: {} };
-      if (!out.users || typeof out.users !== "object") out.users = {};
-      if (!out.profiles || typeof out.profiles !== "object") out.profiles = {};
-      if (!out.version) out.version = 2;
-      return out;
-    }
-
-    async function readGistCacheDoc(token, gistId) {
-      const gist = await githubApiRequest("GET", `https://api.github.com/gists/${gistId}`, token);
-      const file = gist.files && (gist.files[KEYLOCK_GIST_FILENAME] || Object.values(gist.files)[0]);
-      if (!file) return { gistId: gist.id, doc: normalizeCloudDoc(null) };
-      let content = file.content || "";
-      if (file.truncated && file.raw_url) {
-        const rawRes = await fetch(file.raw_url);
-        content = await rawRes.text();
+      if (!supabaseClient) {
+        setAuthStatus(`Configura Supabase in supabase-config.js prima di ${actionLabel}.`, true);
+        return false;
       }
-      let doc;
-      try {
-        doc = JSON.parse(content || "{}");
-      } catch (_) {
-        doc = normalizeCloudDoc(null);
-      }
-      return { gistId: gist.id, doc: normalizeCloudDoc(doc) };
-    }
-
-    async function ensureGistCacheDoc(token, gistId) {
-      const cleanId = String(gistId || "").trim();
-      if (cleanId) {
-        return readGistCacheDoc(token, cleanId);
-      }
-      const initial = normalizeCloudDoc(null);
-      const created = await githubApiRequest("POST", "https://api.github.com/gists", token, {
-        description: "KeyLock cloud cache - Calcolatore Mantenimento",
-        public: false,
-        files: {
-          [KEYLOCK_GIST_FILENAME]: {
-            content: JSON.stringify(initial, null, 2)
-          }
-        }
-      });
-      return { gistId: created.id, doc: initial };
-    }
-
-    async function findKeyLockGistByUsername(token, username) {
-      const gists = await githubApiRequest("GET", "https://api.github.com/gists?per_page=100", token);
-      if (!Array.isArray(gists)) return null;
-
-      // First pass: select likely KeyLock cache gists by filename/description.
-      const candidates = gists.filter((g) => {
-        const hasKeylockFile = !!(g.files && g.files[KEYLOCK_GIST_FILENAME]);
-        const desc = String(g.description || "").toLowerCase();
-        return hasKeylockFile || desc.includes("keylock") || desc.includes("mantenimento");
-      });
-
-      for (const gist of candidates) {
-        try {
-          const { gistId, doc } = await readGistCacheDoc(token, gist.id);
-          if ((doc.users && doc.users[username]) || (doc.profiles && doc.profiles[username])) {
-            return gistId;
-          }
-        } catch (_) {
-          // Ignore malformed/unreachable gist and continue scanning.
-        }
-      }
-      return null;
-    }
-
-    async function writeGistCacheDoc(token, gistId, doc) {
-      await githubApiRequest("PATCH", `https://api.github.com/gists/${gistId}`, token, {
-        files: {
-          [KEYLOCK_GIST_FILENAME]: {
-            content: JSON.stringify(doc, null, 2)
-          }
-        }
-      });
-    }
-
-    function getKeyLockUsers() {
-      return getJsonStore(KEYLOCK_USERS_KEY, {});
-    }
-
-    function setKeyLockUsers(users) {
-      setJsonStore(KEYLOCK_USERS_KEY, users);
-    }
-
-    function getKeyLockProfiles() {
-      return getJsonStore(KEYLOCK_PROFILES_KEY, {});
-    }
-
-    function setKeyLockProfiles(profiles) {
-      setJsonStore(KEYLOCK_PROFILES_KEY, profiles);
-    }
-
-    async function syncCloudUserRecord(username, userRecord) {
-      const token = text("cloudGithubToken");
-      if (!token) return { synced: false, reason: "missing-token" };
-
-      const { gistId, doc } = await ensureGistCacheDoc(token, text("cloudGistId"));
-      const existing = doc.users[username];
-      if (existing && existing.verifier !== userRecord.verifier) {
-        throw new Error("Utente gia presente su cloud con credenziali diverse");
-      }
-      doc.users[username] = userRecord;
-      await writeGistCacheDoc(token, gistId, doc);
-      document.getElementById("cloudGistId").value = gistId;
-      return { synced: true, gistId };
+      return true;
     }
 
     async function registerKeyLockUser() {
-      if (!(window.crypto && window.crypto.subtle)) {
-        setAuthStatus("KeyLock non supportato da questo browser.", true);
-        return;
-      }
+      if (!await ensureSupabaseReady("registrarti")) return;
+
       const username = normalizeUsername(text("keylockUser"));
       const password = text("keylockPass");
-      if (!username) {
-        setAuthStatus("Inserisci un nome utente.", true);
+      if (!isValidUsername(username)) {
+        setAuthStatus("Nome utente non valido: usa 3-40 caratteri tra lettere minuscole, numeri, punto, trattino o underscore.", true);
         return;
       }
       if (password.length < 6) {
         setAuthStatus("Password troppo corta: minimo 6 caratteri.", true);
         return;
       }
-      const users = getKeyLockUsers();
-      if (users[username]) {
-        setAuthStatus("Utente gia registrato.", true);
+
+      const email = usernameToPseudoEmail(username);
+      const signUpRes = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: { data: { username } }
+      });
+
+      if (signUpRes.error) {
+        setAuthStatus(`Registrazione fallita: ${signUpRes.error.message}`, true);
         return;
       }
 
-      const salt = crypto.getRandomValues(new Uint8Array(16));
-      const keyBits = await deriveKeyBits(password, salt);
-      const verifier = await sha256Bytes(keyBits);
-      users[username] = {
-        salt: bytesToBase64(salt),
-        verifier: bytesToBase64(verifier)
-      };
-      setKeyLockUsers(users);
-
-      let registerStatus = `Utente ${username} registrato e login effettuato.`;
-      let registerIsError = false;
-
-      // Optional cloud sync: enables login from other devices/browsers.
-      try {
-        const cloud = await syncCloudUserRecord(username, users[username]);
-        if (cloud.synced) {
-          registerStatus = `Utente ${username} registrato e sincronizzato su cloud (Gist ${cloud.gistId}).`;
-        }
-      } catch (err) {
-        registerStatus = `Utente registrato in locale, sync cloud non riuscita: ${err.message}`;
-        registerIsError = true;
+      const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (signInRes.error || !signInRes.data.user) {
+        setAuthStatus("Registrazione eseguita ma login non completato. In Supabase disattiva la conferma email per usare KeyLock con solo utente/password.", true);
+        return;
       }
 
       authSession.username = username;
-      authSession.keyBits = keyBits;
+      authSession.userId = signInRes.data.user.id;
+      authSession.keyBits = await deriveSessionKeyBits(password, signInRes.data.user.id);
       updateAuthUi();
-      setAuthStatus(registerStatus, registerIsError);
+      setAuthStatus(`Utente ${username} registrato e login effettuato.`);
     }
 
     async function loginKeyLockUser() {
-      if (!(window.crypto && window.crypto.subtle)) {
-        setAuthStatus("KeyLock non supportato da questo browser.", true);
-        return;
-      }
+      if (!await ensureSupabaseReady("effettuare il login")) return;
+
       const username = normalizeUsername(text("keylockUser"));
       const password = text("keylockPass");
-      const users = getKeyLockUsers();
-      let user = users[username];
-      let userFromCloud = false;
-
-      if (!user) {
-        const token = text("cloudGithubToken");
-        let gistId = text("cloudGistId");
-        if (token && !gistId) {
-          gistId = await findKeyLockGistByUsername(token, username) || "";
-          if (gistId) {
-            document.getElementById("cloudGistId").value = gistId;
-          }
-        }
-        if (token && gistId) {
-          try {
-            const { doc } = await readGistCacheDoc(token, gistId);
-            if (doc.users[username]) {
-              user = doc.users[username];
-              users[username] = user;
-              setKeyLockUsers(users);
-              userFromCloud = true;
-            }
-          } catch (_) {
-            // Fallback to local-only error below.
-          }
-        }
-      }
-
-      if (!user) {
-        setAuthStatus("Utente non trovato. Inserisci il token GitHub: il Gist viene cercato automaticamente.", true);
+      if (!isValidUsername(username)) {
+        setAuthStatus("Nome utente non valido.", true);
         return;
       }
 
-      const salt = base64ToBytes(user.salt);
-      const keyBits = await deriveKeyBits(password, salt);
-      const verifier = await sha256Bytes(keyBits);
-      if (bytesToBase64(verifier) !== user.verifier) {
-        setAuthStatus("Credenziali non valide.", true);
+      const email = usernameToPseudoEmail(username);
+      const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (signInRes.error || !signInRes.data.user) {
+        setAuthStatus(`Login fallito: ${signInRes.error ? signInRes.error.message : "utente non trovato"}`, true);
         return;
       }
 
       authSession.username = username;
-      authSession.keyBits = keyBits;
+      authSession.userId = signInRes.data.user.id;
+      authSession.keyBits = await deriveSessionKeyBits(password, signInRes.data.user.id);
       updateAuthUi();
-      setAuthStatus(userFromCloud
-        ? `Login effettuato come ${username} (utente recuperato da cloud).`
-        : `Login effettuato come ${username}.`);
+      setAuthStatus(`Login effettuato come ${username}.`);
     }
 
-    function logoutKeyLockUser() {
+    async function logoutKeyLockUser() {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
       authSession.username = null;
+      authSession.userId = null;
       authSession.keyBits = null;
       updateAuthUi();
       setAuthStatus("Logout eseguito.");
     }
 
     async function saveScenarioForLoggedUser() {
-      if (!authSession.username || !authSession.keyBits) {
+      if (!authSession.username || !authSession.userId || !authSession.keyBits) {
         setAuthStatus("Effettua prima il login.", true);
         return;
       }
-      const profiles = getKeyLockProfiles();
-      const state = toStateWithCloudData(serializeState());
-      profiles[authSession.username] = await encryptStateForKey(state, authSession.keyBits);
-      setKeyLockProfiles(profiles);
-      setAuthStatus("Situazione salvata per l'utente loggato.");
+
+      const encrypted = await encryptStateForKey(serializeState(), authSession.keyBits);
+      const { error } = await supabaseClient
+        .from(KEYLOCK_PROFILE_TABLE)
+        .upsert({
+          user_id: authSession.userId,
+          username: authSession.username,
+          scenario_cipher: encrypted,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id" });
+
+      if (error) {
+        setAuthStatus(`Salvataggio profilo fallito: ${error.message}`, true);
+        return;
+      }
+
+      setAuthStatus("Profilo cloud salvato.");
     }
 
     async function loadScenarioForLoggedUser() {
-      if (!authSession.username || !authSession.keyBits) {
+      if (!authSession.username || !authSession.userId || !authSession.keyBits) {
         setAuthStatus("Effettua prima il login.", true);
         return;
       }
-      const profiles = getKeyLockProfiles();
-      const payload = profiles[authSession.username];
-      if (!payload) {
-        setAuthStatus("Nessuna situazione salvata per questo utente.", true);
+
+      const { data, error } = await supabaseClient
+        .from(KEYLOCK_PROFILE_TABLE)
+        .select("scenario_cipher")
+        .eq("user_id", authSession.userId)
+        .maybeSingle();
+
+      if (error) {
+        setAuthStatus(`Caricamento profilo fallito: ${error.message}`, true);
         return;
       }
+      if (!data || !data.scenario_cipher) {
+        setAuthStatus("Nessun profilo cloud salvato per questo utente.", true);
+        return;
+      }
+
       try {
-        const state = await decryptStateForKey(payload, authSession.keyBits);
+        const state = await decryptStateForKey(data.scenario_cipher, authSession.keyBits);
         applyState(state);
-        applyCloudFormData(state.keylockCloud);
-        setAuthStatus("Situazione personale caricata.");
+        setAuthStatus("Profilo cloud caricato.");
       } catch (_) {
-        setAuthStatus("Impossibile decifrare i dati: verifica login/password.", true);
-      }
-    }
-
-    async function saveScenarioToCloudForLoggedUser() {
-      if (!authSession.username || !authSession.keyBits) {
-        setAuthStatus("Effettua prima il login.", true);
-        return;
-      }
-      const token = text("cloudGithubToken");
-      if (!token) {
-        setAuthStatus("Inserisci un token GitHub con scope gist.", true);
-        return;
-      }
-      try {
-        let gistIdHint = text("cloudGistId");
-        if (!gistIdHint) {
-          gistIdHint = await findKeyLockGistByUsername(token, authSession.username) || "";
-        }
-        const { gistId, doc } = await ensureGistCacheDoc(token, gistIdHint);
-        const state = toStateWithCloudData(serializeState());
-        const encrypted = await encryptStateForKey(state, authSession.keyBits);
-        doc.profiles[authSession.username] = {
-          ...encrypted,
-          updatedAt: new Date().toISOString()
-        };
-        await writeGistCacheDoc(token, gistId, doc);
-        document.getElementById("cloudGistId").value = gistId;
-        setAuthStatus(`Situazione salvata su cloud (Gist ${gistId}).`);
-      } catch (err) {
-        setAuthStatus(`Salvataggio cloud fallito: ${err.message}`, true);
-      }
-    }
-
-    async function loadScenarioFromCloudForLoggedUser() {
-      if (!authSession.username || !authSession.keyBits) {
-        setAuthStatus("Effettua prima il login.", true);
-        return;
-      }
-      const token = text("cloudGithubToken");
-      let gistId = text("cloudGistId");
-      if (!token) {
-        setAuthStatus("Inserisci token GitHub per caricare dal cloud.", true);
-        return;
-      }
-      if (!gistId) {
-        gistId = await findKeyLockGistByUsername(token, authSession.username) || "";
-        if (gistId) {
-          document.getElementById("cloudGistId").value = gistId;
-        }
-      }
-      if (!gistId) {
-        setAuthStatus("Nessun Gist cloud trovato per questo utente con il token fornito.", true);
-        return;
-      }
-      try {
-        const { doc } = await readGistCacheDoc(token, gistId);
-        const payload = doc.profiles[authSession.username];
-        if (!payload || !payload.iv || !payload.data) {
-          setAuthStatus("Nessuna situazione cloud trovata per questo utente.", true);
-          return;
-        }
-        const state = await decryptStateForKey(payload, authSession.keyBits);
-        applyState(state);
-        applyCloudFormData({
-          token,
-          gistId: state && state.keylockCloud && state.keylockCloud.gistId
-            ? state.keylockCloud.gistId
-            : gistId
-        });
-        setAuthStatus("Situazione personale caricata dal cloud.");
-      } catch (err) {
-        setAuthStatus(`Caricamento cloud fallito: ${err.message}`, true);
+        setAuthStatus("Impossibile decifrare il profilo: verifica username/password.", true);
       }
     }
 
@@ -2035,7 +1788,7 @@
         return;
       }
 
-      const state = toStateWithCloudData(serializeState());
+      const state = serializeState();
       const encrypted = await encryptStateForKey(state, authSession.keyBits);
       const payloadObj = {
         format: "keylock-encrypted-state-v1",
@@ -2079,7 +1832,6 @@
           }
 
           applyState(state);
-          applyCloudFormData(state.keylockCloud);
           setAuthStatus("JSON cifrato importato correttamente.");
           alert("Dati caricati da JSON cifrato.");
         } catch (err) {
@@ -2167,8 +1919,8 @@
       await loginKeyLockUser();
     });
 
-    document.getElementById("btnLogoutKeyLock").addEventListener("click", () => {
-      logoutKeyLockUser();
+    document.getElementById("btnLogoutKeyLock").addEventListener("click", async () => {
+      await logoutKeyLockUser();
     });
 
     document.getElementById("btnSaveMyScenario").addEventListener("click", async () => {
@@ -2177,14 +1929,6 @@
 
     document.getElementById("btnLoadMyScenario").addEventListener("click", async () => {
       await loadScenarioForLoggedUser();
-    });
-
-    document.getElementById("btnCloudSaveScenario").addEventListener("click", async () => {
-      await saveScenarioToCloudForLoggedUser();
-    });
-
-    document.getElementById("btnCloudLoadScenario").addEventListener("click", async () => {
-      await loadScenarioFromCloudForLoggedUser();
     });
 
     document.addEventListener("input", (e) => {
