@@ -282,6 +282,14 @@ const defaultExpenseItems = [
       return /^[a-z0-9._-]{3,40}$/.test(value);
     }
 
+    function normalizeEmail(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function isValidEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+    }
+
     const PRIMARY_PSEUDO_EMAIL_DOMAIN = "keylock-auth.app";
     function buildPseudoEmailCandidates(username) {
       const base = normalizeUsername(username);
@@ -331,8 +339,33 @@ const defaultExpenseItems = [
       return /invalid login credentials/i.test(String(msg || ""));
     }
 
-    async function signInWithPseudoEmailCandidates(username, password) {
-      const emails = buildPseudoEmailCandidates(username);
+    function buildLoginEmailCandidates(username, explicitEmail = "") {
+      const out = [];
+      const seen = new Set();
+      const push = (email) => {
+        const e = normalizeEmail(email);
+        if (!isValidEmail(e) || seen.has(e)) return;
+        seen.add(e);
+        out.push(e);
+      };
+
+      if (explicitEmail) push(explicitEmail);
+      if (isValidUsername(username)) {
+        buildPseudoEmailCandidates(username).forEach(push);
+      }
+      return out;
+    }
+
+    function isEmailNotConfirmedAuthMessage(msg) {
+      const m = String(msg || "").toLowerCase();
+      return m.includes("email not confirmed") || m.includes("email_not_confirmed") || m.includes("confirm your email");
+    }
+
+    async function signInWithEmailCandidates(username, password, explicitEmail = "") {
+      const emails = buildLoginEmailCandidates(username, explicitEmail);
+      if (!emails.length) {
+        return { ok: false, email: null, result: null, lastErrorMessage: "Inserisci un utente valido o una email valida." };
+      }
       let lastErrorMessage = "";
       for (const email of emails) {
         const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -581,9 +614,14 @@ const defaultExpenseItems = [
       try {
 
       const username = normalizeUsername(text("keylockUser"));
+      const email = normalizeEmail(text("keylockEmail"));
       const password = text("keylockPass");
       if (!isValidUsername(username)) {
         setAuthStatus("Nome utente non valido: usa 3-40 caratteri tra lettere minuscole, numeri, punto, trattino o underscore.", true);
+        return;
+      }
+      if (!isValidEmail(email)) {
+        setAuthStatus("Email non valida: inserisci un indirizzo corretto.", true);
         return;
       }
       if (password.length < 6) {
@@ -591,11 +629,13 @@ const defaultExpenseItems = [
         return;
       }
 
-      const email = usernameToPseudoEmail(username);
       const signUpRes = await supabaseClient.auth.signUp({
         email,
         password,
-        options: { data: { username } }
+        options: {
+          data: { username, registration_email: email },
+          emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+        }
       });
 
       let signUpRateLimited = false;
@@ -615,7 +655,13 @@ const defaultExpenseItems = [
         }
       }
 
-      const postLogin = await signInWithPseudoEmailCandidates(username, password);
+      const hasSession = !!(signUpRes.data && signUpRes.data.session);
+      if (!hasSession) {
+        setAuthStatus(`Registrazione avviata. Abbiamo inviato una email di verifica a ${email}. Conferma la email e poi effettua il login.`, false);
+        return;
+      }
+
+      const postLogin = await signInWithEmailCandidates(username, password, email);
       if (!postLogin.ok) {
         if (signUpRateLimited || isRateLimitAuthMessage(postLogin.lastErrorMessage)) {
           setAuthStatus("Rate limit Supabase su registrazione/login. Se l'utente esiste, attendi 1-2 minuti e riprova Login. Se e nuovo, attendi e riprova Registrati.", true);
@@ -654,17 +700,30 @@ const defaultExpenseItems = [
       try {
 
       const username = normalizeUsername(text("keylockUser"));
+      const email = normalizeEmail(text("keylockEmail"));
       const password = text("keylockPass");
-      if (!isValidUsername(username)) {
+      if (username && !isValidUsername(username)) {
         setAuthStatus("Nome utente non valido.", true);
         return;
       }
+      if (email && !isValidEmail(email)) {
+        setAuthStatus("Email non valida.", true);
+        return;
+      }
+      if (!username && !email) {
+        setAuthStatus("Inserisci utente oppure email per il login.", true);
+        return;
+      }
 
-      const signIn = await signInWithPseudoEmailCandidates(username, password);
+      const signIn = await signInWithEmailCandidates(username, password, email);
       if (!signIn.ok) {
         const loginMsg = String(signIn.lastErrorMessage || "");
         if (isRateLimitAuthMessage(loginMsg)) {
           setAuthStatus("Troppi tentativi ravvicinati. Attendi 1-2 minuti e riprova il Login.", true);
+          return;
+        }
+        if (isEmailNotConfirmedAuthMessage(loginMsg)) {
+          setAuthStatus("Email non verificata. Apri la mail di conferma e completa la verifica, poi riprova il login.", true);
           return;
         }
         if (isInvalidCredentialAuthMessage(loginMsg)) {
@@ -675,7 +734,12 @@ const defaultExpenseItems = [
         return;
       }
 
-      const loginMsg = await completeAuthSession(username, password, signIn.result.data.user);
+      const effectiveUsername = username
+        || normalizeUsername(signIn.result.data.user && signIn.result.data.user.user_metadata && signIn.result.data.user.user_metadata.username)
+        || normalizeUsername((email || "").split("@")[0])
+        || "utente";
+
+      const loginMsg = await completeAuthSession(effectiveUsername, password, signIn.result.data.user);
       setAuthStatus(loginMsg);
       await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
       } finally {

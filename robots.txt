@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://favagit.github.io/mantenimento-app/sitemap.xml

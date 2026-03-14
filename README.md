@@ -60,6 +60,22 @@ npm start
 Il login cloud resta lato frontend e usa `supabase-config.js` (chiave anon pubblica).
 Non inserire nel frontend segreti server o credenziali DB.
 
+Per la registrazione utente:
+- l'utente inserisce `username + email + password`
+- Supabase invia email di verifica
+- il login diventa disponibile dopo conferma email
+
+In Supabase `Authentication > Providers > Email` mantieni attiva la conferma email.
+
+## SEO e visibilita web
+Sono inclusi:
+- meta tag SEO/OG/Twitter in `frontend/public/index.html`
+- dati strutturati JSON-LD `SoftwareApplication`
+- `frontend/public/robots.txt`
+- `frontend/public/sitemap.xml`
+
+Se pubblichi su un dominio diverso da GitHub Pages, aggiorna URL canonico, `og:url`, `robots.txt` e `sitemap.xml`.
+
 ## Deploy
 Con la nuova architettura non e piu un sito statico puro: serve un runtime Node.js.
 
