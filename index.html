@@ -64,6 +64,49 @@
 
     .hero p { margin: 0; line-height: 1.4; color: #d9eeeb; }
 
+    .top-actions {
+      position: relative;
+      display: inline-block;
+      margin-top: 12px;
+    }
+
+    .top-actions-trigger {
+      border: 1px solid #9dc5be;
+      border-radius: 999px;
+      background: #e8f4f1;
+      color: #164440;
+      padding: 8px 14px;
+      font-weight: 800;
+      cursor: default;
+    }
+
+    .top-actions-menu {
+      position: absolute;
+      top: 42px;
+      left: 0;
+      min-width: 250px;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid #b6cbc6;
+      background: #f5fbf9;
+      box-shadow: 0 10px 22px rgba(8, 40, 37, 0.2);
+      display: none;
+      z-index: 35;
+    }
+
+    .top-actions:hover .top-actions-menu,
+    .top-actions:focus-within .top-actions-menu {
+      display: grid;
+      gap: 6px;
+    }
+
+    .top-actions-menu button {
+      width: 100%;
+      text-align: left;
+      padding: 8px 10px;
+      border-radius: 10px;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -885,6 +928,17 @@
         font-size: 0.84rem;
         padding: 7px 5px;
       }
+      .top-actions {
+        display: block;
+      }
+      .top-actions-trigger {
+        width: 100%;
+      }
+      .top-actions-menu {
+        position: static;
+        margin-top: 8px;
+        min-width: 0;
+      }
     }
 
     @media print {
@@ -902,6 +956,16 @@
       <p>
         Modello di calcolo orientativo adattato al <strong>reddito mensile netto</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
       </p>
+      <div class="top-actions" id="topActions" tabindex="0">
+        <button class="top-actions-trigger" type="button">Azioni rapide</button>
+        <div class="top-actions-menu" aria-label="Azioni applicazione">
+          <button class="btn-secondary" id="btnReset" type="button">Reset valori</button>
+          <button class="btn-secondary" id="btnExportJson" type="button">Esporta JSON cifrato</button>
+          <button class="btn-secondary" id="btnImportJson" type="button">Carica JSON cifrato</button>
+          <button class="btn-secondary" id="btnPdf" type="button">Genera e scarica PDF</button>
+          <input id="fileJson" type="file" accept="application/json,.json" style="display:none" />
+        </div>
+      </div>
     </section>
 
     <div class="grid">
@@ -1074,14 +1138,7 @@
             <tbody id="rowsSpese"></tbody>
           </table>
 
-          <div class="toolbar">
-            <button class="btn-secondary" id="btnReset">Reset</button>
-            <button class="btn-secondary" id="btnSalva">Salva</button>
-            <button class="btn-secondary" id="btnExportJson">Esporta JSON</button>
-            <button class="btn-secondary" id="btnImportJson">Carica JSON</button>
-            <button class="btn-secondary" id="btnPdf">Export PDF</button>
-            <input id="fileJson" type="file" accept="application/json,.json" style="display:none" />
-          </div>
+          <p class="note" style="margin-top:10px">Le azioni di reset/export/import/PDF sono disponibili nel menu <strong>Azioni rapide</strong> in alto.</p>
         </div>
       </section>
 
@@ -1128,6 +1185,7 @@
 
   <script src="supabase-config.js"></script>
   <script src="supabase.min.js"></script>
+  <script src="html2pdf.bundle.min.js"></script>
   <script>
     const expenseItems = [
       { label: "Affitto", help: "Canone mensile di locazione dell'abitazione." },
@@ -1148,7 +1206,6 @@
     const QUOTA_MANTENIMENTO_PERC = 35;
 
     const rowsSpese = document.getElementById("rowsSpese");
-    const STORAGE_DEFAULT_KEY = "appMantenimentoDefaultState";
     const KEYLOCK_PROFILE_TABLE = "keylock_profiles";
     const CLOUD_PROFILE_FORMAT = "keylock-cloud-profile-v2";
     const CLOUD_HISTORY_MAX = 24;
@@ -1199,20 +1256,6 @@
 
     function text(id) {
       return String(document.getElementById(id).value || "").trim();
-    }
-
-    function getJsonStore(key, fallback) {
-      const raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      try {
-        return JSON.parse(raw);
-      } catch (_) {
-        return fallback;
-      }
-    }
-
-    function setJsonStore(key, value) {
-      localStorage.setItem(key, JSON.stringify(value));
     }
 
     function safeJsonClone(v) {
@@ -2156,42 +2199,57 @@
       calculate();
     }
 
-    function setDefaultValuesFromState(state) {
-      if (!state || !state.base || !state.spese) {
-        return;
-      }
-
-      Object.entries(state.base).forEach(([k, v]) => {
-        const el = document.getElementById(k);
-        if (el) {
-          el.defaultValue = String(v ?? 0);
-        }
-      });
-
-      state.spese.forEach((row, i) => {
-        const c1 = document.getElementById(`c1_${i}`);
-        const c2 = document.getElementById(`c2_${i}`);
-        if (c1) c1.defaultValue = String(row.c1 ?? 0);
-        if (c2) c2.defaultValue = String(row.c2 ?? 0);
-      });
-
-      const perm2 = document.getElementById("perm2");
-      if (perm2) {
-        const p1 = Number(state.base.perm1 ?? 0);
-        perm2.defaultValue = String(Math.max(0, Math.min(100, 100 - p1)));
-      }
-    }
-
     function applyState(state) {
       hydrateState(state);
       renderAll();
     }
 
-    function saveAsStartingData() {
-      const state = serializeState();
-      localStorage.setItem(STORAGE_DEFAULT_KEY, JSON.stringify(state));
-      setDefaultValuesFromState(state);
-      alert("Dati di partenza aggiornati.");
+    async function exportPdfDirect() {
+      const source = document.querySelector(".wrap");
+      if (!source || !window.html2pdf) {
+        alert("Generazione PDF non disponibile in questo browser.");
+        return;
+      }
+
+      const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
+      const fileName = `mantenimento-${ts}.pdf`;
+      const options = {
+        margin: [6, 6, 6, 6],
+        filename: fileName,
+        image: { type: "jpeg", quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
+        pagebreak: { mode: ["css", "legacy"] }
+      };
+
+      try {
+        const worker = window.html2pdf().from(source).set(options);
+        const blob = await worker.toPdf().output("blob");
+
+        if (window.showSaveFilePicker) {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: "PDF Document", accept: { "application/pdf": [".pdf"] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          setAuthStatus("PDF generato e salvato nella destinazione scelta.");
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setAuthStatus("PDF generato e scaricato automaticamente.");
+      } catch (err) {
+        setAuthStatus(`Generazione PDF fallita: ${err.message || err}`, true);
+      }
     }
 
     async function exportJson() {
@@ -2302,8 +2360,6 @@
 
     document.getElementById("btnReset").addEventListener("click", resetAll);
 
-    document.getElementById("btnSalva").addEventListener("click", saveAsStartingData);
-
     document.getElementById("btnExportJson").addEventListener("click", async () => {
       await exportJson();
     });
@@ -2320,8 +2376,8 @@
       e.target.value = "";
     });
 
-    document.getElementById("btnPdf").addEventListener("click", () => {
-      window.print();
+    document.getElementById("btnPdf").addEventListener("click", async () => {
+      await exportPdfDirect();
     });
 
     document.getElementById("btnRegisterKeyLock").addEventListener("click", async () => {
@@ -2394,20 +2450,10 @@
     buildExpenseRows();
     initAuthMenu();
     updateAuthUi();
+    renderCloudHistoryPanel();
     syncPermanenza();
     updateModeUi();
-    const rawDefault = localStorage.getItem(STORAGE_DEFAULT_KEY);
-    if (rawDefault) {
-      try {
-        const state = JSON.parse(rawDefault);
-        applyState(state);
-        setDefaultValuesFromState(state);
-      } catch (_) {
-        renderAll();
-      }
-    } else {
-      renderAll();
-    }
+    renderAll();
   </script>
 </body>
 </html>
