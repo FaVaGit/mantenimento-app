@@ -841,12 +841,6 @@
       letter-spacing: 0.3px;
     }
 
-    .live-fabric-sub {
-      font-size: 0.9rem;
-      color: #3f605c;
-      margin-bottom: 10px;
-    }
-
     .live-fabric-canvas {
       width: 100%;
       max-width: 100%;
@@ -1036,10 +1030,6 @@
       }
       .live-fabric-caption {
         font-size: 0.98rem;
-      }
-      .live-fabric-sub {
-        font-size: 0.88rem;
-        margin-bottom: 8px;
       }
       .live-columns { grid-template-columns: 1fr; }
       .shared-grid { grid-template-columns: 1fr; }
@@ -2314,7 +2304,6 @@
         <div class="live-diff">
           <div class="live-fabric-wrap">
             <div class="live-fabric-caption">Visualizzazione comparativa</div>
-            <div class="live-fabric-sub">Bilanciamento visivo dei netti: posizione del marker e intensita del divario tra i coniugi.</div>
             <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="156"></canvas>
           </div>
         </div>
@@ -2401,25 +2390,75 @@
         ? "Netti equivalenti"
         : `Vantaggio netto: C${diffDisp > 0 ? 1 : 2}`;
 
+      const winnerSpouse = diffDisp === 0 ? 0 : (diffDisp > 0 ? 1 : 2);
+      const loserSpouse = diffDisp === 0 ? 0 : (diffDisp > 0 ? 2 : 1);
+
+      function roleForSpouse(spouseId) {
+        if (winnerSpouse === 0) return "equal";
+        if (winnerSpouse === spouseId) return "winner";
+        if (loserSpouse === spouseId) return "loser";
+        return "equal";
+      }
+
+      function addOutcomeFigure(left, top, spouseId, role) {
+        const palette = role === "winner"
+          ? { bg: "#e8f5f1", stroke: "#9fcfc3", ink: "#0e635b", tag: "VINCE" }
+          : role === "loser"
+            ? { bg: "#f8eee1", stroke: "#dfbe8d", ink: "#84510b", tag: "PERDE" }
+            : { bg: "#edf3f1", stroke: "#bfd2cd", ink: "#3d5c59", tag: "PARI" };
+
+        fc.add(new window.fabric.Rect({
+          left,
+          top,
+          width: 96,
+          height: 46,
+          rx: 11,
+          ry: 11,
+          fill: palette.bg,
+          stroke: palette.stroke,
+          strokeWidth: 1
+        }));
+
+        fc.add(new window.fabric.Circle({
+          left: left + 10,
+          top: top + 9,
+          radius: 7,
+          fill: palette.ink
+        }));
+        fc.add(new window.fabric.Rect({
+          left: left + 15,
+          top: top + 23,
+          width: 12,
+          height: 14,
+          rx: 4,
+          ry: 4,
+          fill: palette.ink
+        }));
+
+        fc.add(new window.fabric.Text(`C${spouseId}`, {
+          left: left + 34,
+          top: top + 10,
+          fontSize: 13,
+          fill: palette.ink,
+          fontFamily: "Candara",
+          fontWeight: "700"
+        }));
+        fc.add(new window.fabric.Text(palette.tag, {
+          left: left + 34,
+          top: top + 24,
+          fontSize: 11,
+          fill: palette.ink,
+          fontFamily: "Candara",
+          fontWeight: "700"
+        }));
+      }
+
       const badgeW = Math.min(352, Math.max(220, w - 64));
       const badgeX = (w - badgeW) / 2;
       const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
       const badgeFontSize = w < 360 ? 12 : 14;
-      fc.add(new window.fabric.Rect({
-        left: badgeX,
-        top: 18,
-        width: badgeW,
-        height: 34,
-        rx: 17,
-        ry: 17,
-        fill: "#ffffff",
-        stroke: diffDisp === 0 ? "#98b8b3" : (diffDisp > 0 ? "#8ec3b9" : "#d9b47e"),
-        strokeWidth: 1
-      }));
-
-      fc.add(new window.fabric.Text(badgeText, {
-        left: badgeX + 14,
-        top: w < 360 ? 29 : 27,
+      addOutcomeFigure(18, 18, 1, roleForSpouse(1));
+      addOutcomeFigure(w - 114, 18, 2, roleForSpouse(2));
         fontSize: badgeFontSize,
         fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
         fontFamily: "Candara",
