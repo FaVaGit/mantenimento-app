@@ -1627,14 +1627,24 @@
       const trigger = wrap.querySelector(".top-actions-trigger");
       const menu = wrap.querySelector(".top-actions-menu");
       if (!trigger || !menu) return;
+      const supportsHover = !!(window.matchMedia && window.matchMedia("(hover: hover)").matches);
 
       setTopActionsOpen(false);
 
-      trigger.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setTopActionsOpen(!wrap.classList.contains("is-open"));
-      });
+      if (supportsHover) {
+        wrap.addEventListener("mouseenter", () => {
+          setTopActionsOpen(true);
+        });
+        wrap.addEventListener("mouseleave", () => {
+          setTopActionsOpen(false);
+        });
+      } else {
+        trigger.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setTopActionsOpen(!wrap.classList.contains("is-open"));
+        });
+      }
 
       menu.addEventListener("click", (e) => {
         if (e.target && e.target.closest("button")) {
@@ -1642,11 +1652,13 @@
         }
       });
 
-      document.addEventListener("click", (e) => {
-        if (!wrap.contains(e.target)) {
-          setTopActionsOpen(false);
-        }
-      });
+      if (!supportsHover) {
+        document.addEventListener("click", (e) => {
+          if (!wrap.contains(e.target)) {
+            setTopActionsOpen(false);
+          }
+        });
+      }
 
       wrap.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
