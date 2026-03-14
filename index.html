@@ -833,14 +833,6 @@
         0 8px 18px rgba(24, 73, 67, 0.1);
     }
 
-    .live-fabric-caption {
-      font-size: 1.02rem;
-      color: #1f4844;
-      margin-bottom: 4px;
-      font-weight: 800;
-      letter-spacing: 0.3px;
-    }
-
     .live-fabric-canvas {
       width: 100%;
       max-width: 100%;
@@ -1027,9 +1019,6 @@
       }
       .note {
         font-size: 0.88rem;
-      }
-      .live-fabric-caption {
-        font-size: 0.98rem;
       }
       .live-columns { grid-template-columns: 1fr; }
       .shared-grid { grid-template-columns: 1fr; }
@@ -2320,7 +2309,6 @@
         </div>
         <div class="live-diff">
           <div class="live-fabric-wrap">
-            <div class="live-fabric-caption">Visualizzazione comparativa</div>
             <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="156"></canvas>
           </div>
         </div>
@@ -2411,54 +2399,54 @@
         fc.add(new window.fabric.Circle({
           left,
           top,
-          radius: 31,
+          radius: 38,
           fill: palette.bg,
           stroke: palette.stroke,
           strokeWidth: 1.5,
           shadow: "0 2px 6px rgba(0,0,0,0.10)"
         }));
 
-        const cx = left + 31;
-        const cy = top + 31;
+        const cx = left + 38;
+        const cy = top + 38;
 
         // Person icon centered inside the bubble.
         fc.add(new window.fabric.Circle({
-          left: cx - 7,
-          top: cy - 16,
-          radius: 7,
+          left: cx - 8,
+          top: cy - 19,
+          radius: 8,
           fill: palette.ink
         }));
         fc.add(new window.fabric.Rect({
-          left: cx - 8,
-          top: cy - 8,
-          width: 16,
-          height: 17,
-          rx: 5,
-          ry: 5,
+          left: cx - 9,
+          top: cy - 9,
+          width: 18,
+          height: 20,
+          rx: 6,
+          ry: 6,
           fill: palette.ink
         }));
 
-        fc.add(new window.fabric.Circle({ left: cx - 4, top: cy - 14, radius: 1.1, fill: "#ffffff" }));
-        fc.add(new window.fabric.Circle({ left: cx + 2, top: cy - 14, radius: 1.1, fill: "#ffffff" }));
+        fc.add(new window.fabric.Circle({ left: cx - 4.6, top: cy - 16.5, radius: 1.2, fill: "#ffffff" }));
+        fc.add(new window.fabric.Circle({ left: cx + 2.6, top: cy - 16.5, radius: 1.2, fill: "#ffffff" }));
 
         const mouthPath = role === "winner"
-          ? "M 0 0 Q 4.5 4.5 9 0"
+          ? "M 0 0 Q 5.5 5.5 11 0"
           : role === "loser"
-            ? "M 0 3.5 Q 4.5 -1 9 3.5"
-            : "M 0 1.8 L 9 1.8";
+            ? "M 0 4.2 Q 5.5 -1.2 11 4.2"
+            : "M 0 2.2 L 11 2.2";
         fc.add(new window.fabric.Path(mouthPath, {
-          left: cx - 4.5,
-          top: cy - 8,
+          left: cx - 5.5,
+          top: cy - 10,
           fill: "",
           stroke: "#ffffff",
-          strokeWidth: 1.2,
+          strokeWidth: 1.3,
           strokeLineCap: "round"
         }));
 
         fc.add(new window.fabric.Text(`C${spouseId}`, {
-          left: cx - 9,
-          top: cy + 12,
-          fontSize: 12,
+          left: cx - 10,
+          top: cy + 16,
+          fontSize: 13,
           fill: palette.ink,
           fontFamily: "Candara",
           fontWeight: "700"
@@ -2469,8 +2457,8 @@
       const badgeX = (w - badgeW) / 2;
       const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
       const badgeFontSize = w < 360 ? 12 : 14;
-      addOutcomeFigure(20, 14, 1, roleForSpouse(1));
-      addOutcomeFigure(w - 82, 14, 2, roleForSpouse(2));
+      addOutcomeFigure(20, 10, 1, roleForSpouse(1));
+      addOutcomeFigure(w - 96, 10, 2, roleForSpouse(2));
       fc.add(new window.fabric.Text(badgeText, {
         left: badgeX + 14,
         top: w < 360 ? 29 : 27,
