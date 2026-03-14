@@ -1526,11 +1526,54 @@
       return doc;
     }
 
+    function findLegacyMapMatchByUsername(mapObj, username) {
+      if (!mapObj || typeof mapObj !== "object") return null;
+      const uname = normalizeUsername(username);
+      if (Object.prototype.hasOwnProperty.call(mapObj, uname)) {
+        return { key: uname, value: mapObj[uname] };
+      }
+
+      for (const [k, v] of Object.entries(mapObj)) {
+        if (normalizeUsername(k) === uname) {
+          return { key: k, value: v };
+        }
+        if (v && typeof v === "object") {
+          const embeddedUser = normalizeUsername(v.username || v.user || v.login || "");
+          if (embeddedUser && embeddedUser === uname) {
+            return { key: k, value: v };
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function resolveLegacyUserAndProfile(doc, username) {
+      const userMatch = findLegacyMapMatchByUsername(doc.users, username);
+      const profileMatch = findLegacyMapMatchByUsername(doc.profiles, username);
+
+      let userRecord = userMatch && userMatch.value ? userMatch.value : null;
+      let payload = profileMatch && profileMatch.value ? profileMatch.value : null;
+
+      if (!payload && userMatch && userMatch.key && doc.profiles[userMatch.key]) {
+        payload = doc.profiles[userMatch.key];
+      }
+      if (!userRecord && profileMatch && profileMatch.key && doc.users[profileMatch.key]) {
+        userRecord = doc.users[profileMatch.key];
+      }
+
+      return {
+        userRecord,
+        payload,
+        userKey: userMatch ? userMatch.key : "",
+        profileKey: profileMatch ? profileMatch.key : ""
+      };
+    }
+
     async function findLegacyGistByUsername(token, username) {
       const gists = await githubApiLegacyRequest("GET", "https://api.github.com/gists?per_page=100", token);
       if (!Array.isArray(gists)) return null;
 
-      const uname = normalizeUsername(username);
       for (const gist of gists) {
         try {
           const desc = String(gist.description || "").toLowerCase();
@@ -1539,7 +1582,8 @@
           if (!hasLegacyHint) continue;
 
           const doc = await readLegacyGistDoc(token, gist.id);
-          if ((doc.users && doc.users[uname]) || (doc.profiles && doc.profiles[uname])) {
+          const match = resolveLegacyUserAndProfile(doc, username);
+          if (match.userRecord || match.payload) {
             return gist.id;
           }
         } catch (_) {
@@ -1576,10 +1620,13 @@
 
       try {
         const doc = await readLegacyGistDoc(token, gistId);
-        const userRecord = doc.users[authSession.username];
-        const payload = doc.profiles[authSession.username];
+        const match = resolveLegacyUserAndProfile(doc, authSession.username);
+        const userRecord = match.userRecord;
+        const payload = match.payload;
         if (!userRecord || !payload || !payload.iv || !payload.data) {
-          throw new Error("Nessun dato legacy trovato per questo utente nel Gist indicato");
+          const userKeys = Object.keys(doc.users || {}).slice(0, 8).join(", ");
+          const profileKeys = Object.keys(doc.profiles || {}).slice(0, 8).join(", ");
+          throw new Error(`Nessun dato legacy trovato nel formato atteso. Chiavi users: [${userKeys || "vuoto"}] - chiavi profiles: [${profileKeys || "vuoto"}]`);
         }
 
         const oldSalt = base64ToBytes(userRecord.salt);
