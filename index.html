@@ -240,6 +240,33 @@
       color: #27403e;
     }
 
+    .spouse-name-input {
+      border: none;
+      border-bottom: 2px dashed #74c3b9;
+      background: transparent;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #27403e;
+      width: 100%;
+      outline: none;
+      padding: 2px 0 3px;
+      margin: 0 0 8px;
+      display: block;
+    }
+
+    .spouse-name-input:focus {
+      border-bottom-color: #0b6e66;
+      background: rgba(11,110,102,0.05);
+      border-radius: 4px 4px 0 0;
+      padding-left: 4px;
+    }
+
+    .spouse-name-input::placeholder {
+      color: #8aadaa;
+      font-weight: 400;
+      font-style: italic;
+    }
+
     .field {
       display: flex;
       flex-direction: column;
@@ -1408,7 +1435,7 @@
               <input id="simplePerc" type="number" min="0" max="100" step="1" value="50" />
             </div>
             <div class="field perm-inline-field">
-              <label for="permSlider" class="label-row">Permanenza figli (% Coniuge 1 / Coniuge 2)
+              <label for="permSlider" class="label-row">Permanenza figli (% <span id="lblPerm1">Coniuge 1</span> / <span id="lblPerm2">Coniuge 2</span>)
                 <span class="hint" title="Usa slider o caselle laterali: i due valori restano sempre complementari e sommano 100%.">i</span>
               </label>
               <div class="perm-inline-control">
@@ -1421,7 +1448,7 @@
 
           <div class="spouse-grid">
             <div class="spouse-box">
-              <h3>Coniuge 1</h3>
+              <input type="text" id="nome1" class="spouse-name-input" placeholder="Coniuge 1" maxlength="30" autocomplete="off" aria-label="Nome Coniuge 1" />
               <div class="top-inputs">
                 <div class="field">
                   <label for="reddito1" class="label-row"><span id="lblReddito1">Reddito mensile netto (EUR)</span>
@@ -1451,7 +1478,7 @@
             </div>
 
             <div class="spouse-box">
-              <h3>Coniuge 2</h3>
+              <input type="text" id="nome2" class="spouse-name-input" placeholder="Coniuge 2" maxlength="30" autocomplete="off" aria-label="Nome Coniuge 2" />
               <div class="top-inputs">
                 <div class="field">
                   <label for="reddito2" class="label-row"><span id="lblReddito2">Reddito mensile netto (EUR)</span>
@@ -1523,8 +1550,8 @@
             <thead>
               <tr>
                 <th>Voce spesa</th>
-                <th>Coniuge 1 (EUR)</th>
-                <th>Coniuge 2 (EUR)</th>
+                <th id="thSpese1">Coniuge 1 (EUR)</th>
+                <th id="thSpese2">Coniuge 2 (EUR)</th>
                 <th class="col-actions">Azioni</th>
               </tr>
             </thead>
@@ -2674,6 +2701,20 @@
       };
     }
 
+    function c1n() { return (document.getElementById("nome1").value || "").trim() || "Coniuge 1"; }
+    function c2n() { return (document.getElementById("nome2").value || "").trim() || "Coniuge 2"; }
+
+    function updateSpouseLabels() {
+      const th1 = document.getElementById("thSpese1");
+      const th2 = document.getElementById("thSpese2");
+      const lp1 = document.getElementById("lblPerm1");
+      const lp2 = document.getElementById("lblPerm2");
+      if (th1) th1.textContent = c1n() + " (EUR)";
+      if (th2) th2.textContent = c2n() + " (EUR)";
+      if (lp1) lp1.textContent = c1n();
+      if (lp2) lp2.textContent = c2n();
+    }
+
     function renderLivePanel(m) {
       const liveNet = document.getElementById("liveNet");
       const liveBreakdown = document.getElementById("liveBreakdown");
@@ -2686,11 +2727,11 @@
       const absDiffDisp = Math.abs(diffDisp);
       liveNet.innerHTML = `
         <div class="live-k">
-          Netto disponibile Coniuge 1
+          Netto disponibile ${c1n()}
           <strong class="${m.disp1 >= 0 ? "ok" : "bad"}">${eur(m.disp1)}</strong>
         </div>
         <div class="live-k">
-          Netto disponibile Coniuge 2
+          Netto disponibile ${c2n()}
           <strong class="${m.disp2 >= 0 ? "ok" : "bad"}">${eur(m.disp2)}</strong>
         </div>
         <div class="live-diff">
@@ -2705,7 +2746,7 @@
       liveBreakdown.innerHTML = `
         <div class="live-columns">
           <div class="live-col">
-            <h4>Coniuge 1</h4>
+            <h4>${c1n()}</h4>
             <div class="live-row"><span>Entrate totali (reddito + assegni + INPS)</span><strong class="ok">${eur(entrate1)}</strong></div>
             <div class="live-row"><span>Assegno mantenimento pagato all'altro coniuge</span><strong class="warn">${eur(m.match12)}</strong></div>
             <div class="live-row"><span>Assegno mantenimento pagato esterno</span><strong class="warn">${eur(m.esternoPag1)}</strong></div>
@@ -2713,7 +2754,7 @@
             <div class="live-row"><span>Uscite totali</span><strong class="warn">${eur(uscite1)}</strong></div>
           </div>
           <div class="live-col">
-            <h4>Coniuge 2</h4>
+            <h4>${c2n()}</h4>
             <div class="live-row"><span>Entrate totali (reddito + assegni + INPS)</span><strong class="ok">${eur(entrate2)}</strong></div>
             <div class="live-row"><span>Assegno mantenimento pagato all'altro coniuge</span><strong class="warn">${eur(m.match21)}</strong></div>
             <div class="live-row"><span>Assegno mantenimento pagato esterno</span><strong class="warn">${eur(m.esternoPag2)}</strong></div>
@@ -2763,7 +2804,7 @@
 
       const statusText = diffDisp === 0
         ? "Netti equivalenti"
-        : `Vantaggio netto: C${diffDisp > 0 ? 1 : 2}`;
+        : `Vantaggio netto: ${diffDisp > 0 ? c1n() : c2n()}`;
 
       const winnerSpouse = diffDisp === 0 ? 0 : (diffDisp > 0 ? 1 : 2);
       const loserSpouse = diffDisp === 0 ? 0 : (diffDisp > 0 ? 2 : 1);
@@ -2924,7 +2965,7 @@
         shadow: "0 2px 7px rgba(0,0,0,0.24)"
       }));
 
-      fc.add(new window.fabric.Text("C1", {
+      fc.add(new window.fabric.Text(c1n().slice(0, 5), {
         left: 26,
         top: 123,
         fontSize: 13,
@@ -2932,7 +2973,7 @@
         fontFamily: "Candara",
         fontWeight: "700"
       }));
-      fc.add(new window.fabric.Text("C2", {
+      fc.add(new window.fabric.Text(c2n().slice(0, 5), {
         left: w - 41,
         top: 123,
         fontSize: 13,
@@ -3010,9 +3051,9 @@
 
       let mainText = "Nessun trasferimento suggerito";
       if (m.assegnoDa1a2 > 0.005) {
-        mainText = `Coniuge 1 -> Coniuge 2: ${eur(m.assegnoDa1a2)} / mese`;
+        mainText = `${c1n()} \u2192 ${c2n()}: ${eur(m.assegnoDa1a2)} / mese`;
       } else if (m.assegnoDa2a1 > 0.005) {
-        mainText = `Coniuge 2 -> Coniuge 1: ${eur(m.assegnoDa2a1)} / mese`;
+        mainText = `${c2n()} \u2192 ${c1n()}: ${eur(m.assegnoDa2a1)} / mese`;
       }
       document.getElementById("risultatoMain").textContent = mainText;
 
@@ -3022,14 +3063,14 @@
       const items = [
         ["Modalita attiva", m.mode === "legal" ? "Legale-proporzionale" : (m.mode === "simple" ? `Semplificata (${m.simplePerc.toFixed(0)}%)` : "Linee guida Tribunale di Genova"), "warn"],
         ["Base reddito", m.incomeMode === "annual" ? "Annuale (convertito in mensile)" : "Mensile", "warn"],
-        ["Disponibilita netta Coniuge 1", eur(m.disp1), m.disp1 >= 0 ? "ok" : "bad"],
-        ["Disponibilita netta Coniuge 2", eur(m.disp2), m.disp2 >= 0 ? "ok" : "bad"],
+        [`Disponibilita netta ${c1n()}`, eur(m.disp1), m.disp1 >= 0 ? "ok" : "bad"],
+        [`Disponibilita netta ${c2n()}`, eur(m.disp2), m.disp2 >= 0 ? "ok" : "bad"],
         ["Totale spese inserite", eur(m.speseTot), "warn"],
         ["Fabbisogno figli stimato", eur(m.fabbisognoFigli), "warn"],
-        ["Quota teorica Coniuge 1", eur(m.quotaTeorica1), "ok"],
-        ["Quota teorica Coniuge 2", eur(m.quotaTeorica2), "ok"],
-        ["Post-assegno Coniuge 1", eur(m.post1), m.post1 >= 0 ? "ok" : "bad"],
-        ["Post-assegno Coniuge 2", eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
+        [`Quota teorica ${c1n()}`, eur(m.quotaTeorica1), "ok"],
+        [`Quota teorica ${c2n()}`, eur(m.quotaTeorica2), "ok"],
+        [`Post-assegno ${c1n()}`, eur(m.post1), m.post1 >= 0 ? "ok" : "bad"],
+        [`Post-assegno ${c2n()}`, eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
         ["Importo per figlio", eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
       ];
 
@@ -3069,10 +3110,10 @@
       let assegnoDir = "";
       if (m.assegnoDa1a2 > 0.005) {
         assegnoText = eur(m.assegnoDa1a2) + " / mese";
-        assegnoDir = "Coniuge 1 &rarr; Coniuge 2";
+        assegnoDir = `${c1n()} &rarr; ${c2n()}`;
       } else if (m.assegnoDa2a1 > 0.005) {
         assegnoText = eur(m.assegnoDa2a1) + " / mese";
-        assegnoDir = "Coniuge 2 &rarr; Coniuge 1";
+        assegnoDir = `${c2n()} &rarr; ${c1n()}`;
       }
 
       const speseRows = expenseItems.map((item, i) => {
@@ -3243,11 +3284,11 @@
   <div class="live-panel-title">Impatto in Tempo Reale sul Netto</div>
   <div class="live-net-row">
     <div class="live-net-card">
-      <div class="live-net-label">Netto disponibile Coniuge 1</div>
+      <div class="live-net-label">Netto disponibile ${c1n()}</div>
       <div class="live-net-value c1">${eur(m.disp1)}</div>
     </div>
     <div class="live-net-card">
-      <div class="live-net-label">Netto disponibile Coniuge 2</div>
+      <div class="live-net-label">Netto disponibile ${c2n()}</div>
       <div class="live-net-value c2">${eur(m.disp2)}</div>
     </div>
   </div>
@@ -3279,7 +3320,7 @@
             const diff = m.disp1 - m.disp2;
             const absDiff = Math.abs(diff);
             if (absDiff < 0.5) return `Parità | Delta ${eur(0)}`;
-            const winner = diff > 0 ? "C1" : "C2";
+            const winner = diff > 0 ? c1n() : c2n();
             return `Vantaggio netto: ${winner} | Delta ${eur(absDiff)}`;
           })()}
         </div>
@@ -3329,12 +3370,12 @@
         <tr><td>Modalità di calcolo</td><td>${modeName}</td></tr>
         <tr><td>Base reddito</td><td>${m.incomeMode === "annual" ? "Annuale (÷12 per mensile)" : "Mensile"}</td></tr>
         <tr><td>Numero figli</td><td>${m.figli}</td></tr>
-        <tr><td>Permanenza Coniuge 1</td><td>${m.perm1.toFixed(0)}%</td></tr>
-        <tr><td>Permanenza Coniuge 2</td><td>${m.perm2.toFixed(0)}%</td></tr>
+        <tr><td>Permanenza ${c1n()}</td><td>${m.perm1.toFixed(0)}%</td></tr>
+        <tr><td>Permanenza ${c2n()}</td><td>${m.perm2.toFixed(0)}%</td></tr>
       </tbody>
     </table>
     <table>
-      <thead><tr><th>Voce</th><th class="num">Coniuge 1</th><th class="num">Coniuge 2</th></tr></thead>
+      <thead><tr><th>Voce</th><th class="num">${c1n()}</th><th class="num">${c2n()}</th></tr></thead>
       <tbody>
         <tr><td>Reddito netto${m.incomeMode === "annual" ? " annuo" : " mensile"}</td>
             <td class="num">${eur(m.r1Raw)}</td><td class="num">${eur(m.r2Raw)}</td></tr>
@@ -3354,8 +3395,8 @@
     <thead>
       <tr>
         <th>Voce</th>
-        <th class="num" style="width:110px">Coniuge 1 €/mese</th>
-        <th class="num" style="width:110px">Coniuge 2 €/mese</th>
+        <th class="num" style="width:110px">${c1n()} €/mese</th>
+        <th class="num" style="width:110px">${c2n()} €/mese</th>
         <th class="num" style="width:110px">Totale €/mese</th>
       </tr>
     </thead>
@@ -3376,7 +3417,7 @@
   <div class="section-title">Analisi Economica Comparativa</div>
   <div class="balance-row">
     <div class="bal-card c1">
-      <div class="bal-card-title">Coniuge 1</div>
+      <div class="bal-card-title">${c1n()}</div>
       <div class="bal-line"><span class="bal-lbl">Reddito netto mensile</span><span class="bal-val">${eur(m.r1)}</span></div>
       <div class="bal-line"><span class="bal-lbl">+ Assegno percepito</span><span class="bal-val">+ ${eur(m.aPerc1)}</span></div>
       <div class="bal-line"><span class="bal-lbl">+ Assegni familiari</span><span class="bal-val">+ ${eur(m.aFam1)}</span></div>
@@ -3389,7 +3430,7 @@
         <span class="bal-val ${m.post1 >= 0 ? 'green' : 'red'}">${eur(m.post1)}</span></div>
     </div>
     <div class="bal-card c2">
-      <div class="bal-card-title">Coniuge 2</div>
+      <div class="bal-card-title">${c2n()}</div>
       <div class="bal-line"><span class="bal-lbl">Reddito netto mensile</span><span class="bal-val">${eur(m.r2)}</span></div>
       <div class="bal-line"><span class="bal-lbl">+ Assegno percepito</span><span class="bal-val">+ ${eur(m.aPerc2)}</span></div>
       <div class="bal-line"><span class="bal-lbl">+ Assegni familiari</span><span class="bal-val">+ ${eur(m.aFam2)}</span></div>
@@ -3411,13 +3452,13 @@
     <div class="kpi-box"><div class="kpi-lbl">Totale spese</div><div class="kpi-val warn">${eur(m.speseTot)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">Fabbisogno figli stimato</div><div class="kpi-val warn">${eur(m.fabbisognoFigli)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">Importo per figlio</div><div class="kpi-val warn">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Quota teorica Coniuge 1</div><div class="kpi-val ok">${eur(m.quotaTeorica1)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Quota teorica Coniuge 2</div><div class="kpi-val ok">${eur(m.quotaTeorica2)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Quota teorica ${c1n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica1)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">Quota teorica ${c2n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica2)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">Assegno suggerito</div>
       <div class="kpi-val ${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? 'warn' : 'ok'}">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1))}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Post-assegno Coniuge 1</div>
+    <div class="kpi-box"><div class="kpi-lbl">Post-assegno ${c1n()}</div>
       <div class="kpi-val ${m.post1 >= 0 ? 'ok' : 'bad'}">${eur(m.post1)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Post-assegno Coniuge 2</div>
+    <div class="kpi-box"><div class="kpi-lbl">Post-assegno ${c2n()}</div>
       <div class="kpi-val ${m.post2 >= 0 ? 'ok' : 'bad'}">${eur(m.post2)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">Quota diretta C1 / C2</div>
       <div class="kpi-val ok" style="font-size:10pt">${eur(m.quotaDiretta1)} / ${eur(m.quotaDiretta2)}</div></div>
@@ -3528,7 +3569,9 @@
       };
       const spese = expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
       const expenseItemsState = expenseItems.map((item) => ({ label: item.label, help: item.help }));
-      return { base, spese, expenseItems: expenseItemsState };
+      return { base, spese, expenseItems: expenseItemsState,
+        nome1: document.getElementById("nome1").value,
+        nome2: document.getElementById("nome2").value };
     }
 
     function hydrateState(state) {
@@ -3545,6 +3588,9 @@
       while (expenseItems.length < state.spese.length) {
         expenseItems.push(normalizeExpenseItem(null, expenseItems.length));
       }
+      if (state.nome1 !== undefined) document.getElementById("nome1").value = state.nome1;
+      if (state.nome2 !== undefined) document.getElementById("nome2").value = state.nome2;
+      updateSpouseLabels();
       buildExpenseRows();
       syncPermanenza();
       state.spese.forEach((row, i) => {
@@ -3740,6 +3786,9 @@
     syncPermanenza();
     incomeModeLast = document.getElementById("incomeMode").value || "monthly";
     updateModeUi();
+    updateSpouseLabels();
+    document.getElementById("nome1").addEventListener("input", () => { updateSpouseLabels(); renderAll(); });
+    document.getElementById("nome2").addEventListener("input", () => { updateSpouseLabels(); renderAll(); });
     renderAll();
   </script>
 </body>
