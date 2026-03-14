@@ -2453,15 +2453,27 @@
         }));
       }
 
-      const badgeW = Math.min(352, Math.max(220, w - 64));
+      const badgeW = Math.min(520, Math.max(300, w - 220));
       const badgeX = (w - badgeW) / 2;
       const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
-      const badgeFontSize = w < 360 ? 12 : 14;
+      const badgeFontSize = w < 560 ? 24 : 28;
       addOutcomeFigure(20, 10, 1, roleForSpouse(1));
       addOutcomeFigure(w - 96, 10, 2, roleForSpouse(2));
+      const badgeHeight = w < 560 ? 56 : 62;
+      fc.add(new window.fabric.Rect({
+        left: badgeX,
+        top: 18,
+        width: badgeW,
+        height: badgeHeight,
+        rx: 20,
+        ry: 20,
+        fill: "#ffffff",
+        stroke: diffDisp === 0 ? "#98b8b3" : (diffDisp > 0 ? "#8ec3b9" : "#d9b47e"),
+        strokeWidth: 1
+      }));
       fc.add(new window.fabric.Text(badgeText, {
-        left: badgeX + 14,
-        top: w < 360 ? 29 : 27,
+        left: badgeX + 18,
+        top: w < 560 ? 34 : 32,
         fontSize: badgeFontSize,
         fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
         fontFamily: "Candara",
