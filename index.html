@@ -1169,14 +1169,39 @@
     }
 
     const PRIMARY_PSEUDO_EMAIL_DOMAIN = "keylock-auth.app";
-    const LEGACY_PSEUDO_EMAIL_DOMAINS = ["keylock.app", "keylock.local"];
+    const LEGACY_PSEUDO_EMAIL_DOMAINS = ["keylock.app"];
+    const KEYLOCK_EMAIL_HINTS_KEY = "keylockEmailHints";
 
-    function buildPseudoEmailCandidates(username) {
+    function getPreferredPseudoEmailHint(username) {
+      const hints = getJsonStore(KEYLOCK_EMAIL_HINTS_KEY, {});
+      return String(hints[normalizeUsername(username)] || "").trim().toLowerCase();
+    }
+
+    function savePreferredPseudoEmailHint(username, email) {
+      const uname = normalizeUsername(username);
+      const value = String(email || "").trim().toLowerCase();
+      if (!uname || !value) return;
+      const hints = getJsonStore(KEYLOCK_EMAIL_HINTS_KEY, {});
+      hints[uname] = value;
+      setJsonStore(KEYLOCK_EMAIL_HINTS_KEY, hints);
+    }
+
+    function buildPseudoEmailCandidates(username, includeLegacy = false) {
       const base = normalizeUsername(username);
-      const domains = [PRIMARY_PSEUDO_EMAIL_DOMAIN, ...LEGACY_PSEUDO_EMAIL_DOMAINS]
-        .map((d) => String(d || "").trim().toLowerCase())
-        .filter((d, i, arr) => d && arr.indexOf(d) === i);
-      return domains.map((domain) => `${base}@${domain}`);
+      const primary = `${base}@${PRIMARY_PSEUDO_EMAIL_DOMAIN}`;
+      const hint = getPreferredPseudoEmailHint(username);
+      const out = [];
+
+      if (hint && hint.includes("@")) out.push(hint);
+      out.push(primary);
+
+      if (includeLegacy) {
+        LEGACY_PSEUDO_EMAIL_DOMAINS.forEach((domain) => {
+          out.push(`${base}@${String(domain || "").trim().toLowerCase()}`);
+        });
+      }
+
+      return out.filter((v, i, arr) => v && arr.indexOf(v) === i);
     }
 
     function usernameToPseudoEmail(username) {
@@ -1221,12 +1246,14 @@
       return /invalid login credentials/i.test(String(msg || ""));
     }
 
-    async function signInWithPseudoEmailCandidates(username, password) {
-      const emails = buildPseudoEmailCandidates(username);
+    async function signInWithPseudoEmailCandidates(username, password, options = {}) {
+      const includeLegacy = !!options.includeLegacy;
+      const emails = buildPseudoEmailCandidates(username, includeLegacy);
       let lastErrorMessage = "";
       for (const email of emails) {
         const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
         if (!signInRes.error && signInRes.data && signInRes.data.user) {
+          savePreferredPseudoEmailHint(username, email);
           return { ok: true, email, result: signInRes, lastErrorMessage };
         }
 
@@ -1594,17 +1621,6 @@
         return;
       }
 
-      const preLogin = await signInWithPseudoEmailCandidates(username, password);
-      if (preLogin.ok) {
-        const loginMsg = await completeAuthSession(username, password, preLogin.result.data.user);
-        if (preLogin.email !== usernameToPseudoEmail(username)) {
-          setAuthStatus(`${loginMsg} Rilevato account legacy e autenticato automaticamente.`);
-        } else {
-          setAuthStatus(loginMsg);
-        }
-        return;
-      }
-
       const email = usernameToPseudoEmail(username);
       const signUpRes = await supabaseClient.auth.signUp({
         email,
@@ -1617,17 +1633,19 @@
       if (signUpRes.error) {
         const signUpMsg = String(signUpRes.error.message || "");
         if (/already|registered/i.test(signUpMsg)) {
-          // User already exists with primary pseudo email: continue with login flow.
+          // User may already exist: continue with login flow.
         } else if (isRateLimitAuthMessage(signUpMsg)) {
-          setLocalAuthCooldown(parseRetryAfterSeconds(signUpMsg));
+          const waitSec = setLocalAuthCooldown(parseRetryAfterSeconds(signUpMsg));
           signUpRateLimited = true;
+          setAuthStatus(`Rate limit Supabase su Registrati. Attendi ${waitSec}s e riprova.`, true);
+          return;
         } else {
           setAuthStatus(`Registrazione fallita: ${signUpRes.error.message}`, true);
           return;
         }
       }
 
-      const postLogin = await signInWithPseudoEmailCandidates(username, password);
+      const postLogin = await signInWithPseudoEmailCandidates(username, password, { includeLegacy: false });
       if (!postLogin.ok) {
         if (signUpRateLimited || isRateLimitAuthMessage(postLogin.lastErrorMessage)) {
           setAuthStatus("Rate limit Supabase su registrazione/login. Se l'utente esiste, attendi 1-2 minuti e riprova Login. Se e nuovo, attendi e riprova Registrati.", true);
@@ -1669,7 +1687,7 @@
         return;
       }
 
-      const signIn = await signInWithPseudoEmailCandidates(username, password);
+      const signIn = await signInWithPseudoEmailCandidates(username, password, { includeLegacy: true });
       if (!signIn.ok) {
         const loginMsg = String(signIn.lastErrorMessage || "");
         if (isRateLimitAuthMessage(loginMsg)) {
