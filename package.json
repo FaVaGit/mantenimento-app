@@ -1,14 +1,37 @@
 {
   "name": "mantenimento-app",
   "version": "1.0.0",
-  "private": true,
   "description": "Frontend + backend architecture for the mantenimento calculator",
   "type": "commonjs",
+  "main": "backend/calculate-model.js",
+  "files": [
+    "backend/",
+    "frontend/",
+    "scripts/",
+    "app.js"
+  ],
   "scripts": {
     "dev": "node backend/server.js",
     "build:frontend": "node scripts/build-frontend.mjs",
     "start": "npm run build:frontend && node backend/server.js"
   },
+  "keywords": [
+    "mantenimento",
+    "calcolo",
+    "assegno",
+    "figli",
+    "express"
+  ],
+  "author": "FaVaGit",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FaVaGit/mantenimento-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FaVaGit/mantenimento-app/issues"
+  },
+  "homepage": "https://github.com/FaVaGit/mantenimento-app#readme",
   "dependencies": {
     "dotenv": "^17.3.1",
     "express": "^4.21.2"
