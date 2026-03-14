@@ -144,6 +144,124 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
     }
 
+    /* ── COFFEE BUTTON (hero) ── */
+    .btn-coffee-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1.5px solid #d49a30;
+      background: linear-gradient(135deg, #fff8e8, #ffefc0);
+      color: #7a4800;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      box-shadow: 0 1px 4px rgba(180,120,0,0.15);
+      white-space: nowrap;
+    }
+
+    .btn-coffee-hero:hover {
+      background: linear-gradient(135deg, #fff3cc, #ffd966);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(180,120,0,0.22);
+    }
+
+    /* ── FLOATING COFFEE ── */
+    .coffee-float {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .coffee-float-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #d49a30;
+      background: linear-gradient(135deg, #fff8e8, #ffd96a);
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .15s, box-shadow .15s;
+      flex-shrink: 0;
+    }
+
+    .coffee-float-btn:hover {
+      transform: scale(1.12);
+      box-shadow: 0 6px 20px rgba(180,120,0,0.32);
+    }
+
+    .coffee-float-card {
+      background: #fff;
+      border: 1.5px solid #f0c36d;
+      border-radius: 14px;
+      padding: 12px 14px;
+      width: 230px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+      opacity: 0;
+      transform: translateY(8px) scale(0.97);
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      text-align: center;
+    }
+
+    .coffee-float:hover .coffee-float-card,
+    .coffee-float-card:hover {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .coffee-float-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #4a3000;
+      margin-bottom: 4px;
+    }
+
+    .coffee-float-sub {
+      font-size: 0.76rem;
+      color: #7a5e2a;
+      margin-bottom: 10px;
+      line-height: 1.45;
+    }
+
+    .coffee-float-btns {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .coffee-float-btns a {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity .15s;
+    }
+
+    .coffee-float-btns a:hover { opacity: 0.82; }
+    .coffee-float-btns .cf-paypal { background: #0070ba; color: #fff; }
+    .coffee-float-btns .cf-kofi   { background: #ff5e5b; color: #fff; }
+
+    body.pdf-exporting .coffee-float,
+    body.pdf-exporting .btn-coffee-hero { display: none !important; }
+
     .zoom-controls button {
       border-radius: 9px;
       border: 1px solid #9fbdb7;
@@ -1374,6 +1492,7 @@
           <button type="button" id="btnZoomIn" title="Aumenta zoom">A+</button>
           <button type="button" id="btnZoomReset" title="Ripristina zoom">Reset</button>
         </div>
+        <a class="btn-coffee-hero" href="https://ko-fi.com/fabiovacchino" target="_blank" rel="noopener noreferrer" title="Offrimi un caffè!">&#9749; Offrimi un caffè</a>
       </div>
     </section>
 
@@ -1646,6 +1765,19 @@
       <span>Copyright Fabio Vacchino</span>
       <span>Licensed under the <a href="LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a></span>
     </footer>
+  </div>
+
+  <!-- FLOATING COFFEE BUTTON -->
+  <div class="coffee-float">
+    <div class="coffee-float-card">
+      <div class="coffee-float-title">&#9749; Offrimi un caff&egrave;!</div>
+      <div class="coffee-float-sub">Lo strumento &egrave; gratuito. Se ti &egrave; stato utile, anche una piccola donazione fa la differenza.</div>
+      <div class="coffee-float-btns">
+        <a class="cf-paypal" href="https://paypal.me/fabiovacchino" target="_blank" rel="noopener noreferrer">&#x1F17F; PayPal</a>
+        <a class="cf-kofi" href="https://ko-fi.com/fabiovacchino" target="_blank" rel="noopener noreferrer">&hearts; Ko-fi</a>
+      </div>
+    </div>
+    <button class="coffee-float-btn" title="Offrimi un caff&egrave;!">&#9749;</button>
   </div>
 
   <script src="supabase-config.js"></script>
