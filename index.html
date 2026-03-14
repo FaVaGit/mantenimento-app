@@ -7,18 +7,19 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='28'>⚖️</text></svg>" />
   <style>
     :root {
-      --bg-1: #f4efe7;
-      --bg-2: #dfe8de;
-      --panel: #fffdf8;
-      --ink: #1f2a2a;
-      --muted: #5c6b6b;
-      --brand: #0f766e;
-      --brand-2: #d97706;
-      --line: #d6d8cf;
+      --bg-1: #edf4f2;
+      --bg-2: #dcebe7;
+      --bg-3: #f8f1df;
+      --panel: rgba(255, 255, 255, 0.84);
+      --ink: #162a2a;
+      --muted: #4d6362;
+      --brand: #0b6e66;
+      --brand-2: #c77a11;
+      --line: #c7d8d2;
       --ok: #166534;
       --warn: #a16207;
       --bad: #991b1b;
-      --shadow: 0 12px 30px rgba(15, 35, 35, 0.12);
+      --shadow: 0 14px 38px rgba(10, 40, 36, 0.14);
       --radius: 16px;
     }
 
@@ -27,10 +28,10 @@
       margin: 0;
       color: var(--ink);
       background:
-        radial-gradient(1000px 500px at 0% -10%, #fff7e6 0%, transparent 70%),
-        radial-gradient(900px 420px at 100% 0%, #e7f6f3 0%, transparent 65%),
-        linear-gradient(150deg, var(--bg-1), var(--bg-2));
-      font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+        radial-gradient(1000px 520px at -5% -8%, #fef4d8 0%, transparent 72%),
+        radial-gradient(880px 460px at 105% -4%, #d8f2ec 0%, transparent 67%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2) 62%, var(--bg-3));
+      font-family: "Candara", "Gill Sans", "Trebuchet MS", sans-serif;
       min-height: 100vh;
     }
 
@@ -48,12 +49,15 @@
     }
 
     .hero {
-      background: linear-gradient(120deg, #113a38, #1e5b56 45%, #326d64);
+      background:
+        radial-gradient(180% 120% at -20% -30%, rgba(255, 255, 255, 0.18), transparent 42%),
+        linear-gradient(125deg, #103635, #1d5d58 42%, #2f7a6f 90%);
       color: #f4fbfa;
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 22px;
       box-shadow: var(--shadow);
       margin-bottom: 14px;
+      border: 1px solid rgba(194, 227, 220, 0.35);
     }
 
     .hero h1 {
@@ -71,13 +75,14 @@
     }
 
     .top-actions-trigger {
-      border: 1px solid #9dc5be;
+      border: 1px solid #8bb8b0;
       border-radius: 999px;
-      background: #e8f4f1;
+      background: linear-gradient(135deg, #f7fcfb, #e0f2ee);
       color: #164440;
       padding: 8px 14px;
       font-weight: 800;
       cursor: default;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
     .top-actions-menu {
@@ -88,10 +93,11 @@
       padding: 8px;
       border-radius: 12px;
       border: 1px solid #b6cbc6;
-      background: #f5fbf9;
+      background: rgba(244, 252, 249, 0.96);
       box-shadow: 0 10px 22px rgba(8, 40, 37, 0.2);
       display: none;
       z-index: 35;
+      backdrop-filter: blur(7px);
     }
 
     .top-actions:hover .top-actions-menu,
@@ -123,13 +129,14 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
+      backdrop-filter: blur(8px);
     }
 
     .card h2 {
       margin: 0;
       padding: 14px 16px;
       border-bottom: 1px solid var(--line);
-      background: #faf9f4;
+      background: linear-gradient(90deg, rgba(249, 248, 242, 0.95), rgba(237, 246, 243, 0.95));
       font-size: 1.03rem;
       color: #253534;
     }
@@ -674,7 +681,7 @@
     .live-box {
       border-radius: 14px;
       padding: 12px;
-      background: #f7faf9;
+      background: linear-gradient(170deg, #f8fcfb, #eef8f6);
       border: 1px solid #cddfdc;
       margin-bottom: 10px;
     }
@@ -730,7 +737,7 @@
       grid-column: 1 / -1;
       border: 1px solid #d4ddd8;
       border-radius: 12px;
-      background: #f3f8f7;
+      background: linear-gradient(160deg, #f4faf8, #edf7f4);
       padding: 8px;
     }
 
@@ -768,6 +775,28 @@
       justify-content: space-between;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .live-fabric-wrap {
+      margin-top: 8px;
+      border: 1px dashed #b9d0cb;
+      border-radius: 12px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .live-fabric-caption {
+      font-size: 0.78rem;
+      color: #30514d;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .live-fabric-canvas {
+      width: 100%;
+      max-width: 100%;
+      display: block;
+      border-radius: 8px;
     }
 
     .history-list {
@@ -1185,6 +1214,7 @@
 
   <script src="supabase-config.js"></script>
   <script src="supabase.min.js"></script>
+  <script src="fabric.min.js"></script>
   <script src="html2pdf.bundle.min.js"></script>
   <script>
     const expenseItems = [
@@ -1231,6 +1261,7 @@
       loaded: null,
       history: []
     };
+    let netDiffFabricCanvas = null;
     let authFlowInProgress = false;
     let authRateLimitedUntilTs = 0;
 
@@ -2100,8 +2131,14 @@
             <strong class="${diffDisp === 0 ? "warn" : "ok"}">${leaderText}</strong>
             <strong class="${losingSpouse === 0 ? "warn" : "bad"}">${lossText}</strong>
           </div>
+          <div class="live-fabric-wrap">
+            <div class="live-fabric-caption">Visualizzazione comparativa (FabricJS)</div>
+            <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="118"></canvas>
+          </div>
         </div>
       `;
+
+      renderLiveDiffFabric(m, diffDisp, absDiffDisp);
 
       liveBreakdown.innerHTML = `
         <div class="live-columns">
@@ -2123,6 +2160,95 @@
           </div>
         </div>
       `;
+    }
+
+    function renderLiveDiffFabric(m, diffDisp, absDiffDisp) {
+      if (!window.fabric) return;
+      const canvasEl = document.getElementById("liveDiffCanvas");
+      if (!canvasEl) return;
+
+      const w = Math.max(280, Math.round(canvasEl.parentElement.clientWidth - 16));
+      const h = 118;
+      canvasEl.width = w;
+      canvasEl.height = h;
+
+      if (netDiffFabricCanvas) {
+        netDiffFabricCanvas.dispose();
+        netDiffFabricCanvas = null;
+      }
+
+      const fc = new window.fabric.StaticCanvas(canvasEl, { selection: false, renderOnAddRemove: false });
+      netDiffFabricCanvas = fc;
+
+      const centerX = w / 2;
+      const centerY = 62;
+      const radius = Math.min(44, Math.max(34, (w * 0.15)));
+      const totalAbs = Math.max(1, Math.abs(m.disp1) + Math.abs(m.disp2));
+      const shift = (diffDisp / totalAbs) * (radius * 1.5);
+      const pointerX = Math.max(centerX - radius * 1.6, Math.min(centerX + radius * 1.6, centerX + shift));
+
+      fc.add(new window.fabric.Rect({
+        left: 10,
+        top: 18,
+        width: w - 20,
+        height: 78,
+        rx: 12,
+        ry: 12,
+        fill: "#f7fcfa",
+        stroke: "#c9ddd8",
+        strokeWidth: 1
+      }));
+
+      fc.add(new window.fabric.Rect({
+        left: 20,
+        top: centerY - 7,
+        width: (w - 40) / 2,
+        height: 14,
+        fill: "#d8efe9"
+      }));
+      fc.add(new window.fabric.Rect({
+        left: centerX,
+        top: centerY - 7,
+        width: (w - 40) / 2,
+        height: 14,
+        fill: "#f4e2c9"
+      }));
+
+      fc.add(new window.fabric.Circle({
+        left: pointerX - 9,
+        top: centerY - 9,
+        radius: 9,
+        fill: diffDisp >= 0 ? "#0b6e66" : "#c77a11",
+        stroke: "#ffffff",
+        strokeWidth: 2,
+        shadow: "0 1px 3px rgba(0,0,0,0.18)"
+      }));
+
+      fc.add(new window.fabric.Text("C1", {
+        left: 24,
+        top: 40,
+        fontSize: 12,
+        fill: "#145b55",
+        fontFamily: "Candara"
+      }));
+      fc.add(new window.fabric.Text("C2", {
+        left: w - 38,
+        top: 40,
+        fontSize: 12,
+        fill: "#8a580f",
+        fontFamily: "Candara"
+      }));
+
+      fc.add(new window.fabric.Text(`Delta: ${eur(absDiffDisp)}`, {
+        left: 20,
+        top: 77,
+        fontSize: 12,
+        fill: "#244645",
+        fontFamily: "Candara",
+        fontWeight: "700"
+      }));
+
+      fc.renderAll();
     }
 
     function calculate() {
