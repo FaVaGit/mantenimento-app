@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calcolatore Mantenimento Figli</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='28'>⚖️</text></svg>" />
   <style>
     :root {
       --bg-1: #f4efe7;
@@ -845,6 +846,7 @@
             <div class="auth-dropdown" id="authDropdown">
               <div class="auth-box">
                 <div class="auth-head">KeyLock Cloud</div>
+                <form id="authLoginForm" autocomplete="on" onsubmit="return false;">
                 <div id="authLoginSection" class="auth-grid">
                   <div class="field">
                     <label for="keylockUser" class="label-row">Utente
@@ -861,8 +863,9 @@
                 </div>
                 <div id="authLoginActions" class="toolbar">
                   <button class="btn-secondary" id="btnRegisterKeyLock" type="button">Registrati</button>
-                  <button class="btn-primary" id="btnLoginKeyLock" type="button">Login</button>
+                  <button class="btn-primary" id="btnLoginKeyLock" type="submit">Login</button>
                 </div>
+                </form>
                 <div id="authSessionActions" class="toolbar is-hidden">
                   <button class="btn-secondary" id="btnLogoutKeyLock" type="button">Logout</button>
                   <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva profilo cloud</button>
@@ -870,12 +873,13 @@
                 </div>
                 <details id="legacyRecoveryBox">
                   <summary>Recupero legacy (una tantum)</summary>
+                  <form autocomplete="off" onsubmit="return false;">
                   <div class="auth-grid" style="margin-top:8px">
                     <div class="field">
                       <label for="legacyGithubToken" class="label-row">Token GitHub legacy
                         <span class="hint" title="Solo per migrare vecchi dati KeyLock salvati su Gist.">i</span>
                       </label>
-                      <input id="legacyGithubToken" type="password" autocomplete="off" placeholder="ghp_..." />
+                      <input id="legacyGithubToken" type="password" autocomplete="new-password" placeholder="ghp_..." />
                     </div>
                     <div class="field">
                       <label for="legacyGistId" class="label-row">Gist ID legacy
@@ -887,12 +891,13 @@
                       <label for="legacyKeylockPass" class="label-row">Password legacy
                         <span class="hint" title="Password usata nella vecchia versione per decifrare i dati.">i</span>
                       </label>
-                      <input id="legacyKeylockPass" type="password" autocomplete="off" placeholder="password vecchio KeyLock" />
+                      <input id="legacyKeylockPass" type="password" autocomplete="new-password" placeholder="password vecchio KeyLock" />
                     </div>
                   </div>
                   <div class="toolbar" style="margin-top:8px">
-                    <button class="btn-secondary" id="btnMigrateLegacy" type="button">Importa dati legacy</button>
+                    <button class="btn-secondary" id="btnMigrateLegacy" type="submit">Importa dati legacy</button>
                   </div>
+                  </form>
                 </details>
                 <div id="authStatus" class="auth-status">Non autenticato.</div>
               </div>
@@ -2663,6 +2668,11 @@
     });
 
     document.getElementById("btnLoginKeyLock").addEventListener("click", async () => {
+      await loginKeyLockUser();
+    });
+
+    document.getElementById("authLoginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
       await loginKeyLockUser();
     });
 
