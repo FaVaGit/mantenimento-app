@@ -3334,6 +3334,10 @@
       const now = new Date();
       const genDate = now.toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" });
       const genTime = now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+      const c1Name = c1n();
+      const c2Name = c2n();
+      const c1NameEsc = escapeHtml(c1Name);
+      const c2NameEsc = escapeHtml(c2Name);
 
       const modeName = m.mode === "legal"
         ? "Legale-proporzionale"
@@ -3343,10 +3347,10 @@
       let assegnoDir = "";
       if (m.assegnoDa1a2 > 0.005) {
         assegnoText = eur(m.assegnoDa1a2) + " / mese";
-        assegnoDir = `${c1n()} &rarr; ${c2n()}`;
+        assegnoDir = `${c1NameEsc} &rarr; ${c2NameEsc}`;
       } else if (m.assegnoDa2a1 > 0.005) {
         assegnoText = eur(m.assegnoDa2a1) + " / mese";
-        assegnoDir = `${c2n()} &rarr; ${c1n()}`;
+        assegnoDir = `${c2NameEsc} &rarr; ${c1NameEsc}`;
       }
 
       const speseRows = expenseItems.map((item, i) => {
@@ -3529,11 +3533,11 @@
   <div class="live-panel-title">Impatto in Tempo Reale sul Netto</div>
   <div class="live-net-row">
     <div class="live-net-card">
-      <div class="live-net-label">Netto disponibile ${c1n()}</div>
+      <div class="live-net-label">Netto disponibile ${c1NameEsc}</div>
       <div class="live-net-value c1">${eur(m.disp1)}</div>
     </div>
     <div class="live-net-card">
-      <div class="live-net-label">Netto disponibile ${c2n()}</div>
+      <div class="live-net-label">Netto disponibile ${c2NameEsc}</div>
       <div class="live-net-value c2">${eur(m.disp2)}</div>
     </div>
   </div>
@@ -3555,7 +3559,7 @@
             }
           </svg>
         </div>
-        <div class="fig-label">C1</div>
+        <div class="fig-label">${c1NameEsc}</div>
       </div>
 
       <!-- Badge centrale -->
@@ -3565,7 +3569,7 @@
             const diff = m.disp1 - m.disp2;
             const absDiff = Math.abs(diff);
             if (absDiff < 0.5) return `Parità | Delta ${eur(0)}`;
-            const winner = diff > 0 ? c1n() : c2n();
+            const winner = diff > 0 ? c1NameEsc : c2NameEsc;
             return `Vantaggio netto: ${winner} | Delta ${eur(absDiff)}`;
           })()}
         </div>
@@ -3585,7 +3589,7 @@
             }
           </svg>
         </div>
-        <div class="fig-label">C2</div>
+        <div class="fig-label">${c2NameEsc}</div>
       </div>
     </div>
 
@@ -3597,7 +3601,7 @@
           : 50
       ))}%"></div>
     </div>
-    <div class="track-labels"><span>C1</span><span>C2</span></div>
+    <div class="track-labels"><span>${c1NameEsc}</span><span>${c2NameEsc}</span></div>
   </div>
 
   <!-- Assegno suggerito -->
