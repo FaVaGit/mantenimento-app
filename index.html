@@ -2388,22 +2388,6 @@
         strokeWidth: 1
       }));
 
-      fc.add(new window.fabric.Circle({
-        left: 16,
-        top: 12,
-        radius: 50,
-        fill: "rgba(89, 165, 152, 0.12)",
-        selectable: false
-      }));
-
-      fc.add(new window.fabric.Circle({
-        left: w - 96,
-        top: 10,
-        radius: 44,
-        fill: "rgba(220, 163, 78, 0.16)",
-        selectable: false
-      }));
-
       const statusText = diffDisp === 0
         ? "Netti equivalenti"
         : `Vantaggio netto: C${diffDisp > 0 ? 1 : 2}`;
@@ -2420,51 +2404,62 @@
 
       function addOutcomeFigure(left, top, spouseId, role) {
         const palette = role === "winner"
-          ? { bg: "#e8f5f1", stroke: "#9fcfc3", ink: "#0e635b", tag: "VINCE" }
+          ? { bg: "#ddf2ec", stroke: "#9ccfc2", ink: "#0d625a" }
           : role === "loser"
-            ? { bg: "#f8eee1", stroke: "#dfbe8d", ink: "#84510b", tag: "PERDE" }
-            : { bg: "#edf3f1", stroke: "#bfd2cd", ink: "#3d5c59", tag: "PARI" };
-
-        fc.add(new window.fabric.Rect({
-          left,
-          top,
-          width: 96,
-          height: 46,
-          rx: 11,
-          ry: 11,
-          fill: palette.bg,
-          stroke: palette.stroke,
-          strokeWidth: 1
-        }));
+            ? { bg: "#f8ecd9", stroke: "#dfbf8f", ink: "#8a580f" }
+            : { bg: "#eaf2f0", stroke: "#bfd2cd", ink: "#3d5c59" };
 
         fc.add(new window.fabric.Circle({
-          left: left + 10,
-          top: top + 9,
+          left,
+          top,
+          radius: 31,
+          fill: palette.bg,
+          stroke: palette.stroke,
+          strokeWidth: 1.5,
+          shadow: "0 2px 6px rgba(0,0,0,0.10)"
+        }));
+
+        const cx = left + 31;
+        const cy = top + 31;
+
+        // Person icon centered inside the bubble.
+        fc.add(new window.fabric.Circle({
+          left: cx - 7,
+          top: cy - 16,
           radius: 7,
           fill: palette.ink
         }));
         fc.add(new window.fabric.Rect({
-          left: left + 15,
-          top: top + 23,
-          width: 12,
-          height: 14,
-          rx: 4,
-          ry: 4,
+          left: cx - 8,
+          top: cy - 8,
+          width: 16,
+          height: 17,
+          rx: 5,
+          ry: 5,
           fill: palette.ink
         }));
 
-        fc.add(new window.fabric.Text(`C${spouseId}`, {
-          left: left + 34,
-          top: top + 10,
-          fontSize: 13,
-          fill: palette.ink,
-          fontFamily: "Candara",
-          fontWeight: "700"
+        fc.add(new window.fabric.Circle({ left: cx - 4, top: cy - 14, radius: 1.1, fill: "#ffffff" }));
+        fc.add(new window.fabric.Circle({ left: cx + 2, top: cy - 14, radius: 1.1, fill: "#ffffff" }));
+
+        const mouthPath = role === "winner"
+          ? "M 0 0 Q 4.5 4.5 9 0"
+          : role === "loser"
+            ? "M 0 3.5 Q 4.5 -1 9 3.5"
+            : "M 0 1.8 L 9 1.8";
+        fc.add(new window.fabric.Path(mouthPath, {
+          left: cx - 4.5,
+          top: cy - 8,
+          fill: "",
+          stroke: "#ffffff",
+          strokeWidth: 1.2,
+          strokeLineCap: "round"
         }));
-        fc.add(new window.fabric.Text(palette.tag, {
-          left: left + 34,
-          top: top + 24,
-          fontSize: 11,
+
+        fc.add(new window.fabric.Text(`C${spouseId}`, {
+          left: cx - 9,
+          top: cy + 12,
+          fontSize: 12,
           fill: palette.ink,
           fontFamily: "Candara",
           fontWeight: "700"
@@ -2475,8 +2470,8 @@
       const badgeX = (w - badgeW) / 2;
       const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
       const badgeFontSize = w < 360 ? 12 : 14;
-      addOutcomeFigure(18, 18, 1, roleForSpouse(1));
-      addOutcomeFigure(w - 114, 18, 2, roleForSpouse(2));
+      addOutcomeFigure(20, 14, 1, roleForSpouse(1));
+      addOutcomeFigure(w - 82, 14, 2, roleForSpouse(2));
       fc.add(new window.fabric.Text(badgeText, {
         left: badgeX + 14,
         top: w < 360 ? 29 : 27,
