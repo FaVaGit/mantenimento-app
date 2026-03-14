@@ -1335,7 +1335,7 @@
       return new Uint8Array(hash);
     }
 
-    async function deriveKeyBits(password, saltBytes) {
+    async function deriveKeyBits(password, saltBytes, iterations = 120000) {
       const enc = new TextEncoder();
       const material = await crypto.subtle.importKey(
         "raw",
@@ -1348,13 +1348,27 @@
         {
           name: "PBKDF2",
           salt: saltBytes,
-          iterations: 120000,
+          iterations,
           hash: "SHA-256"
         },
         material,
         256
       );
       return new Uint8Array(bits);
+    }
+
+    async function tryDecryptWithKeyBytes(keyBytes, cipherPayload) {
+      try {
+        const key = await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["decrypt"]);
+        const iv = decodeBytesFlexible(cipherPayload.iv);
+        const data = decodeBytesFlexible(cipherPayload.data);
+        if (!iv || !data || !iv.length || !data.length) return null;
+        const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
+        const parsed = JSON.parse(new TextDecoder().decode(plain));
+        return parsed && typeof parsed === "object" ? parsed : null;
+      } catch (_) {
+        return null;
+      }
     }
 
     async function encryptStateForKey(state, keyBits) {
@@ -1783,6 +1797,35 @@
       const plainState = extractLegacyPlainState(rawProfile, doc, username);
       if (plainState) return plainState;
 
+      // Broader fallback: try sha256(password) directly as AES-GCM key.
+      const enc2 = new TextEncoder();
+      const pwdHash = await sha256Bytes(enc2.encode(password));
+      const directState = await tryDecryptWithKeyBytes(pwdHash, cipherPayload);
+      if (directState) return directState;
+
+      // Try every combination of deterministic salts × legacy PBKDF2 iteration counts.
+      const legacySalts = await Promise.all([
+        sha256Bytes(enc2.encode(`keylock:${normalizeUsername(username)}`)),
+        sha256Bytes(enc2.encode(normalizeUsername(username))),
+        sha256Bytes(enc2.encode(`appMantenimento:${normalizeUsername(username)}`)),
+        sha256Bytes(enc2.encode(`keylock-salt-${normalizeUsername(username)}`)),
+        sha256Bytes(enc2.encode(`mantenimento:${normalizeUsername(username)}`)),
+        Promise.resolve(enc2.encode(normalizeUsername(username))),
+        sha256Bytes(enc2.encode(password + normalizeUsername(username))),
+        sha256Bytes(enc2.encode(normalizeUsername(username) + password)),
+      ]);
+      for (const iters of [100000, 10000, 1000, 600000, 1]) {
+        for (const saltBytes of [...saltByteCandidates, ...legacySalts]) {
+          try {
+            const keyBits = await deriveKeyBits(password, saltBytes, iters);
+            const state = await decryptStateForKey(cipherPayload, keyBits);
+            if (state && typeof state === "object") return state;
+          } catch (_) {
+            // Continue.
+          }
+        }
+      }
+
       throw new Error("Profilo legacy trovato ma non decifrabile con la password indicata (metadati salt/verifier assenti o formato differente)");
     }
 
@@ -1935,7 +1978,22 @@
 
         setAuthStatus("Migrazione legacy completata: profilo importato nel nuovo cloud.");
       } catch (err) {
-        setAuthStatus(`Migrazione legacy fallita: ${err.message}`, true);
+        // Diagnostic: show structure of profile payload to aid further debugging.
+        let diagStr = "";
+        try {
+          const rawProf = (doc.profiles || {})[authSession.username]
+            || (doc.profiles || {})[normalizeUsername(authSession.username)];
+          if (rawProf && typeof rawProf === "object") {
+            const topKeys = Object.keys(rawProf).join(", ") || "nessuna";
+            const nestedKeys = Object.values(rawProf)
+              .filter((v) => v && typeof v === "object")
+              .flatMap((v) => Object.keys(v))
+              .filter((v, i, a) => a.indexOf(v) === i)
+              .join(", ");
+            diagStr = ` | Campi profilo: [${topKeys}]${nestedKeys ? ` | Campi annidati: [${nestedKeys}]` : ""}`;
+          }
+        } catch (_) { }
+        setAuthStatus(`Migrazione legacy fallita: ${err.message}${diagStr}`, true);
       }
     }
 
