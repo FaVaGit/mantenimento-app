@@ -64,7 +64,177 @@ const defaultExpenseItems = [
         modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
         redditoAnnuale: "Reddito annuale netto",
         redditoMensile: "Reddito mensile netto",
-        coffeeHero: "Offrimi un caffè"
+        coffeeHero: "Offrimi un caffè",
+        authUserPrefix: "Utente",
+        authNotAuthenticated: "Non autenticato.",
+        authHistoryNone: "Nessuna versione storica disponibile al momento.",
+        authHistoryVersion: "Versione",
+        authDateUnavailable: "Data non disponibile",
+        authRestore: "Ripristina",
+        authRateLimitActive: "Rate limit Supabase attivo. Attendi {seconds}s prima di riprovare Login/Registrati.",
+        authNeedValidUserOrEmail: "Inserisci un utente valido o una email valida.",
+        authRateLimitRetry: "Rate limit Supabase. Attendi {seconds}s e riprova.",
+        authLoginAs: "Login effettuato come {username}.",
+        authUnsupportedBrowser: "KeyLock non supportato da questo browser.",
+        authConfigureSupabase: "Configura Supabase in supabase-config.js prima di {actionLabel}.",
+        authOperationInProgress: "Operazione auth gia in corso, attendi qualche secondo.",
+        authInvalidUsernameLong: "Nome utente non valido: usa 3-40 caratteri tra lettere minuscole, numeri, punto, trattino o underscore.",
+        authInvalidEmail: "Email non valida: inserisci un indirizzo corretto.",
+        authShortPassword: "Password troppo corta: minimo 6 caratteri.",
+        authRegisterRateLimit: "Rate limit Supabase su Registrati. Attendi {seconds}s e riprova.",
+        authRegisterFailed: "Registrazione fallita: {message}",
+        authRegisterVerifyEmail: "Registrazione avviata. Abbiamo inviato una email di verifica a {email}. Conferma la email e poi effettua il login.",
+        authRegisterLoginRateLimit: "Rate limit Supabase su registrazione/login. Se l'utente esiste, attendi 1-2 minuti e riprova Login. Se e nuovo, attendi e riprova Registrati.",
+        authRegisterIncomplete: "Registrazione non completata o credenziali non corrette. Riprova Login.",
+        authRegisterNoAutoLogin: "Registrazione eseguita ma login non completato. In Supabase disattiva la conferma email per usare KeyLock con solo utente/password.",
+        authRegisterRateLimitedLoggedIn: "Rate limit registrazione rilevato, ma accesso effettuato: {loginMsg}",
+        authRegisteredAndLogged: "Utente {username} registrato e login effettuato.",
+        authInvalidUsername: "Nome utente non valido.",
+        authNeedUserOrEmail: "Inserisci utente oppure email per il login.",
+        authLoginRateLimit: "Troppi tentativi ravvicinati. Attendi 1-2 minuti e riprova il Login.",
+        authEmailNotVerified: "Email non verificata. Apri la mail di conferma e completa la verifica, poi riprova il login.",
+        authInvalidCredentials: "Login fallito: credenziali non valide o utente non presente nel nuovo cloud. Usa Registrati solo se l'utente non e mai stato creato su Supabase.",
+        authLoginFailed: "Login fallito: {message}",
+        authUserFallback: "utente",
+        authLogoutDone: "Logout eseguito.",
+        authLoginRequired: "Effettua prima il login.",
+        authSaveFailed: "Salvataggio profilo fallito: {message}",
+        authCloudSaved: "Profilo cloud salvato. Versioni storiche: {count}.",
+        authLoadFailed: "Caricamento profilo fallito: {message}",
+        authNoCloudProfile: "Nessun profilo cloud salvato per questo utente.",
+        authLoadedFromLogin: "Login effettuato e ultimo profilo cloud caricato. Versioni storiche: {count}.",
+        authLoaded: "Profilo cloud caricato. Versioni storiche: {count}.",
+        authDecryptFailed: "Impossibile decifrare il profilo: credenziali errate o formato profilo non compatibile.",
+        authHistoryRestored: "Versione storica ripristinata nel form. Salva profilo cloud per renderla corrente.",
+        pdfReportTitle: "Report Mantenimento",
+        pdfAppTitle: "Calcolo Mantenimento Figli",
+        pdfAppSubtitle: "Stima indicativa a supporto della negoziazione assistita",
+        pdfGeneratedOn: "Generato il",
+        pdfBannerLbl: "Assegno mensile suggerito dal modello",
+        pdfPerMonth: "/ mese",
+        pdfPerMonthShort: "{currency}/mese",
+        pdfPerChild: "per figlio",
+        pdfNoSupport: "✓ Nessun assegno di mantenimento necessario",
+        pdfLiveTitle: "Impatto in Tempo Reale sul Netto",
+        pdfNetAvailable: "Netto disponibile",
+        pdfParity: "Parità",
+        pdfNetAdvantage: "Vantaggio netto",
+        pdfDelta: "Delta",
+        pdfSuggestedSupport: "Assegno suggerito",
+        pdfInputSection: "Parametri di Input",
+        pdfGeneralSettings: "Impostazioni Generali",
+        pdfCalcMode: "Modalità di calcolo",
+        pdfIncomeBase: "Base reddito",
+        pdfIncomeAnnualBase: "Annuale (÷12 per mensile)",
+        pdfIncomeMonthlyBase: "Mensile",
+        pdfChildrenCount: "Numero figli",
+        pdfPermanence: "Permanenza",
+        pdfItem: "Voce",
+        pdfNetIncome: "Reddito netto",
+        pdfYearlySuffix: " annuo",
+        pdfMonthlySuffix: " mensile",
+        pdfMonthlyConv: "Reddito netto mensile (÷12)",
+        pdfSupportReceived: "Assegno percepito",
+        pdfSupportPaid: "Assegno pagato",
+        pdfDirectExpenses: "Spese dirette",
+        pdfFamilyBenefits: "Assegni familiari / INPS",
+        pdfExpenseSection: "Voci di Spesa",
+        pdfExpenseItem: "Voce",
+        pdfTotalMonthly: "Totale {currency}/mese",
+        pdfTotal: "TOTALE",
+        pdfComparison: "Analisi Economica Comparativa",
+        pdfWeight: "Peso contributivo",
+        pdfPostSupport: "Disponibilità post-assegno",
+        pdfKpiSection: "Indicatori Chiave",
+        pdfTotalExpenses: "Totale spese",
+        pdfEstimatedChildrenNeeds: "Fabbisogno figli stimato",
+        pdfAmountPerChild: "Importo per figlio",
+        pdfTheoreticalShare: "Quota teorica",
+        pdfDirectShareC1C2: "Quota diretta C1 / C2",
+        pdfFooter: "Calcolatore Mantenimento Figli — Uso privato e riservato — {date}",
+        pdfNoTransfer: "Nessun trasferimento",
+        pdfMethodology: "Note metodologiche",
+        pdfMethodologyText: "Documento generato automaticamente con finalità illustrativa e non costituisce parere legale.",
+        pdfModeText: "Modalità di calcolo",
+        pdfNeedEstimate: "Il fabbisogno figli è stimato come il 35% delle spese totali inserite.",
+        pdfAnnualNote: "I redditi inseriti in base annuale sono stati convertiti in mensili (÷12).",
+        pdfResultsDepend: "I risultati dipendono esclusivamente dai dati immessi e non sostituiscono la valutazione di un professionista.",
+        pdfPopupBlocked: "Il popup è stato bloccato dal browser. Consenti i popup per questo sito e riprova.",
+        authLoginBeforeExportStatus: "Effettua il login KeyLock prima di esportare JSON cifrato.",
+        authLoginBeforeExportAlert: "Per esportare, devi prima fare login KeyLock.",
+        authInvalidJsonFormat: "Formato JSON non valido: e richiesto un export cifrato KeyLock",
+        authLoginBeforeImport: "Effettua prima il login KeyLock per importare il file cifrato",
+        authFileOwnedByOther: "Questo file appartiene a un altro utente KeyLock",
+        authDecryptedContentInvalid: "Contenuto decifrato non valido",
+        authEncryptedJsonImported: "JSON cifrato importato correttamente.",
+        authEncryptedJsonLoaded: "Dati caricati da JSON cifrato.",
+        authImportFailedStatus: "Import JSON fallito: {message}",
+        authImportFailedAlert: "Impossibile caricare il JSON: {message}",
+        spouse1Default: "Coniuge 1",
+        spouse2Default: "Coniuge 2",
+        expenseCountNote: "Elenco spese compilabili: {count} voci.",
+        expensePartialLabel: "Tot",
+        expensePartialTitle: "Somma parziale progressiva",
+        expenseRemoveTitle: "Rimuovi voce spesa",
+        expenseRemoveBtn: "Rimuovi",
+        expenseMinOneAlert: "Deve restare almeno una voce spesa.",
+        simplePercTitleEnabled: "Percentuale usata nella formula semplificata.",
+        simplePercTitleDisabled: "Campo inattivo: viene usato solo nella modalita semplificata.",
+        incomeHintAnnual: "Entrate nette annuali di {spouse}: il sistema converte automaticamente in quota mensile (/12).",
+        incomeHintMonthly: "Entrate nette mensili disponibili di {spouse}.",
+        liveNetAvailablePerson: "Netto disponibile {spouse}",
+        liveTotalIncome: "Entrate totali (reddito + assegni + INPS)",
+        livePaidToOther: "Assegno mantenimento pagato all'altro coniuge",
+        livePaidExternal: "Assegno mantenimento pagato esterno",
+        liveTotalExpensesEntered: "Totale spese inserite",
+        liveTotalOutflows: "Uscite totali",
+        liveEquivalentNets: "Netti equivalenti",
+        liveNetAdvantageSpouse: "Vantaggio netto: {spouse}",
+        calcModeLegalName: "Legale-proporzionale",
+        calcModeSimpleName: "Semplificata ({perc}%)",
+        calcModeGenovaName: "Linee guida Tribunale di Genova",
+        calcSimpleRuleTitle: "Regola specifica modalita semplificata",
+        calcSimpleRule1: "1) Differenza netti = |Disponibilita C1 - Disponibilita C2| = {value}.",
+        calcSimpleRule2: "2) Assegno suggerito = differenza netti x {perc}%.",
+        calcSimpleRule3: "3) Paga il coniuge con disponibilita netta maggiore.",
+        calcGenovaRuleTitle: "Regola specifica linee guida Genova",
+        calcGenovaRule1: "1) Collocatario stimato: Coniuge {coll} (maggiore permanenza).",
+        calcGenovaRule2: "2) Non collocatario: Coniuge {nonColl}.",
+        calcGenovaRule3: "3) Costo giornaliero medio figli = fabbisogno figli / 30 = {value}.",
+        calcGenovaRule4: "4) Quota diretta non collocatario = costo giornaliero x giorni di permanenza presso non collocatario.",
+        calcGenovaRule5: "5) Assegno suggerito = max(0, quota teorica non collocatario - quota diretta non collocatario).",
+        calcLegalRuleTitle: "Regola specifica modalita legale-proporzionale",
+        calcLegalRule1: "1) Quota teorica = fabbisogno figli x peso contributivo del coniuge.",
+        calcLegalRule2: "2) Quota diretta = fabbisogno figli x permanenza presso quel coniuge.",
+        calcLegalRule3: "3) Saldo = quota teorica - quota diretta.",
+        calcLegalRule4: "4) L'assegno e il saldo positivo del coniuge debitore verso l'altro.",
+        calcGeneralTitle: "Impostazione generale del calcolo",
+        calcActiveMode: "Modalita attiva",
+        calcGeneral1: "Disponibilita netta C1 = reddito netto C1 + assegni percepiti C1 + assegni familiari C1 - assegni pagati C1 - spese C1.",
+        calcGeneral2: "Disponibilita netta C2 = reddito netto C2 + assegni percepiti C2 + assegni familiari C2 - assegni pagati C2 - spese C2.",
+        calcGeneral3: "Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.",
+        calcGeneral4: "Fabbisogno figli stimato = totale spese inserite x 35%.",
+        calcInputMeaningTitle: "Significato delle principali voci richieste in input",
+        calcInput1: "- Reddito netto: entrata disponibile del coniuge (mensile oppure annuale, se selezionata base annuale).",
+        calcInput2: "- Assegno percepito: importo ricevuto mensilmente dal coniuge.",
+        calcInput3: "- Assegno pagato: importo versato mensilmente dal coniuge.",
+        calcInput4: "- Assegni familiari/INPS: componenti assistenziali percepite.",
+        calcInput5: "- Permanenza figli (%): ripartizione dei giorni medi mensili tra i due coniugi.",
+        calcInput6: "- Spese per voce: costi mensili attribuiti a ciascun coniuge.",
+        calcKpiReadTitle: "Lettura dei risultati e KPI",
+        calcKpi1: "- Netto disponibile: situazione prima del nuovo assegno calcolato dal modello.",
+        calcKpi2: "- Totale spese inserite: somma C1 + C2 delle voci compilate.",
+        calcKpi3: "- Quota teorica: quota di fabbisogno figli attribuita in base al peso economico.",
+        calcKpi4: "- Post-assegno: netto disponibile dopo applicazione dell'assegno suggerito.",
+        calcKpi5: "- Importo per figlio: assegno mensile suggerito diviso per numero figli.",
+        calcKpi6: "- Assegno pagato esterno: quota pagata non compensata da assegni percepiti dell'altro coniuge (non accreditata all'altro).",
+        calcIncomeBaseNote: "Nota base reddito:",
+        calcIncomeBaseNoteText: "i redditi annuali sono convertiti automaticamente in mensili (/12) prima di tutti i calcoli.",
+        calcNoTransferSuggested: "Nessun trasferimento suggerito",
+        kpiActiveMode: "Modalita attiva",
+        kpiIncomeBase: "Base reddito",
+        kpiIncomeBaseAnnual: "Annuale (convertito in mensile)",
+        kpiIncomeBaseMonthly: "Mensile"
       },
       en: {
         title: "Child Support Calculator",
@@ -90,7 +260,177 @@ const defaultExpenseItems = [
         modeGuidelineLink: "Genoa Court guidelines (PDF)",
         redditoAnnuale: "Annual net income",
         redditoMensile: "Monthly net income",
-        coffeeHero: "Buy me a coffee"
+        coffeeHero: "Buy me a coffee",
+        authUserPrefix: "User",
+        authNotAuthenticated: "Not authenticated.",
+        authHistoryNone: "No cloud history version available right now.",
+        authHistoryVersion: "Version",
+        authDateUnavailable: "Date unavailable",
+        authRestore: "Restore",
+        authRateLimitActive: "Supabase rate limit active. Wait {seconds}s before trying Login/Register again.",
+        authNeedValidUserOrEmail: "Enter a valid username or email.",
+        authRateLimitRetry: "Supabase rate limit. Wait {seconds}s and retry.",
+        authLoginAs: "Logged in as {username}.",
+        authUnsupportedBrowser: "KeyLock is not supported by this browser.",
+        authConfigureSupabase: "Configure Supabase in supabase-config.js before {actionLabel}.",
+        authOperationInProgress: "Authentication operation already in progress, wait a few seconds.",
+        authInvalidUsernameLong: "Invalid username: use 3-40 chars with lowercase letters, numbers, dot, dash or underscore.",
+        authInvalidEmail: "Invalid email: enter a valid email address.",
+        authShortPassword: "Password too short: minimum 6 characters.",
+        authRegisterRateLimit: "Supabase rate limit on registration. Wait {seconds}s and retry.",
+        authRegisterFailed: "Registration failed: {message}",
+        authRegisterVerifyEmail: "Registration started. We sent a verification email to {email}. Confirm it, then log in.",
+        authRegisterLoginRateLimit: "Supabase rate limit on registration/login. If the user exists, wait 1-2 minutes and retry Login. If new, wait and retry Register.",
+        authRegisterIncomplete: "Registration not completed or invalid credentials. Retry Login.",
+        authRegisterNoAutoLogin: "Registration completed but login not completed. Keep email confirmation enabled in Supabase and verify your email.",
+        authRegisterRateLimitedLoggedIn: "Registration rate limit detected, but access completed: {loginMsg}",
+        authRegisteredAndLogged: "User {username} registered and logged in.",
+        authInvalidUsername: "Invalid username.",
+        authNeedUserOrEmail: "Enter username or email for login.",
+        authLoginRateLimit: "Too many attempts. Wait 1-2 minutes and retry Login.",
+        authEmailNotVerified: "Email not verified. Open your confirmation email and complete verification, then retry login.",
+        authInvalidCredentials: "Login failed: invalid credentials or user not found in this cloud. Use Register only if the user was never created in Supabase.",
+        authLoginFailed: "Login failed: {message}",
+        authUserFallback: "user",
+        authLogoutDone: "Logout completed.",
+        authLoginRequired: "Please login first.",
+        authSaveFailed: "Cloud profile save failed: {message}",
+        authCloudSaved: "Cloud profile saved. History versions: {count}.",
+        authLoadFailed: "Cloud profile load failed: {message}",
+        authNoCloudProfile: "No cloud profile saved for this user.",
+        authLoadedFromLogin: "Login completed and latest cloud profile loaded. History versions: {count}.",
+        authLoaded: "Cloud profile loaded. History versions: {count}.",
+        authDecryptFailed: "Cannot decrypt profile: wrong credentials or unsupported profile format.",
+        authHistoryRestored: "History version restored into the form. Save cloud profile to make it current.",
+        pdfReportTitle: "Support Report",
+        pdfAppTitle: "Child Support Calculation",
+        pdfAppSubtitle: "Indicative estimate to support assisted negotiation",
+        pdfGeneratedOn: "Generated on",
+        pdfBannerLbl: "Model suggested monthly support",
+        pdfPerMonth: "/ month",
+        pdfPerMonthShort: "{currency}/month",
+        pdfPerChild: "per child",
+        pdfNoSupport: "✓ No child support payment required",
+        pdfLiveTitle: "Real-time Net Impact",
+        pdfNetAvailable: "Net available",
+        pdfParity: "Parity",
+        pdfNetAdvantage: "Net advantage",
+        pdfDelta: "Delta",
+        pdfSuggestedSupport: "Suggested support",
+        pdfInputSection: "Input Parameters",
+        pdfGeneralSettings: "General Settings",
+        pdfCalcMode: "Calculation mode",
+        pdfIncomeBase: "Income base",
+        pdfIncomeAnnualBase: "Yearly (÷12 to monthly)",
+        pdfIncomeMonthlyBase: "Monthly",
+        pdfChildrenCount: "Children count",
+        pdfPermanence: "Permanence",
+        pdfItem: "Item",
+        pdfNetIncome: "Net income",
+        pdfYearlySuffix: " yearly",
+        pdfMonthlySuffix: " monthly",
+        pdfMonthlyConv: "Monthly net income (÷12)",
+        pdfSupportReceived: "Support received",
+        pdfSupportPaid: "Support paid",
+        pdfDirectExpenses: "Direct expenses",
+        pdfFamilyBenefits: "Family benefits / INPS",
+        pdfExpenseSection: "Expense Items",
+        pdfExpenseItem: "Item",
+        pdfTotalMonthly: "Total {currency}/month",
+        pdfTotal: "TOTAL",
+        pdfComparison: "Comparative Economic Analysis",
+        pdfWeight: "Contribution weight",
+        pdfPostSupport: "Post-support availability",
+        pdfKpiSection: "Key Indicators",
+        pdfTotalExpenses: "Total expenses",
+        pdfEstimatedChildrenNeeds: "Estimated children needs",
+        pdfAmountPerChild: "Amount per child",
+        pdfTheoreticalShare: "Theoretical share",
+        pdfDirectShareC1C2: "Direct share C1 / C2",
+        pdfFooter: "Child Support Calculator — Private and reserved use — {date}",
+        pdfNoTransfer: "No transfer",
+        pdfMethodology: "Methodological notes",
+        pdfMethodologyText: "This document is automatically generated for illustrative purposes and does not constitute legal advice.",
+        pdfModeText: "Calculation mode",
+        pdfNeedEstimate: "Children needs are estimated as 35% of total entered expenses.",
+        pdfAnnualNote: "Yearly incomes have been converted to monthly (÷12).",
+        pdfResultsDepend: "Results depend solely on the entered data and do not replace professional evaluation.",
+        pdfPopupBlocked: "The popup was blocked by the browser. Allow popups for this site and try again.",
+        authLoginBeforeExportStatus: "Please login to KeyLock before exporting encrypted JSON.",
+        authLoginBeforeExportAlert: "You must login to KeyLock before exporting.",
+        authInvalidJsonFormat: "Invalid JSON format: an encrypted KeyLock export is required",
+        authLoginBeforeImport: "Login to KeyLock before importing the encrypted file",
+        authFileOwnedByOther: "This file belongs to another KeyLock user",
+        authDecryptedContentInvalid: "Invalid decrypted content",
+        authEncryptedJsonImported: "Encrypted JSON imported successfully.",
+        authEncryptedJsonLoaded: "Data loaded from encrypted JSON.",
+        authImportFailedStatus: "JSON import failed: {message}",
+        authImportFailedAlert: "Unable to load JSON: {message}",
+        spouse1Default: "Spouse 1",
+        spouse2Default: "Spouse 2",
+        expenseCountNote: "Editable expense items: {count} entries.",
+        expensePartialLabel: "Tot",
+        expensePartialTitle: "Progressive partial sum",
+        expenseRemoveTitle: "Remove expense item",
+        expenseRemoveBtn: "Remove",
+        expenseMinOneAlert: "At least one expense item must remain.",
+        simplePercTitleEnabled: "Percentage used in the simplified formula.",
+        simplePercTitleDisabled: "Inactive field: used only in simplified mode.",
+        incomeHintAnnual: "Yearly net income for {spouse}: automatically converted to monthly amount (/12).",
+        incomeHintMonthly: "Available monthly net income for {spouse}.",
+        liveNetAvailablePerson: "Net available {spouse}",
+        liveTotalIncome: "Total income (income + support + INPS)",
+        livePaidToOther: "Support paid to the other spouse",
+        livePaidExternal: "External support paid",
+        liveTotalExpensesEntered: "Total entered expenses",
+        liveTotalOutflows: "Total outflows",
+        liveEquivalentNets: "Equivalent nets",
+        liveNetAdvantageSpouse: "Net advantage: {spouse}",
+        calcModeLegalName: "Legal-proportional",
+        calcModeSimpleName: "Simplified ({perc}%)",
+        calcModeGenovaName: "Genoa Court guidelines",
+        calcSimpleRuleTitle: "Specific simplified mode rule",
+        calcSimpleRule1: "1) Net difference = |Availability C1 - Availability C2| = {value}.",
+        calcSimpleRule2: "2) Suggested support = net difference x {perc}%.",
+        calcSimpleRule3: "3) The spouse with higher net availability pays.",
+        calcGenovaRuleTitle: "Specific Genoa guidelines rule",
+        calcGenovaRule1: "1) Estimated custodial parent: Spouse {coll} (higher permanence).",
+        calcGenovaRule2: "2) Non-custodial parent: Spouse {nonColl}.",
+        calcGenovaRule3: "3) Average daily children cost = children needs / 30 = {value}.",
+        calcGenovaRule4: "4) Non-custodial direct share = daily cost x days with non-custodial parent.",
+        calcGenovaRule5: "5) Suggested support = max(0, non-custodial theoretical share - non-custodial direct share).",
+        calcLegalRuleTitle: "Specific legal-proportional mode rule",
+        calcLegalRule1: "1) Theoretical share = children needs x spouse contribution weight.",
+        calcLegalRule2: "2) Direct share = children needs x permanence with that spouse.",
+        calcLegalRule3: "3) Balance = theoretical share - direct share.",
+        calcLegalRule4: "4) Support equals the positive balance of the debtor spouse toward the other.",
+        calcGeneralTitle: "General calculation setup",
+        calcActiveMode: "Active mode",
+        calcGeneral1: "Net availability C1 = net income C1 + support received C1 + family benefits C1 - support paid C1 - expenses C1.",
+        calcGeneral2: "Net availability C2 = net income C2 + support received C2 + family benefits C2 - support paid C2 - expenses C2.",
+        calcGeneral3: "Contribution weight = spouse positive availability / sum of positive availabilities.",
+        calcGeneral4: "Estimated children needs = total entered expenses x 35%.",
+        calcInputMeaningTitle: "Meaning of the main required input fields",
+        calcInput1: "- Net income: spouse available income (monthly or yearly if yearly base is selected).",
+        calcInput2: "- Support received: monthly amount received by the spouse.",
+        calcInput3: "- Support paid: monthly amount paid by the spouse.",
+        calcInput4: "- Family benefits/INPS: received support components.",
+        calcInput5: "- Children permanence (%): split of average monthly days between spouses.",
+        calcInput6: "- Expense items: monthly costs assigned to each spouse.",
+        calcKpiReadTitle: "How to read results and KPI",
+        calcKpi1: "- Net available: status before the new support calculated by the model.",
+        calcKpi2: "- Total entered expenses: sum C1 + C2 of completed items.",
+        calcKpi3: "- Theoretical share: children needs quota assigned by economic weight.",
+        calcKpi4: "- Post-support: net available after applying suggested support.",
+        calcKpi5: "- Amount per child: suggested monthly support divided by number of children.",
+        calcKpi6: "- External support paid: paid quota not offset by support received from the other spouse (not credited to the other).",
+        calcIncomeBaseNote: "Income base note:",
+        calcIncomeBaseNoteText: "yearly incomes are automatically converted to monthly (/12) before all calculations.",
+        calcNoTransferSuggested: "No suggested transfer",
+        kpiActiveMode: "Active mode",
+        kpiIncomeBase: "Income base",
+        kpiIncomeBaseAnnual: "Yearly (converted to monthly)",
+        kpiIncomeBaseMonthly: "Monthly"
       }
     };
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
@@ -125,6 +465,14 @@ const defaultExpenseItems = [
     function tr(key) {
       const table = I18N[currentLang] || I18N.it;
       return table[key] || I18N.it[key] || key;
+    }
+
+    function msg(key, vars = {}) {
+      let out = tr(key);
+      Object.keys(vars).forEach((k) => {
+        out = out.replaceAll(`{${k}}`, String(vars[k]));
+      });
+      return out;
     }
 
     function getCurrentLocale() {
@@ -428,16 +776,16 @@ const defaultExpenseItems = [
       panel.classList.remove("is-hidden");
 
       if (!cloudProfileSession.loaded || !Array.isArray(cloudProfileSession.history) || !cloudProfileSession.history.length) {
-        list.innerHTML = "Nessuna versione storica disponibile al momento.";
+        list.innerHTML = tr("authHistoryNone");
         return;
       }
 
       const rows = [...cloudProfileSession.history]
         .reverse()
         .map((entry, idx) => {
-          const ts = entry && entry.savedAt ? new Date(entry.savedAt).toLocaleString("it-IT") : "Data non disponibile";
+          const ts = entry && entry.savedAt ? new Date(entry.savedAt).toLocaleString(getCurrentLocale()) : tr("authDateUnavailable");
           const originalIndex = cloudProfileSession.history.length - 1 - idx;
-          return `<div class="history-item"><div><strong>Versione ${idx + 1}</strong><small>${ts}</small></div><button class="btn-secondary" type="button" data-history-idx="${originalIndex}">Ripristina</button></div>`;
+          return `<div class="history-item"><div><strong>${tr("authHistoryVersion")} ${idx + 1}</strong><small>${ts}</small></div><button class="btn-secondary" type="button" data-history-idx="${originalIndex}">${tr("authRestore")}</button></div>`;
         })
         .join("");
 
@@ -499,7 +847,7 @@ const defaultExpenseItems = [
     function ensureAuthNotCoolingDown() {
       const rem = authCooldownRemainingSeconds();
       if (rem > 0) {
-        setAuthStatus(`Rate limit Supabase attivo. Attendi ${rem}s prima di riprovare Login/Registrati.`, true);
+        setAuthStatus(msg("authRateLimitActive", { seconds: rem }), true);
         return false;
       }
       return true;
@@ -534,7 +882,7 @@ const defaultExpenseItems = [
     async function signInWithEmailCandidates(username, password, explicitEmail = "") {
       const emails = buildLoginEmailCandidates(username, explicitEmail);
       if (!emails.length) {
-        return { ok: false, email: null, result: null, lastErrorMessage: "Inserisci un utente valido o una email valida." };
+        return { ok: false, email: null, result: null, lastErrorMessage: tr("authNeedValidUserOrEmail") };
       }
       let lastErrorMessage = "";
       for (const email of emails) {
@@ -546,7 +894,7 @@ const defaultExpenseItems = [
         lastErrorMessage = String((signInRes.error && signInRes.error.message) || "");
         if (isRateLimitAuthMessage(lastErrorMessage)) {
           const waitSec = setLocalAuthCooldown(parseRetryAfterSeconds(lastErrorMessage));
-          lastErrorMessage = `Rate limit Supabase. Attendi ${waitSec}s e riprova.`;
+          lastErrorMessage = msg("authRateLimitRetry", { seconds: waitSec });
           return { ok: false, email: null, result: null, lastErrorMessage };
         }
       }
@@ -559,7 +907,7 @@ const defaultExpenseItems = [
       authSession.userId = user.id;
       authSession.keyBits = await deriveSessionKeyBits(password, user.id);
       updateAuthUi();
-      return `Login effettuato come ${username}.`;
+      return msg("authLoginAs", { username });
     }
 
     function bytesToBase64(bytes) {
@@ -694,7 +1042,7 @@ const defaultExpenseItems = [
       if (sessionActions) sessionActions.classList.toggle("is-hidden", !logged);
       if (toggleBtn) {
         toggleBtn.classList.toggle("logged", logged);
-        toggleBtn.querySelector("span").textContent = logged ? `Utente: ${authSession.username}` : tr("authLogin");
+        toggleBtn.querySelector("span").textContent = logged ? `${tr("authUserPrefix")}: ${authSession.username}` : tr("authLogin");
       }
 
       document.getElementById("btnRegisterKeyLock").disabled = logged;
@@ -706,7 +1054,7 @@ const defaultExpenseItems = [
       if (logged) {
         setAuthStatus("", false);
       } else {
-        setAuthStatus("Non autenticato.", false);
+        setAuthStatus(tr("authNotAuthenticated"), false);
       }
     }
 
@@ -760,6 +1108,68 @@ const defaultExpenseItems = [
       observer.observe(footer);
     }
 
+    function setCoffeePickerOpen(open) {
+      const coffeeFloat = document.querySelector(".coffee-float");
+      const floatBtn = document.querySelector(".coffee-float-btn");
+      if (!coffeeFloat || !floatBtn) return;
+      coffeeFloat.classList.toggle("is-open", !!open);
+      floatBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    function initCoffeeDonationPicker() {
+      const heroCoffeeBtn = document.querySelector(".btn-coffee-hero");
+      const coffeeFloat = document.querySelector(".coffee-float");
+      const floatBtn = document.querySelector(".coffee-float-btn");
+      const floatCard = document.querySelector(".coffee-float-card");
+      const donateBanner = document.querySelector(".donate-banner");
+      if (!heroCoffeeBtn || !coffeeFloat || !floatBtn || !floatCard) return;
+
+      floatBtn.setAttribute("aria-haspopup", "true");
+      floatBtn.setAttribute("aria-expanded", "false");
+
+      heroCoffeeBtn.addEventListener("click", (e) => {
+        // Keep the href as no-JS fallback, but open the local payment chooser when JS is active.
+        e.preventDefault();
+        setCoffeePickerOpen(true);
+      });
+
+      if (donateBanner) {
+        donateBanner.addEventListener("click", (e) => {
+          // Let payment links keep their native behavior.
+          if (e.target.closest("a,button")) return;
+          e.preventDefault();
+          setCoffeePickerOpen(true);
+        });
+
+        donateBanner.addEventListener("keydown", (e) => {
+          if ((e.key === "Enter" || e.key === " ") && !e.target.closest("a,button")) {
+            e.preventDefault();
+            setCoffeePickerOpen(true);
+          }
+        });
+      }
+
+      floatBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const willOpen = !coffeeFloat.classList.contains("is-open");
+        setCoffeePickerOpen(willOpen);
+      });
+
+      floatCard.addEventListener("click", (e) => {
+        const link = e.target.closest("a");
+        if (link) setCoffeePickerOpen(false);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (e.target.closest(".coffee-float") || e.target.closest(".btn-coffee-hero")) return;
+        setCoffeePickerOpen(false);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setCoffeePickerOpen(false);
+      });
+    }
+
     async function deriveSessionKeyBits(password, userId) {
       const enc = new TextEncoder();
       const salt = await sha256Bytes(enc.encode(`keylock:${userId}`));
@@ -768,11 +1178,11 @@ const defaultExpenseItems = [
 
     async function ensureSupabaseReady(actionLabel) {
       if (!(window.crypto && window.crypto.subtle)) {
-        setAuthStatus("KeyLock non supportato da questo browser.", true);
+        setAuthStatus(tr("authUnsupportedBrowser"), true);
         return false;
       }
       if (!supabaseClient) {
-        setAuthStatus(`Configura Supabase in supabase-config.js prima di ${actionLabel}.`, true);
+        setAuthStatus(msg("authConfigureSupabase", { actionLabel }), true);
         return false;
       }
       return true;
@@ -792,7 +1202,7 @@ const defaultExpenseItems = [
     async function registerKeyLockUser() {
       if (!await ensureSupabaseReady("registrarti")) return;
       if (authFlowInProgress) {
-        setAuthStatus("Operazione auth gia in corso, attendi qualche secondo.", true);
+        setAuthStatus(tr("authOperationInProgress"), true);
         return;
       }
       if (!ensureAuthNotCoolingDown()) return;
@@ -803,15 +1213,15 @@ const defaultExpenseItems = [
       const email = normalizeEmail(text("keylockEmail"));
       const password = text("keylockPass");
       if (!isValidUsername(username)) {
-        setAuthStatus("Nome utente non valido: usa 3-40 caratteri tra lettere minuscole, numeri, punto, trattino o underscore.", true);
+        setAuthStatus(tr("authInvalidUsernameLong"), true);
         return;
       }
       if (!isValidEmail(email)) {
-        setAuthStatus("Email non valida: inserisci un indirizzo corretto.", true);
+        setAuthStatus(tr("authInvalidEmail"), true);
         return;
       }
       if (password.length < 6) {
-        setAuthStatus("Password troppo corta: minimo 6 caratteri.", true);
+        setAuthStatus(tr("authShortPassword"), true);
         return;
       }
 
@@ -833,41 +1243,41 @@ const defaultExpenseItems = [
         } else if (isRateLimitAuthMessage(signUpMsg)) {
           const waitSec = setLocalAuthCooldown(parseRetryAfterSeconds(signUpMsg));
           signUpRateLimited = true;
-          setAuthStatus(`Rate limit Supabase su Registrati. Attendi ${waitSec}s e riprova.`, true);
+          setAuthStatus(msg("authRegisterRateLimit", { seconds: waitSec }), true);
           return;
         } else {
-          setAuthStatus(`Registrazione fallita: ${signUpRes.error.message}`, true);
+          setAuthStatus(msg("authRegisterFailed", { message: signUpRes.error.message }), true);
           return;
         }
       }
 
       const hasSession = !!(signUpRes.data && signUpRes.data.session);
       if (!hasSession) {
-        setAuthStatus(`Registrazione avviata. Abbiamo inviato una email di verifica a ${email}. Conferma la email e poi effettua il login.`, false);
+        setAuthStatus(msg("authRegisterVerifyEmail", { email }), false);
         return;
       }
 
       const postLogin = await signInWithEmailCandidates(username, password, email);
       if (!postLogin.ok) {
         if (signUpRateLimited || isRateLimitAuthMessage(postLogin.lastErrorMessage)) {
-          setAuthStatus("Rate limit Supabase su registrazione/login. Se l'utente esiste, attendi 1-2 minuti e riprova Login. Se e nuovo, attendi e riprova Registrati.", true);
+          setAuthStatus(tr("authRegisterLoginRateLimit"), true);
           return;
         }
 
         if (isInvalidCredentialAuthMessage(postLogin.lastErrorMessage)) {
-          setAuthStatus("Registrazione non completata o credenziali non corrette. Riprova Login.", true);
+          setAuthStatus(tr("authRegisterIncomplete"), true);
           return;
         }
 
-        setAuthStatus("Registrazione eseguita ma login non completato. In Supabase disattiva la conferma email per usare KeyLock con solo utente/password.", true);
+        setAuthStatus(tr("authRegisterNoAutoLogin"), true);
         return;
       }
 
       const loginMsg = await completeAuthSession(username, password, postLogin.result.data.user);
       if (signUpRateLimited) {
-        setAuthStatus(`Rate limit registrazione rilevato, ma accesso effettuato: ${loginMsg}`);
+        setAuthStatus(msg("authRegisterRateLimitedLoggedIn", { loginMsg }));
       } else {
-        setAuthStatus(`Utente ${username} registrato e login effettuato.`);
+        setAuthStatus(msg("authRegisteredAndLogged", { username }));
       }
       await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
       } finally {
@@ -878,7 +1288,7 @@ const defaultExpenseItems = [
     async function loginKeyLockUser() {
       if (!await ensureSupabaseReady("effettuare il login")) return;
       if (authFlowInProgress) {
-        setAuthStatus("Operazione auth gia in corso, attendi qualche secondo.", true);
+        setAuthStatus(tr("authOperationInProgress"), true);
         return;
       }
       if (!ensureAuthNotCoolingDown()) return;
@@ -889,15 +1299,15 @@ const defaultExpenseItems = [
       const email = normalizeEmail(text("keylockEmail"));
       const password = text("keylockPass");
       if (username && !isValidUsername(username)) {
-        setAuthStatus("Nome utente non valido.", true);
+        setAuthStatus(tr("authInvalidUsername"), true);
         return;
       }
       if (email && !isValidEmail(email)) {
-        setAuthStatus("Email non valida.", true);
+        setAuthStatus(tr("authInvalidEmail"), true);
         return;
       }
       if (!username && !email) {
-        setAuthStatus("Inserisci utente oppure email per il login.", true);
+        setAuthStatus(tr("authNeedUserOrEmail"), true);
         return;
       }
 
@@ -905,25 +1315,25 @@ const defaultExpenseItems = [
       if (!signIn.ok) {
         const loginMsg = String(signIn.lastErrorMessage || "");
         if (isRateLimitAuthMessage(loginMsg)) {
-          setAuthStatus("Troppi tentativi ravvicinati. Attendi 1-2 minuti e riprova il Login.", true);
+          setAuthStatus(tr("authLoginRateLimit"), true);
           return;
         }
         if (isEmailNotConfirmedAuthMessage(loginMsg)) {
-          setAuthStatus("Email non verificata. Apri la mail di conferma e completa la verifica, poi riprova il login.", true);
+          setAuthStatus(tr("authEmailNotVerified"), true);
           return;
         }
         if (isInvalidCredentialAuthMessage(loginMsg)) {
-          setAuthStatus("Login fallito: credenziali non valide o utente non presente nel nuovo cloud. Usa Registrati solo se l'utente non e mai stato creato su Supabase.", true);
+          setAuthStatus(tr("authInvalidCredentials"), true);
           return;
         }
-        setAuthStatus(`Login fallito: ${loginMsg || "utente non trovato"}`, true);
+        setAuthStatus(msg("authLoginFailed", { message: loginMsg || tr("authUserFallback") }), true);
         return;
       }
 
       const effectiveUsername = username
         || normalizeUsername(signIn.result.data.user && signIn.result.data.user.user_metadata && signIn.result.data.user.user_metadata.username)
         || normalizeUsername((email || "").split("@")[0])
-        || "utente";
+        || tr("authUserFallback");
 
       const loginMsg = await completeAuthSession(effectiveUsername, password, signIn.result.data.user);
       setAuthStatus(loginMsg);
@@ -944,12 +1354,12 @@ const defaultExpenseItems = [
       cloudProfileSession.history = [];
       updateAuthUi();
       renderCloudHistoryPanel();
-      setAuthStatus("Logout eseguito.");
+      setAuthStatus(tr("authLogoutDone"));
     }
 
     async function saveScenarioForLoggedUser() {
       if (!authSession.username || !authSession.userId || !authSession.keyBits) {
-        setAuthStatus("Effettua prima il login.", true);
+        setAuthStatus(tr("authLoginRequired"), true);
         return;
       }
 
@@ -964,7 +1374,7 @@ const defaultExpenseItems = [
         .maybeSingle();
 
       if (existingRes.error) {
-        setAuthStatus(`Salvataggio profilo fallito: ${existingRes.error.message}`, true);
+        setAuthStatus(msg("authSaveFailed", { message: existingRes.error.message }), true);
         return;
       }
 
@@ -1007,19 +1417,19 @@ const defaultExpenseItems = [
         }, { onConflict: "user_id" });
 
       if (error) {
-        setAuthStatus(`Salvataggio profilo fallito: ${error.message}`, true);
+        setAuthStatus(msg("authSaveFailed", { message: error.message }), true);
         return;
       }
 
       cloudProfileSession.loaded = cloudDoc;
       cloudProfileSession.history = history;
       renderCloudHistoryPanel();
-      setAuthStatus(`Profilo cloud salvato. Versioni storiche: ${history.length}.`);
+      setAuthStatus(msg("authCloudSaved", { count: history.length }));
     }
 
     async function loadScenarioForLoggedUser(options = {}) {
       if (!authSession.username || !authSession.userId || !authSession.keyBits) {
-        setAuthStatus("Effettua prima il login.", true);
+        setAuthStatus(tr("authLoginRequired"), true);
         return false;
       }
 
@@ -1030,14 +1440,14 @@ const defaultExpenseItems = [
         .maybeSingle();
 
       if (error) {
-        setAuthStatus(`Caricamento profilo fallito: ${error.message}`, true);
+        setAuthStatus(msg("authLoadFailed", { message: error.message }), true);
         return false;
       }
       if (!data || !data.scenario_cipher) {
         cloudProfileSession.loaded = null;
         cloudProfileSession.history = [];
         renderCloudHistoryPanel();
-        if (!options.silentNoData) setAuthStatus("Nessun profilo cloud salvato per questo utente.", true);
+        if (!options.silentNoData) setAuthStatus(tr("authNoCloudProfile"), true);
         return false;
       }
 
@@ -1049,18 +1459,18 @@ const defaultExpenseItems = [
         applyState(doc.current);
         renderCloudHistoryPanel();
         setAuthStatus(options.fromLogin
-          ? `Login effettuato e ultimo profilo cloud caricato. Versioni storiche: ${cloudProfileSession.history.length}.`
-          : `Profilo cloud caricato. Versioni storiche: ${cloudProfileSession.history.length}.`);
+          ? msg("authLoadedFromLogin", { count: cloudProfileSession.history.length })
+          : msg("authLoaded", { count: cloudProfileSession.history.length }));
         return true;
       } catch (_) {
-        setAuthStatus("Impossibile decifrare il profilo: credenziali errate o formato profilo non compatibile.", true);
+        setAuthStatus(tr("authDecryptFailed"), true);
         return false;
       }
     }
 
     function buildExpenseRows() {
       rowsSpese.innerHTML = "";
-      document.getElementById("speseCountNote").textContent = `Elenco spese compilabili: ${expenseItems.length} voci.`;
+      document.getElementById("speseCountNote").textContent = msg("expenseCountNote", { count: expenseItems.length });
       expenseItems.forEach((item, idx) => {
         const labelEsc = escapeHtml(item.label);
         const helpEsc = escapeHtml(item.help);
@@ -1070,17 +1480,17 @@ const defaultExpenseItems = [
           <td>
             <div class="spese-input-wrap">
               <input type="number" min="0" step="0.01" id="c1_${idx}" value="0" />
-              <span class="spese-partial" id="p1_${idx}" title="Somma parziale progressiva">Tot: ${eurTiny(0)}</span>
+              <span class="spese-partial" id="p1_${idx}" title="${tr("expensePartialTitle")}">${tr("expensePartialLabel")}: ${eurTiny(0)}</span>
             </div>
           </td>
           <td>
             <div class="spese-input-wrap">
               <input type="number" min="0" step="0.01" id="c2_${idx}" value="0" />
-              <span class="spese-partial" id="p2_${idx}" title="Somma parziale progressiva">Tot: ${eurTiny(0)}</span>
+              <span class="spese-partial" id="p2_${idx}" title="${tr("expensePartialTitle")}">${tr("expensePartialLabel")}: ${eurTiny(0)}</span>
             </div>
           </td>
           <td class="col-actions">
-            <button class="btn-secondary spese-remove-btn" type="button" data-remove-expense-idx="${idx}" title="Rimuovi voce spesa">Rimuovi</button>
+            <button class="btn-secondary spese-remove-btn" type="button" data-remove-expense-idx="${idx}" title="${tr("expenseRemoveTitle")}">${tr("expenseRemoveBtn")}</button>
           </td>
         `;
         rowsSpese.appendChild(tr);
@@ -1104,7 +1514,7 @@ const defaultExpenseItems = [
     function removeExpenseItemAt(index) {
       if (!Number.isInteger(index) || index < 0 || index >= expenseItems.length) return;
       if (expenseItems.length <= 1) {
-        alert("Deve restare almeno una voce spesa.");
+        alert(tr("expenseMinOneAlert"));
         return;
       }
 
@@ -1135,12 +1545,12 @@ const defaultExpenseItems = [
         const p1 = document.getElementById(`p1_${idx}`);
         const p2 = document.getElementById(`p2_${idx}`);
         if (p1) {
-          p1.textContent = `Tot: ${eurTiny(partial1)}`;
-          p1.title = `Somma parziale progressiva: ${eur(partial1)}`;
+          p1.textContent = `${tr("expensePartialLabel")}: ${eurTiny(partial1)}`;
+          p1.title = `${tr("expensePartialTitle")}: ${eur(partial1)}`;
         }
         if (p2) {
-          p2.textContent = `Tot: ${eurTiny(partial2)}`;
-          p2.title = `Somma parziale progressiva: ${eur(partial2)}`;
+          p2.textContent = `${tr("expensePartialLabel")}: ${eurTiny(partial2)}`;
+          p2.title = `${tr("expensePartialTitle")}: ${eur(partial2)}`;
         }
       });
     }
@@ -1194,8 +1604,8 @@ const defaultExpenseItems = [
       simplePerc.disabled = !isSimple;
       if (simplePercField) simplePercField.classList.toggle("is-hidden", !isSimple);
       simplePerc.title = isSimple
-        ? "Percentuale usata nella formula semplificata."
-        : "Campo inattivo: viene usato solo nella modalita semplificata.";
+        ? tr("simplePercTitleEnabled")
+        : tr("simplePercTitleDisabled");
 
       const redditoLabel1 = document.getElementById("lblReddito1");
       const redditoLabel2 = document.getElementById("lblReddito2");
@@ -1206,11 +1616,11 @@ const defaultExpenseItems = [
         ? `${tr("redditoAnnuale")} (${currentCurrency})`
         : `${tr("redditoMensile")} (${currentCurrency})`;
       const hintText1 = annual
-        ? "Entrate nette annuali del Coniuge 1: il sistema converte automaticamente in quota mensile (/12)."
-        : "Entrate nette mensili disponibili del Coniuge 1.";
+        ? msg("incomeHintAnnual", { spouse: c1n() })
+        : msg("incomeHintMonthly", { spouse: c1n() });
       const hintText2 = annual
-        ? "Entrate nette annuali del Coniuge 2: il sistema converte automaticamente in quota mensile (/12)."
-        : "Entrate nette mensili disponibili del Coniuge 2.";
+        ? msg("incomeHintAnnual", { spouse: c2n() })
+        : msg("incomeHintMonthly", { spouse: c2n() });
       if (redditoLabel1) redditoLabel1.textContent = labelText;
       if (redditoLabel2) redditoLabel2.textContent = labelText;
       if (redditoHint1) redditoHint1.title = hintText1;
@@ -1353,8 +1763,8 @@ const defaultExpenseItems = [
       return computeModelLocal(payload);
     }
 
-    function c1n() { return (document.getElementById("nome1").value || "").trim() || "Coniuge 1"; }
-    function c2n() { return (document.getElementById("nome2").value || "").trim() || "Coniuge 2"; }
+    function c1n() { return (document.getElementById("nome1").value || "").trim() || tr("spouse1Default"); }
+    function c2n() { return (document.getElementById("nome2").value || "").trim() || tr("spouse2Default"); }
 
     function updateSpouseLabels() {
       const th1 = document.getElementById("thSpese1");
@@ -1379,11 +1789,11 @@ const defaultExpenseItems = [
       const absDiffDisp = Math.abs(diffDisp);
       liveNet.innerHTML = `
         <div class="live-k">
-          Netto disponibile ${c1n()}
+          ${msg("liveNetAvailablePerson", { spouse: c1n() })}
           <strong class="${m.disp1 >= 0 ? "ok" : "bad"}">${eur(m.disp1)}</strong>
         </div>
         <div class="live-k">
-          Netto disponibile ${c2n()}
+          ${msg("liveNetAvailablePerson", { spouse: c2n() })}
           <strong class="${m.disp2 >= 0 ? "ok" : "bad"}">${eur(m.disp2)}</strong>
         </div>
         <div class="live-diff">
@@ -1399,19 +1809,19 @@ const defaultExpenseItems = [
         <div class="live-columns">
           <div class="live-col">
             <h4>${c1n()}</h4>
-            <div class="live-row"><span>Entrate totali (reddito + assegni + INPS)</span><strong class="ok">${eur(entrate1)}</strong></div>
-            <div class="live-row"><span>Assegno mantenimento pagato all'altro coniuge</span><strong class="warn">${eur(m.match12)}</strong></div>
-            <div class="live-row"><span>Assegno mantenimento pagato esterno</span><strong class="warn">${eur(m.esternoPag1)}</strong></div>
-            <div class="live-row"><span>Totale spese inserite</span><strong class="warn">${eur(m.spese1)}</strong></div>
-            <div class="live-row"><span>Uscite totali</span><strong class="warn">${eur(uscite1)}</strong></div>
+            <div class="live-row"><span>${tr("liveTotalIncome")}</span><strong class="ok">${eur(entrate1)}</strong></div>
+            <div class="live-row"><span>${tr("livePaidToOther")}</span><strong class="warn">${eur(m.match12)}</strong></div>
+            <div class="live-row"><span>${tr("livePaidExternal")}</span><strong class="warn">${eur(m.esternoPag1)}</strong></div>
+            <div class="live-row"><span>${tr("liveTotalExpensesEntered")}</span><strong class="warn">${eur(m.spese1)}</strong></div>
+            <div class="live-row"><span>${tr("liveTotalOutflows")}</span><strong class="warn">${eur(uscite1)}</strong></div>
           </div>
           <div class="live-col">
             <h4>${c2n()}</h4>
-            <div class="live-row"><span>Entrate totali (reddito + assegni + INPS)</span><strong class="ok">${eur(entrate2)}</strong></div>
-            <div class="live-row"><span>Assegno mantenimento pagato all'altro coniuge</span><strong class="warn">${eur(m.match21)}</strong></div>
-            <div class="live-row"><span>Assegno mantenimento pagato esterno</span><strong class="warn">${eur(m.esternoPag2)}</strong></div>
-            <div class="live-row"><span>Totale spese inserite</span><strong class="warn">${eur(m.spese2)}</strong></div>
-            <div class="live-row"><span>Uscite totali</span><strong class="warn">${eur(uscite2)}</strong></div>
+            <div class="live-row"><span>${tr("liveTotalIncome")}</span><strong class="ok">${eur(entrate2)}</strong></div>
+            <div class="live-row"><span>${tr("livePaidToOther")}</span><strong class="warn">${eur(m.match21)}</strong></div>
+            <div class="live-row"><span>${tr("livePaidExternal")}</span><strong class="warn">${eur(m.esternoPag2)}</strong></div>
+            <div class="live-row"><span>${tr("liveTotalExpensesEntered")}</span><strong class="warn">${eur(m.spese2)}</strong></div>
+            <div class="live-row"><span>${tr("liveTotalOutflows")}</span><strong class="warn">${eur(uscite2)}</strong></div>
           </div>
         </div>
       `;
@@ -1455,8 +1865,8 @@ const defaultExpenseItems = [
       }));
 
       const statusText = diffDisp === 0
-        ? "Netti equivalenti"
-        : `Vantaggio netto: ${diffDisp > 0 ? c1n() : c2n()}`;
+        ? tr("liveEquivalentNets")
+        : msg("liveNetAdvantageSpouse", { spouse: diffDisp > 0 ? c1n() : c2n() });
 
       const winnerSpouse = diffDisp === 0 ? 0 : (diffDisp > 0 ? 1 : 2);
       const loserSpouse = diffDisp === 0 ? 0 : (diffDisp > 0 ? 2 : 1);
@@ -1546,7 +1956,7 @@ const defaultExpenseItems = [
       const badgeAvailableW = Math.max(120, Math.min(w - 20, w - reservedForFigures));
       const badgeW = Math.min(520, badgeAvailableW);
       const badgeX = (w - badgeW) / 2;
-      const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
+      const badgeText = `${statusText} | ${tr("pdfDelta")} ${eur(absDiffDisp)}`;
       const badgeMaxFontSize = isNarrow ? 16 : (w < 560 ? 24 : 28);
       const badgeMinFontSize = isNarrow ? 12 : 10;
       const badgeInnerW = badgeW - 36;
@@ -1708,75 +2118,79 @@ const defaultExpenseItems = [
       fc.renderAll();
     }
 
+    function getModeName(mode, simplePerc) {
+      if (mode === "legal") return tr("calcModeLegalName");
+      if (mode === "simple") return msg("calcModeSimpleName", { perc: simplePerc.toFixed(0) });
+      return tr("calcModeGenovaName");
+    }
+
     function calculate() {
       const m = computeModel();
       const formulaNote = document.getElementById("formulaNote");
 
-      const modeName = m.mode === "legal"
-        ? "Legale-proporzionale"
-        : (m.mode === "simple" ? `Semplificata (${m.simplePerc.toFixed(0)}%)` : "Linee guida Tribunale di Genova");
+      const modeName = getModeName(m.mode, m.simplePerc);
 
       let modeSpecific = "";
       if (m.mode === "simple") {
         modeSpecific = `
-          <br /><strong>Regola specifica modalita semplificata</strong>
-          <br />1) Differenza netti = |Disponibilita C1 - Disponibilita C2| = ${eur(Math.abs(m.disp1 - m.disp2))}.
-          <br />2) Assegno suggerito = differenza netti x ${m.simplePerc.toFixed(0)}%.
-          <br />3) Paga il coniuge con disponibilita netta maggiore.
+          <br /><strong>${tr("calcSimpleRuleTitle")}</strong>
+          <br />${msg("calcSimpleRule1", { value: eur(Math.abs(m.disp1 - m.disp2)) })}
+          <br />${msg("calcSimpleRule2", { perc: m.simplePerc.toFixed(0) })}
+          <br />${tr("calcSimpleRule3")}
         `;
       } else if (m.mode === "genova") {
         const nonColl = m.collocatario === 1 ? 2 : 1;
         modeSpecific = `
-          <br /><strong>Regola specifica linee guida Genova</strong>
-          <br />1) Collocatario stimato: Coniuge ${m.collocatario} (maggiore permanenza).
-          <br />2) Non collocatario: Coniuge ${nonColl}.
-          <br />3) Costo giornaliero medio figli = fabbisogno figli / 30 = ${eur(m.costoGiornalieroFiglio)}.
-          <br />4) Quota diretta non collocatario = costo giornaliero x giorni di permanenza presso non collocatario.
-          <br />5) Assegno suggerito = max(0, quota teorica non collocatario - quota diretta non collocatario).
+          <br /><strong>${tr("calcGenovaRuleTitle")}</strong>
+          <br />${msg("calcGenovaRule1", { coll: m.collocatario })}
+          <br />${msg("calcGenovaRule2", { nonColl })}
+          <br />${msg("calcGenovaRule3", { value: eur(m.costoGiornalieroFiglio) })}
+          <br />${tr("calcGenovaRule4")}
+          <br />${tr("calcGenovaRule5")}
         `;
       } else {
         modeSpecific = `
-          <br /><strong>Regola specifica modalita legale-proporzionale</strong>
-          <br />1) Quota teorica = fabbisogno figli x peso contributivo del coniuge.
-          <br />2) Quota diretta = fabbisogno figli x permanenza presso quel coniuge.
-          <br />3) Saldo = quota teorica - quota diretta.
-          <br />4) L'assegno e il saldo positivo del coniuge debitore verso l'altro.
+          <br /><strong>${tr("calcLegalRuleTitle")}</strong>
+          <br />${tr("calcLegalRule1")}
+          <br />${tr("calcLegalRule2")}
+          <br />${tr("calcLegalRule3")}
+          <br />${tr("calcLegalRule4")}
         `;
       }
 
       formulaNote.innerHTML = `
-        <strong>Impostazione generale del calcolo</strong>
-        <br />Modalita attiva: ${modeName}.
-        <br />Disponibilita netta C1 = reddito netto C1 + assegni percepiti C1 + assegni familiari C1 - assegni pagati C1 - spese C1.
-        <br />Disponibilita netta C2 = reddito netto C2 + assegni percepiti C2 + assegni familiari C2 - assegni pagati C2 - spese C2.
-        <br />Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.
-        <br />Fabbisogno figli stimato = totale spese inserite x 35%.
+        <strong>${tr("calcGeneralTitle")}</strong>
+        <br />${tr("calcActiveMode")}: ${modeName}.
+        <br />${tr("calcGeneral1")}
+        <br />${tr("calcGeneral2")}
+        <br />${tr("calcGeneral3")}
+        <br />${tr("calcGeneral4")}
 
-        <br /><strong>Significato delle principali voci richieste in input</strong>
-        <br />- Reddito netto: entrata disponibile del coniuge (mensile oppure annuale, se selezionata base annuale).
-        <br />- Assegno percepito: importo ricevuto mensilmente dal coniuge.
-        <br />- Assegno pagato: importo versato mensilmente dal coniuge.
-        <br />- Assegni familiari/INPS: componenti assistenziali percepite.
-        <br />- Permanenza figli (%): ripartizione dei giorni medi mensili tra i due coniugi.
-        <br />- Spese per voce: costi mensili attribuiti a ciascun coniuge.
+        <br /><strong>${tr("calcInputMeaningTitle")}</strong>
+        <br />${tr("calcInput1")}
+        <br />${tr("calcInput2")}
+        <br />${tr("calcInput3")}
+        <br />${tr("calcInput4")}
+        <br />${tr("calcInput5")}
+        <br />${tr("calcInput6")}
 
-        <br /><strong>Lettura dei risultati e KPI</strong>
-        <br />- Netto disponibile: situazione prima del nuovo assegno calcolato dal modello.
-        <br />- Totale spese inserite: somma C1 + C2 delle voci compilate.
-        <br />- Quota teorica: quota di fabbisogno figli attribuita in base al peso economico.
-        <br />- Post-assegno: netto disponibile dopo applicazione dell'assegno suggerito.
-        <br />- Importo per figlio: assegno mensile suggerito diviso per numero figli.
-        <br />- Assegno pagato esterno: quota pagata non compensata da assegni percepiti dell'altro coniuge (non accreditata all'altro).
+        <br /><strong>${tr("calcKpiReadTitle")}</strong>
+        <br />${tr("calcKpi1")}
+        <br />${tr("calcKpi2")}
+        <br />${tr("calcKpi3")}
+        <br />${tr("calcKpi4")}
+        <br />${tr("calcKpi5")}
+        <br />${tr("calcKpi6")}
 
         ${modeSpecific}
-        ${m.incomeMode === "annual" ? "<br /><strong>Nota base reddito:</strong> i redditi annuali sono convertiti automaticamente in mensili (/12) prima di tutti i calcoli." : ""}
+        ${m.incomeMode === "annual" ? `<br /><strong>${tr("calcIncomeBaseNote")}</strong> ${tr("calcIncomeBaseNoteText")}` : ""}
       `;
 
-      let mainText = "Nessun trasferimento suggerito";
+      let mainText = tr("calcNoTransferSuggested");
       if (m.assegnoDa1a2 > 0.005) {
-        mainText = `${c1n()} \u2192 ${c2n()}: ${eur(m.assegnoDa1a2)} / mese`;
+        mainText = `${c1n()} \u2192 ${c2n()}: ${eur(m.assegnoDa1a2)} ${tr("pdfPerMonth")}`;
       } else if (m.assegnoDa2a1 > 0.005) {
-        mainText = `${c2n()} \u2192 ${c1n()}: ${eur(m.assegnoDa2a1)} / mese`;
+        mainText = `${c2n()} \u2192 ${c1n()}: ${eur(m.assegnoDa2a1)} ${tr("pdfPerMonth")}`;
       }
       document.getElementById("risultatoMain").textContent = mainText;
 
@@ -1784,17 +2198,17 @@ const defaultExpenseItems = [
       kpi.innerHTML = "";
 
       const items = [
-        ["Modalita attiva", m.mode === "legal" ? "Legale-proporzionale" : (m.mode === "simple" ? `Semplificata (${m.simplePerc.toFixed(0)}%)` : "Linee guida Tribunale di Genova"), "warn"],
-        ["Base reddito", m.incomeMode === "annual" ? "Annuale (convertito in mensile)" : "Mensile", "warn"],
-        [`Disponibilita netta ${c1n()}`, eur(m.disp1), m.disp1 >= 0 ? "ok" : "bad"],
-        [`Disponibilita netta ${c2n()}`, eur(m.disp2), m.disp2 >= 0 ? "ok" : "bad"],
-        ["Totale spese inserite", eur(m.speseTot), "warn"],
-        ["Fabbisogno figli stimato", eur(m.fabbisognoFigli), "warn"],
-        [`Quota teorica ${c1n()}`, eur(m.quotaTeorica1), "ok"],
-        [`Quota teorica ${c2n()}`, eur(m.quotaTeorica2), "ok"],
-        [`Post-assegno ${c1n()}`, eur(m.post1), m.post1 >= 0 ? "ok" : "bad"],
-        [`Post-assegno ${c2n()}`, eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
-        ["Importo per figlio", eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
+        [tr("kpiActiveMode"), modeName, "warn"],
+        [tr("kpiIncomeBase"), m.incomeMode === "annual" ? tr("kpiIncomeBaseAnnual") : tr("kpiIncomeBaseMonthly"), "warn"],
+        [`${tr("pdfNetAvailable")} ${c1n()}`, eur(m.disp1), m.disp1 >= 0 ? "ok" : "bad"],
+        [`${tr("pdfNetAvailable")} ${c2n()}`, eur(m.disp2), m.disp2 >= 0 ? "ok" : "bad"],
+        [tr("liveTotalExpensesEntered"), eur(m.speseTot), "warn"],
+        [tr("pdfEstimatedChildrenNeeds"), eur(m.fabbisognoFigli), "warn"],
+        [`${tr("pdfTheoreticalShare")} ${c1n()}`, eur(m.quotaTeorica1), "ok"],
+        [`${tr("pdfTheoreticalShare")} ${c2n()}`, eur(m.quotaTeorica2), "ok"],
+        [`${tr("pdfPostSupport")} ${c1n()}`, eur(m.post1), m.post1 >= 0 ? "ok" : "bad"],
+        [`${tr("pdfPostSupport")} ${c2n()}`, eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
+        [tr("pdfAmountPerChild"), eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
       ];
 
       items.forEach(([label, value, cls]) => {
@@ -1822,24 +2236,24 @@ const defaultExpenseItems = [
     function exportPdfDirect() {
       const m = computeModel();
       const now = new Date();
-      const genDate = now.toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" });
-      const genTime = now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+      const genDate = now.toLocaleDateString(getCurrentLocale(), { day: "2-digit", month: "long", year: "numeric" });
+      const genTime = now.toLocaleTimeString(getCurrentLocale(), { hour: "2-digit", minute: "2-digit" });
       const c1Name = c1n();
       const c2Name = c2n();
       const c1NameEsc = escapeHtml(c1Name);
       const c2NameEsc = escapeHtml(c2Name);
 
-      const modeName = m.mode === "legal"
-        ? "Legale-proporzionale"
-        : (m.mode === "simple" ? `Semplificata (${m.simplePerc.toFixed(0)}%)` : "Linee guida Tribunale di Genova");
+      const pdfLang = currentLang === "en" ? "en" : "it";
 
-      let assegnoText = "Nessun trasferimento";
+      const modeName = getModeName(m.mode, m.simplePerc);
+
+      let assegnoText = tr("pdfNoTransfer");
       let assegnoDir = "";
       if (m.assegnoDa1a2 > 0.005) {
-        assegnoText = eur(m.assegnoDa1a2) + " / mese";
+        assegnoText = eur(m.assegnoDa1a2) + " " + tr("pdfPerMonth");
         assegnoDir = `${c1NameEsc} &rarr; ${c2NameEsc}`;
       } else if (m.assegnoDa2a1 > 0.005) {
-        assegnoText = eur(m.assegnoDa2a1) + " / mese";
+        assegnoText = eur(m.assegnoDa2a1) + " " + tr("pdfPerMonth");
         assegnoDir = `${c2NameEsc} &rarr; ${c1NameEsc}`;
       }
 
@@ -1855,10 +2269,10 @@ const defaultExpenseItems = [
       }).join("");
 
       const html = `<!DOCTYPE html>
-<html lang="it">
+<html lang="${pdfLang}">
 <head>
 <meta charset="UTF-8"/>
-<title>Report Mantenimento – ${genDate}</title>
+<title>${tr("pdfReportTitle")} – ${genDate}</title>
 <style>
   @page { size: A4 portrait; margin: 16mm 14mm 14mm 14mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1993,41 +2407,41 @@ const defaultExpenseItems = [
 <!-- HEADER -->
 <div class="rpt-header">
   <div>
-    <div class="rpt-title">Calcolo Mantenimento Figli</div>
-    <div class="rpt-subtitle">Stima indicativa a supporto della negoziazione assistita</div>
+    <div class="rpt-title">${tr("pdfAppTitle")}</div>
+    <div class="rpt-subtitle">${tr("pdfAppSubtitle")}</div>
   </div>
-  <div class="rpt-meta">Generato il ${genDate}<br/>${genTime}</div>
+  <div class="rpt-meta">${tr("pdfGeneratedOn")} ${genDate}<br/>${genTime}</div>
 </div>
 
 <!-- ASSEGNO BANNER -->
 <div class="banner">
   ${assegnoDir ? `
   <div>
-    <div class="banner-lbl">Assegno mensile suggerito dal modello</div>
+    <div class="banner-lbl">${tr("pdfBannerLbl")}</div>
     <div class="banner-dir">${assegnoDir}</div>
   </div>
   <div>
     <div class="banner-amount">${assegnoText}</div>
-    ${m.figli > 1 ? `<div class="banner-sub">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)} per figlio</div>` : ""}
+    ${m.figli > 1 ? `<div class="banner-sub">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)} ${tr("pdfPerChild")}</div>` : ""}
   </div>
   ` : `
   <div style="width:100%;text-align:center;padding:4px 0;">
-    <div class="banner-lbl" style="font-size:9pt;margin-bottom:6px;">Assegno mensile suggerito dal modello</div>
-    <div class="banner-dir" style="font-size:14pt;">✓ Nessun assegno di mantenimento necessario</div>
+    <div class="banner-lbl" style="font-size:9pt;margin-bottom:6px;">${tr("pdfBannerLbl")}</div>
+    <div class="banner-dir" style="font-size:14pt;">${tr("pdfNoSupport")}</div>
   </div>
   `}
 </div>
 
 <!-- LIVE PANEL (replica del blocco visivo dell'app) -->
 <div class="live-panel">
-  <div class="live-panel-title">Impatto in Tempo Reale sul Netto</div>
+  <div class="live-panel-title">${tr("pdfLiveTitle")}</div>
   <div class="live-net-row">
     <div class="live-net-card">
-      <div class="live-net-label">Netto disponibile ${c1NameEsc}</div>
+      <div class="live-net-label">${tr("pdfNetAvailable")} ${c1NameEsc}</div>
       <div class="live-net-value c1">${eur(m.disp1)}</div>
     </div>
     <div class="live-net-card">
-      <div class="live-net-label">Netto disponibile ${c2NameEsc}</div>
+      <div class="live-net-label">${tr("pdfNetAvailable")} ${c2NameEsc}</div>
       <div class="live-net-value c2">${eur(m.disp2)}</div>
     </div>
   </div>
@@ -2058,9 +2472,9 @@ const defaultExpenseItems = [
           ${(() => {
             const diff = m.disp1 - m.disp2;
             const absDiff = Math.abs(diff);
-            if (absDiff < 0.5) return `Parità | Delta ${eur(0)}`;
+            if (absDiff < 0.5) return `${tr("pdfParity")} | ${tr("pdfDelta")} ${eur(0)}`;
             const winner = diff > 0 ? c1NameEsc : c2NameEsc;
-            return `Vantaggio netto: ${winner} | Delta ${eur(absDiff)}`;
+            return `${tr("pdfNetAdvantage")}: ${winner} | ${tr("pdfDelta")} ${eur(absDiff)}`;
           })()}
         </div>
       </div>
@@ -2097,32 +2511,32 @@ const defaultExpenseItems = [
   <!-- Assegno suggerito -->
   ${assegnoDir ? `
   <div class="assegno-pill">
-    <div class="assegno-lbl">Assegno suggerito</div>
+    <div class="assegno-lbl">${tr("pdfSuggestedSupport")}</div>
     <div class="assegno-val">${assegnoDir}: ${assegnoText}</div>
   </div>` : ""}
 </div>
 <div class="section">
-  <div class="section-title">Parametri di Input</div>
+  <div class="section-title">${tr("pdfInputSection")}</div>
   <div class="two-col">
     <table>
-      <thead><tr><th colspan="2">Impostazioni Generali</th></tr></thead>
+      <thead><tr><th colspan="2">${tr("pdfGeneralSettings")}</th></tr></thead>
       <tbody>
-        <tr><td>Modalità di calcolo</td><td>${modeName}</td></tr>
-        <tr><td>Base reddito</td><td>${m.incomeMode === "annual" ? "Annuale (÷12 per mensile)" : "Mensile"}</td></tr>
-        <tr><td>Numero figli</td><td>${m.figli}</td></tr>
-        <tr><td>Permanenza ${c1n()}</td><td>${m.perm1.toFixed(0)}%</td></tr>
-        <tr><td>Permanenza ${c2n()}</td><td>${m.perm2.toFixed(0)}%</td></tr>
+        <tr><td>${tr("pdfCalcMode")}</td><td>${modeName}</td></tr>
+        <tr><td>${tr("pdfIncomeBase")}</td><td>${m.incomeMode === "annual" ? tr("pdfIncomeAnnualBase") : tr("pdfIncomeMonthlyBase")}</td></tr>
+        <tr><td>${tr("pdfChildrenCount")}</td><td>${m.figli}</td></tr>
+        <tr><td>${tr("pdfPermanence")} ${c1n()}</td><td>${m.perm1.toFixed(0)}%</td></tr>
+        <tr><td>${tr("pdfPermanence")} ${c2n()}</td><td>${m.perm2.toFixed(0)}%</td></tr>
       </tbody>
     </table>
     <table class="data-table">
-      <thead><tr><th>Voce</th><th class="num">${c1n()}</th><th class="num">${c2n()}</th></tr></thead>
+      <thead><tr><th>${tr("pdfItem")}</th><th class="num">${c1n()}</th><th class="num">${c2n()}</th></tr></thead>
       <tbody>
-        <tr><td>Reddito netto${m.incomeMode === "annual" ? " annuo" : " mensile"}</td>
+        <tr><td>${tr("pdfNetIncome")}${m.incomeMode === "annual" ? tr("pdfYearlySuffix") : tr("pdfMonthlySuffix")}</td>
             <td class="num">${eur(m.r1Raw)}</td><td class="num">${eur(m.r2Raw)}</td></tr>
-        ${m.incomeMode === "annual" ? `<tr><td>Reddito netto mensile (÷12)</td><td class="num">${eur(m.r1)}</td><td class="num">${eur(m.r2)}</td></tr>` : ""}
-        <tr><td>Assegno percepito</td><td class="num">${eur(m.aPerc1)}</td><td class="num">${eur(m.aPerc2)}</td></tr>
-        <tr><td>Assegno pagato</td><td class="num">${eur(m.aPag1)}</td><td class="num">${eur(m.aPag2)}</td></tr>
-        <tr><td>Assegni familiari / INPS</td><td class="num">${eur(m.aFam1)}</td><td class="num">${eur(m.aFam2)}</td></tr>
+        ${m.incomeMode === "annual" ? `<tr><td>${tr("pdfMonthlyConv")}</td><td class="num">${eur(m.r1)}</td><td class="num">${eur(m.r2)}</td></tr>` : ""}
+        <tr><td>${tr("pdfSupportReceived")}</td><td class="num">${eur(m.aPerc1)}</td><td class="num">${eur(m.aPerc2)}</td></tr>
+        <tr><td>${tr("pdfSupportPaid")}</td><td class="num">${eur(m.aPag1)}</td><td class="num">${eur(m.aPag2)}</td></tr>
+        <tr><td>${tr("pdfFamilyBenefits")}</td><td class="num">${eur(m.aFam1)}</td><td class="num">${eur(m.aFam2)}</td></tr>
       </tbody>
     </table>
   </div>
@@ -2130,20 +2544,20 @@ const defaultExpenseItems = [
 
 <!-- SPESE -->
 <div class="section">
-  <div class="section-title">Voci di Spesa</div>
+  <div class="section-title">${tr("pdfExpenseSection")}</div>
   <table>
     <thead>
       <tr>
-        <th>Voce</th>
-        <th class="num" style="width:110px">${c1n()} €/mese</th>
-        <th class="num" style="width:110px">${c2n()} €/mese</th>
-        <th class="num" style="width:110px">Totale €/mese</th>
+        <th>${tr("pdfExpenseItem")}</th>
+        <th class="num" style="width:110px">${c1n()} ${msg("pdfPerMonthShort", { currency: currentCurrency })}</th>
+        <th class="num" style="width:110px">${c2n()} ${msg("pdfPerMonthShort", { currency: currentCurrency })}</th>
+        <th class="num" style="width:110px">${msg("pdfTotalMonthly", { currency: currentCurrency })}</th>
       </tr>
     </thead>
     <tbody>
       ${speseRows}
       <tr class="total-row">
-        <td>TOTALE</td>
+        <td>${tr("pdfTotal")}</td>
         <td class="num">${eur(m.spese1)}</td>
         <td class="num">${eur(m.spese2)}</td>
         <td class="num">${eur(m.speseTot)}</td>
@@ -2154,32 +2568,32 @@ const defaultExpenseItems = [
 
 <!-- ANALISI COMPARATIVA -->
 <div class="section">
-  <div class="section-title">Analisi Economica Comparativa</div>
+  <div class="section-title">${tr("pdfComparison")}</div>
   <div class="balance-row">
     <div class="bal-card c1">
       <div class="bal-card-title">${c1n()}</div>
-      <div class="bal-line"><span class="bal-lbl">Reddito netto mensile</span><span class="bal-val">${eur(m.r1)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">+ Assegno percepito</span><span class="bal-val">+ ${eur(m.aPerc1)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">+ Assegni familiari</span><span class="bal-val">+ ${eur(m.aFam1)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">– Assegno pagato</span><span class="bal-val">– ${eur(m.aPag1)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">– Spese dirette</span><span class="bal-val">– ${eur(m.spese1)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">Disponibilità netta</span>
+      <div class="bal-line"><span class="bal-lbl">${tr("pdfNetIncome")}${tr("pdfMonthlySuffix")}</span><span class="bal-val">${eur(m.r1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">+ ${tr("pdfSupportReceived")}</span><span class="bal-val">+ ${eur(m.aPerc1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">+ ${tr("pdfFamilyBenefits")}</span><span class="bal-val">+ ${eur(m.aFam1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">– ${tr("pdfSupportPaid")}</span><span class="bal-val">– ${eur(m.aPag1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">– ${tr("pdfDirectExpenses")}</span><span class="bal-val">– ${eur(m.spese1)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">${tr("pdfNetAvailable")}</span>
         <span class="bal-val ${m.disp1 >= 0 ? 'green' : 'red'}">${eur(m.disp1)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">Peso contributivo</span><span class="bal-val">${(m.peso1 * 100).toFixed(1)}%</span></div>
-      <div class="bal-line"><span class="bal-lbl">Disponibilità post-assegno</span>
+      <div class="bal-line"><span class="bal-lbl">${tr("pdfWeight")}</span><span class="bal-val">${(m.peso1 * 100).toFixed(1)}%</span></div>
+      <div class="bal-line"><span class="bal-lbl">${tr("pdfPostSupport")}</span>
         <span class="bal-val ${m.post1 >= 0 ? 'green' : 'red'}">${eur(m.post1)}</span></div>
     </div>
     <div class="bal-card c2">
       <div class="bal-card-title">${c2n()}</div>
-      <div class="bal-line"><span class="bal-lbl">Reddito netto mensile</span><span class="bal-val">${eur(m.r2)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">+ Assegno percepito</span><span class="bal-val">+ ${eur(m.aPerc2)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">+ Assegni familiari</span><span class="bal-val">+ ${eur(m.aFam2)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">– Assegno pagato</span><span class="bal-val">– ${eur(m.aPag2)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">– Spese dirette</span><span class="bal-val">– ${eur(m.spese2)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">Disponibilità netta</span>
+      <div class="bal-line"><span class="bal-lbl">${tr("pdfNetIncome")}${tr("pdfMonthlySuffix")}</span><span class="bal-val">${eur(m.r2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">+ ${tr("pdfSupportReceived")}</span><span class="bal-val">+ ${eur(m.aPerc2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">+ ${tr("pdfFamilyBenefits")}</span><span class="bal-val">+ ${eur(m.aFam2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">– ${tr("pdfSupportPaid")}</span><span class="bal-val">– ${eur(m.aPag2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">– ${tr("pdfDirectExpenses")}</span><span class="bal-val">– ${eur(m.spese2)}</span></div>
+      <div class="bal-line"><span class="bal-lbl">${tr("pdfNetAvailable")}</span>
         <span class="bal-val ${m.disp2 >= 0 ? 'green' : 'red'}">${eur(m.disp2)}</span></div>
-      <div class="bal-line"><span class="bal-lbl">Peso contributivo</span><span class="bal-val">${(m.peso2 * 100).toFixed(1)}%</span></div>
-      <div class="bal-line"><span class="bal-lbl">Disponibilità post-assegno</span>
+      <div class="bal-line"><span class="bal-lbl">${tr("pdfWeight")}</span><span class="bal-val">${(m.peso2 * 100).toFixed(1)}%</span></div>
+      <div class="bal-line"><span class="bal-lbl">${tr("pdfPostSupport")}</span>
         <span class="bal-val ${m.post2 >= 0 ? 'green' : 'red'}">${eur(m.post2)}</span></div>
     </div>
   </div>
@@ -2187,34 +2601,34 @@ const defaultExpenseItems = [
 
 <!-- KPI -->
 <div class="section">
-  <div class="section-title">Indicatori Chiave</div>
+  <div class="section-title">${tr("pdfKpiSection")}</div>
   <div class="three-col">
-    <div class="kpi-box"><div class="kpi-lbl">Totale spese</div><div class="kpi-val warn">${eur(m.speseTot)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Fabbisogno figli stimato</div><div class="kpi-val warn">${eur(m.fabbisognoFigli)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Importo per figlio</div><div class="kpi-val warn">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Quota teorica ${c1n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica1)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Quota teorica ${c2n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica2)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Assegno suggerito</div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTotalExpenses")}</div><div class="kpi-val warn">${eur(m.speseTot)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfEstimatedChildrenNeeds")}</div><div class="kpi-val warn">${eur(m.fabbisognoFigli)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfAmountPerChild")}</div><div class="kpi-val warn">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTheoreticalShare")} ${c1n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica1)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTheoreticalShare")} ${c2n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica2)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfSuggestedSupport")}</div>
       <div class="kpi-val ${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? 'warn' : 'ok'}">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1))}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Post-assegno ${c1n()}</div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfPostSupport")} ${c1n()}</div>
       <div class="kpi-val ${m.post1 >= 0 ? 'ok' : 'bad'}">${eur(m.post1)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Post-assegno ${c2n()}</div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfPostSupport")} ${c2n()}</div>
       <div class="kpi-val ${m.post2 >= 0 ? 'ok' : 'bad'}">${eur(m.post2)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">Quota diretta C1 / C2</div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfDirectShareC1C2")}</div>
       <div class="kpi-val ok" style="font-size:10pt">${eur(m.quotaDiretta1)} / ${eur(m.quotaDiretta2)}</div></div>
   </div>
 </div>
 
 <!-- NOTE METODOLOGICHE -->
 <div class="note-box">
-  <strong>Note metodologiche</strong> — Documento generato automaticamente con finalità illustrativa e non costituisce parere legale.
-  Modalità di calcolo: <strong>${modeName}</strong>.
-  Il fabbisogno figli è stimato come il 35% delle spese totali inserite.
-  ${m.incomeMode === "annual" ? "I redditi inseriti in base annuale sono stati convertiti in mensili (÷12)." : ""}
-  I risultati dipendono esclusivamente dai dati immessi e non sostituiscono la valutazione di un professionista.
+  <strong>${tr("pdfMethodology")}</strong> — ${tr("pdfMethodologyText")}
+  ${tr("pdfModeText")}: <strong>${modeName}</strong>.
+  ${tr("pdfNeedEstimate")}
+  ${m.incomeMode === "annual" ? tr("pdfAnnualNote") : ""}
+  ${tr("pdfResultsDepend")}
 </div>
 
-<div class="footer">Calcolatore Mantenimento Figli — Uso privato e riservato — ${genDate}</div>
+<div class="footer">${msg("pdfFooter", { date: genDate })}</div>
 
 <script>window.onload = function(){ window.print(); };<\/script>
 </body>
@@ -2222,7 +2636,7 @@ const defaultExpenseItems = [
 
       const win = window.open("", "_blank");
       if (!win) {
-        alert("Il popup è stato bloccato dal browser. Consenti i popup per questo sito e riprova.");
+        alert(tr("pdfPopupBlocked"));
         return;
       }
       win.document.open();
@@ -2232,8 +2646,8 @@ const defaultExpenseItems = [
 
     async function exportJson() {
       if (!authSession.username || !authSession.keyBits) {
-        setAuthStatus("Effettua il login KeyLock prima di esportare JSON cifrato.", true);
-        alert("Per esportare, devi prima fare login KeyLock.");
+        setAuthStatus(tr("authLoginBeforeExportStatus"), true);
+        alert(tr("authLoginBeforeExportAlert"));
         return;
       }
 
@@ -2264,28 +2678,28 @@ const defaultExpenseItems = [
         try {
           const payload = JSON.parse(String(reader.result || "{}"));
           if (!payload || payload.format !== "keylock-encrypted-state-v1" || !payload.owner || !payload.cipher) {
-            throw new Error("Formato JSON non valido: e richiesto un export cifrato KeyLock");
+            throw new Error(tr("authInvalidJsonFormat"));
           }
 
           if (!authSession.username || !authSession.keyBits) {
-            throw new Error("Effettua prima il login KeyLock per importare il file cifrato");
+            throw new Error(tr("authLoginBeforeImport"));
           }
 
           if (normalizeUsername(payload.owner) !== normalizeUsername(authSession.username)) {
-            throw new Error("Questo file appartiene a un altro utente KeyLock");
+            throw new Error(tr("authFileOwnedByOther"));
           }
 
           const state = await decryptStateForKey(payload.cipher, authSession.keyBits);
           if (!state || typeof state !== "object" || !state.base || !Array.isArray(state.spese)) {
-            throw new Error("Contenuto decifrato non valido");
+            throw new Error(tr("authDecryptedContentInvalid"));
           }
 
           applyState(state);
-          setAuthStatus("JSON cifrato importato correttamente.");
-          alert("Dati caricati da JSON cifrato.");
+          setAuthStatus(tr("authEncryptedJsonImported"));
+          alert(tr("authEncryptedJsonLoaded"));
         } catch (err) {
-          setAuthStatus(`Import JSON fallito: ${err.message}`, true);
-          alert(`Impossibile caricare il JSON: ${err.message}`);
+          setAuthStatus(msg("authImportFailedStatus", { message: err.message }), true);
+          alert(msg("authImportFailedAlert", { message: err.message }));
         }
       };
       reader.readAsText(file, "utf-8");
@@ -2484,7 +2898,7 @@ const defaultExpenseItems = [
       const entry = cloudProfileSession.history[idx];
       if (!entry || !entry.state) return;
       applyState(entry.state);
-      setAuthStatus("Versione storica ripristinata nel form. Salva profilo cloud per renderla corrente.");
+      setAuthStatus(tr("authHistoryRestored"));
     });
 
     document.addEventListener("input", (e) => {
@@ -2547,6 +2961,7 @@ const defaultExpenseItems = [
     initTopActionsMenu();
     initAuthMenu();
     initCoffeeFloatVisibility();
+    initCoffeeDonationPicker();
     updateAuthUi();
     renderCloudHistoryPanel();
     syncPermanenza();

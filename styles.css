@@ -216,6 +216,8 @@
     }
 
     .coffee-float:hover .coffee-float-card,
+    .coffee-float.is-open .coffee-float-card,
+    .coffee-float:focus-within .coffee-float-card,
     .coffee-float-card:hover {
       opacity: 1;
       transform: translateY(0) scale(1);
@@ -1266,6 +1268,10 @@
       justify-content: space-between;
       gap: 14px;
       flex-wrap: wrap;
+
+    .donate-banner[role="button"] {
+      cursor: pointer;
+    }
     }
 
     .donate-text {
