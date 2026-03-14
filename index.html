@@ -2459,6 +2459,9 @@
       const badgeFontSize = w < 360 ? 12 : 14;
       addOutcomeFigure(18, 18, 1, roleForSpouse(1));
       addOutcomeFigure(w - 114, 18, 2, roleForSpouse(2));
+      fc.add(new window.fabric.Text(badgeText, {
+        left: badgeX + 14,
+        top: w < 360 ? 29 : 27,
         fontSize: badgeFontSize,
         fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
         fontFamily: "Candara",
