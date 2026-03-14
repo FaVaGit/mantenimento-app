@@ -88,3 +88,39 @@ Opzioni tipiche:
 ## Note
 - Strumento orientativo: non sostituisce valutazione legale/professionale.
 - Per ulteriore hardening: rate limit API, auth server-side, logging audit, WAF/CDN.
+
+## Compliance GDPR e legale (checklist operativa)
+Questa checklist aiuta a ridurre rischi di non conformita per istanze pubblicate in Italia/UE.
+
+1. Governance e ruoli
+- Definisci il titolare del trattamento per ogni istanza pubblicata.
+- Se usi fornitori cloud, verifica nomina a responsabile del trattamento (DPA) dove richiesto.
+
+2. Documentazione minima
+- Mantieni aggiornate `privacy.html`, `cookie.html` e `termini.html`.
+- Mantieni un registro dei trattamenti (art. 30 GDPR) se applicabile alla tua organizzazione.
+
+3. Basi giuridiche e minimizzazione
+- Tratta solo dati necessari al calcolo e alle funzioni richieste.
+- Documenta base giuridica per account, sincronizzazione e sicurezza.
+
+4. Sicurezza
+- Non salvare segreti backend nel frontend.
+- Mantieni cifratura lato client del profilo cloud.
+- Applica controllo accessi, backup e monitoraggio su infrastruttura server.
+
+5. Conservazione e diritti interessati
+- Definisci tempi/criteri di retention per dati cloud e log tecnici.
+- Predisponi processo per richieste di accesso, rettifica, cancellazione e opposizione.
+
+6. Cookie e storage locale
+- Usa storage locale solo per finalita tecniche necessarie.
+- In caso di strumenti analytics/marketing futuri, valuta banner e consenso dove richiesto.
+
+7. Licenze software
+- Verifica compatibilita licenze di dipendenze e librerie terze.
+- Mantieni file `LICENSE` e attribuzioni necessarie nei materiali distribuiti.
+
+8. Ambito medico-legale
+- Questo progetto NON e un dispositivo medico e non fornisce pareri legali.
+- Evita claim diagnostici/clinici o automatismi decisionali su diritti soggettivi.

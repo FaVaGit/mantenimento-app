@@ -1780,6 +1780,7 @@ const defaultExpenseItems = [
     function renderLivePanel(m) {
       const liveNet = document.getElementById("liveNet");
       const liveBreakdown = document.getElementById("liveBreakdown");
+      if (!liveNet || !liveBreakdown) return;
 
       const entrate1 = m.r1 + m.aPerc1 + m.aFam1;
       const entrate2 = m.r2 + m.aPerc2 + m.aFam2;
@@ -2124,9 +2125,12 @@ const defaultExpenseItems = [
       return tr("calcModeGenovaName");
     }
 
-    function calculate() {
-      const m = computeModel();
+    function calculate(model = null) {
+      const m = model || computeModel();
       const formulaNote = document.getElementById("formulaNote");
+      const resultMain = document.getElementById("risultatoMain");
+      const kpi = document.getElementById("kpi");
+      if (!formulaNote || !resultMain || !kpi) return;
 
       const modeName = getModeName(m.mode, m.simplePerc);
 
@@ -2192,9 +2196,8 @@ const defaultExpenseItems = [
       } else if (m.assegnoDa2a1 > 0.005) {
         mainText = `${c2n()} \u2192 ${c1n()}: ${eur(m.assegnoDa2a1)} ${tr("pdfPerMonth")}`;
       }
-      document.getElementById("risultatoMain").textContent = mainText;
+      resultMain.textContent = mainText;
 
-      const kpi = document.getElementById("kpi");
       kpi.innerHTML = "";
 
       const items = [
@@ -2223,7 +2226,7 @@ const defaultExpenseItems = [
       const m = computeModel();
       updateExpensePartials();
       renderLivePanel(m);
-      calculate();
+      calculate(m);
     }
 
     function applyState(state) {
