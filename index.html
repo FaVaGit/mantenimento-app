@@ -1505,8 +1505,16 @@
       });
 
       if (signUpRes.error) {
-        setAuthStatus(`Registrazione fallita: ${signUpRes.error.message}`, true);
-        return;
+        const signUpMsg = String(signUpRes.error.message || "").toLowerCase();
+        if (signUpMsg.includes("already") || signUpMsg.includes("registered")) {
+          // User already exists: continue with login flow.
+        } else if (signUpMsg.includes("rate limit") || signUpMsg.includes("email rate")) {
+          setAuthStatus("Registrazione temporaneamente bloccata da rate limit email di Supabase. Attendi qualche minuto e riprova.", true);
+          return;
+        } else {
+          setAuthStatus(`Registrazione fallita: ${signUpRes.error.message}`, true);
+          return;
+        }
       }
 
       const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -1544,30 +1552,15 @@
       }
 
       const email = usernameToPseudoEmail(username);
-      let signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
-
-      // If user is missing in Supabase (old KeyLock-only account), auto-provision.
-      if (signInRes.error && /invalid login credentials/i.test(String(signInRes.error.message || ""))) {
-        const signUpRes = await supabaseClient.auth.signUp({
-          email,
-          password,
-          options: { data: { username } }
-        });
-        if (!signUpRes.error) {
-          signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
-        } else {
-          const signUpMsg = String(signUpRes.error.message || "");
-          if (/already registered/i.test(signUpMsg)) {
-            setAuthStatus("Login fallito: utente esistente ma password non corretta.", true);
-            return;
-          }
-          setAuthStatus(`Login fallito: provisioning utente non riuscito (${signUpMsg}).`, true);
-          return;
-        }
-      }
+      const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
 
       if (signInRes.error || !signInRes.data.user) {
-        setAuthStatus(`Login fallito: ${signInRes.error ? signInRes.error.message : "utente non trovato"}`, true);
+        const loginMsg = String((signInRes.error && signInRes.error.message) || "");
+        if (/invalid login credentials/i.test(loginMsg)) {
+          setAuthStatus("Login fallito: credenziali non valide oppure utente non ancora registrato nel nuovo cloud. Usa prima 'Registrati' con le stesse credenziali, poi 'Recupero legacy'.", true);
+          return;
+        }
+        setAuthStatus(`Login fallito: ${loginMsg || "utente non trovato"}`, true);
         return;
       }
 
