@@ -772,6 +772,7 @@
     body.pdf-exporting #expenseItemEditor,
     body.pdf-exporting .hint,
     body.pdf-exporting .legal-footer,
+    body.pdf-exporting .donate-banner,
     body.pdf-exporting details {
       display: none !important;
     }
@@ -1060,8 +1061,83 @@
       text-decoration: underline;
     }
 
+    /* ── DONATE BANNER ── */
+    .donate-banner {
+      margin-top: 14px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #fff8ee 0%, #fff3e0 100%);
+      border: 1.5px solid #f0c36d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .donate-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .donate-icon {
+      font-size: 1.8rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .donate-msg {
+      font-size: 0.87rem;
+      color: #6b4b1a;
+      line-height: 1.45;
+    }
+
+    .donate-msg strong {
+      display: block;
+      font-size: 0.95rem;
+      color: #4a3000;
+      margin-bottom: 2px;
+    }
+
+    .donate-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn-donate {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.87rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+    }
+
+    .btn-donate:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-donate:active { transform: translateY(0); }
+
+    .btn-donate-paypal {
+      background: #0070ba;
+      color: #fff;
+    }
+
+    .btn-donate-kofi {
+      background: #ff5e5b;
+      color: #fff;
+    }
+
     details {
-      margin-top: 10px;
       border: 1px solid #d8ddd2;
       border-radius: 12px;
       padding: 10px;
@@ -1491,6 +1567,30 @@
           </p>
         </div>
       </section>
+    </div>
+
+    <div class="donate-banner">
+      <div class="donate-text">
+        <div class="donate-icon">☕</div>
+        <div class="donate-msg">
+          <strong>Ti è stato utile? Offrimi un caffè!</strong>
+          Questo strumento è gratuito e open source. Se ti ha fatto risparmiare tempo (o qualcosa di più),
+          anche una piccola donazione mi permettere di tenerlo vivo e migliorarlo.
+        </div>
+      </div>
+      <div class="donate-buttons">
+        <a class="btn-donate btn-donate-paypal"
+           href="https://paypal.me/fabiovacchino"
+           target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 4.643-5.813 4.643H12.58c-.316 0-.583.23-.633.54l-1.02 6.468-.316 2.003c-.01.063-.015.127-.015.19 0 .254.194.461.447.461h3.14c.277 0 .511-.2.554-.473l.023-.119.44-2.79.028-.154a.562.562 0 0 1 .554-.474h.35c2.26 0 4.026-.918 4.542-3.574.216-1.11.104-2.035-.466-2.685z"/></svg>
+          PayPal
+        </a>
+        <a class="btn-donate btn-donate-kofi"
+           href="https://ko-fi.com/fabiovacchino"
+           target="_blank" rel="noopener noreferrer">
+          ♥ Ko-fi
+        </a>
+      </div>
     </div>
 
     <footer class="legal-footer">
