@@ -155,9 +155,10 @@
       gap: 10px;
       margin-bottom: 12px;
       padding: 10px;
-      border: 1px solid #d8ded3;
+      border: 1px solid #c7dad4;
       border-radius: 12px;
-      background: #f8faf6;
+      background: linear-gradient(165deg, rgba(245, 251, 249, 0.95), rgba(235, 246, 243, 0.95));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
     
     .spouse-grid {
@@ -168,10 +169,11 @@
     }
     
     .spouse-box {
-      border: 1px solid #d3dacd;
+      border: 1px solid #c8dad3;
       border-radius: 12px;
-      background: #fff;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(244, 250, 247, 0.92));
       padding: 10px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
     
     .spouse-box h3 {
@@ -246,38 +248,45 @@
 
     input[type="number"] {
       width: 100%;
-      border: 1px solid #c8cec4;
+      border: 1px solid #bbcdc8;
       border-radius: 10px;
       padding: 9px 10px;
       font-size: 0.95rem;
-      background: #fff;
+      background: linear-gradient(180deg, #ffffff, #f4f9f7);
       color: #152020;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
     input[type="text"],
     input[type="password"] {
       width: 100%;
-      border: 1px solid #c8cec4;
+      border: 1px solid #bbcdc8;
       border-radius: 10px;
       padding: 9px 10px;
       font-size: 0.95rem;
-      background: #fff;
+      background: linear-gradient(180deg, #ffffff, #f4f9f7);
       color: #152020;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
     select {
       width: 100%;
-      border: 1px solid #c8cec4;
+      border: 1px solid #bbcdc8;
       border-radius: 10px;
       padding: 9px 10px;
       font-size: 0.95rem;
-      background: #fff;
+      background: linear-gradient(180deg, #ffffff, #f4f9f7);
       color: #152020;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
-    input[type="number"]:focus {
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    select:focus {
       outline: 2px solid rgba(15, 118, 110, 0.2);
       border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(11, 110, 102, 0.12);
     }
 
     input[type="range"] {
@@ -305,21 +314,26 @@
       border-collapse: collapse;
       margin-top: 8px;
       font-size: 0.92rem;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid #cfe0da;
     }
 
     .spese-table th,
     .spese-table td {
-      border-bottom: 1px dashed #d9ddd4;
+      border-bottom: 1px dashed #cad9d4;
       padding: 8px 6px;
       text-align: left;
       vertical-align: middle;
     }
 
     .spese-table th {
-      color: #304443;
+      color: #264846;
       font-size: 0.84rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      background: #edf7f4;
     }
 
     .spese-table input { min-width: 86px; }
@@ -364,11 +378,12 @@
       gap: 8px;
       padding: 8px 14px;
       border-radius: 999px;
-      border: 1px solid #b9c9c5;
-      background: #eef4f2;
+      border: 1px solid #adc7c2;
+      background: linear-gradient(145deg, #f6fbfa, #e4f2ef);
       color: #1f3a38;
       font-weight: 800;
       cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
     }
 
     .auth-toggle.logged {
@@ -402,11 +417,12 @@
     }
 
     .auth-box {
-      border: 1px solid #d5dccf;
+      border: 1px solid #c6d8d2;
       border-radius: 12px;
-      background: #f8fbf8;
+      background: linear-gradient(170deg, rgba(248, 252, 251, 0.97), rgba(239, 248, 246, 0.95));
       padding: 10px;
       margin-bottom: 10px;
+      backdrop-filter: blur(8px);
     }
 
     .auth-head {
@@ -443,12 +459,13 @@
     }
 
     button {
-      border: none;
+      border: 1px solid rgba(150, 178, 170, 0.38);
       border-radius: 999px;
       padding: 10px 16px;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.12s ease, filter 0.12s ease;
+      transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 2px 7px rgba(17, 55, 50, 0.12);
     }
 
     button:hover { transform: translateY(-1px); }
@@ -460,7 +477,7 @@
     }
 
     .btn-secondary {
-      background: #e8ece6;
+      background: linear-gradient(145deg, #f6faf6, #e6eee8);
       color: #223130;
       border: 1px solid #c6cdc3;
     }
@@ -656,10 +673,11 @@
     }
 
     .kpi-item {
-      border: 1px solid #d3d8cd;
+      border: 1px solid #c9dad4;
       border-radius: 12px;
       padding: 10px;
-      background: #fff;
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.96), rgba(244, 250, 247, 0.9));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
     }
 
     .kpi-item strong { display: block; font-size: 1.15rem; margin-top: 4px; }
@@ -667,8 +685,8 @@
     .result-pill {
       border-radius: 14px;
       padding: 14px;
-      background: #f2f7f6;
-      border: 1px solid #c8dbd8;
+      background: linear-gradient(165deg, #f4faf8, #ebf6f3);
+      border: 1px solid #bfd7d1;
       margin-bottom: 10px;
     }
 
@@ -707,9 +725,9 @@
     }
 
     .live-col {
-      border: 1px solid #d5dfdb;
+      border: 1px solid #c6d8d2;
       border-radius: 12px;
-      background: #ffffff;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(242, 249, 246, 0.92));
       padding: 9px;
     }
 
@@ -720,10 +738,10 @@
     }
 
     .live-k {
-      border: 1px solid #d8e2df;
+      border: 1px solid #c6d8d2;
       border-radius: 10px;
       padding: 8px;
-      background: #fff;
+      background: linear-gradient(180deg, #ffffff, #f2f8f6);
       font-size: 0.88rem;
     }
 
@@ -741,44 +759,8 @@
       padding: 8px;
     }
 
-    .live-diff-head {
-      font-size: 0.82rem;
-      color: #2d4b48;
-      margin-bottom: 6px;
-      font-weight: 700;
-    }
-
-    .live-diff-bar {
-      width: 100%;
-      height: 12px;
-      border-radius: 999px;
-      overflow: hidden;
-      display: flex;
-      background: #dfe9e6;
-      border: 1px solid #c8d7d3;
-    }
-
-    .live-diff-c1 {
-      background: linear-gradient(90deg, #0f766e, #149a8f);
-      height: 100%;
-    }
-
-    .live-diff-c2 {
-      background: linear-gradient(90deg, #d97706, #e8a03f);
-      height: 100%;
-    }
-
-    .live-diff-meta {
-      margin-top: 6px;
-      font-size: 0.82rem;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
     .live-fabric-wrap {
-      margin-top: 8px;
+      margin-top: 0;
       border: 1px dashed #b9d0cb;
       border-radius: 12px;
       padding: 8px;
@@ -844,10 +826,10 @@
 
     .note {
       font-size: 0.84rem;
-      color: #4b5d5b;
+      color: #425a58;
       line-height: 1.45;
-      background: #f9f5e8;
-      border: 1px solid #eadfbf;
+      background: linear-gradient(160deg, #fbf7ea, #f3edd8);
+      border: 1px solid #e5d8b2;
       border-radius: 12px;
       padding: 10px;
       margin-top: 8px;
@@ -2101,17 +2083,6 @@
       const uscite2 = m.match21 + m.esternoPag2 + m.spese2;
       const diffDisp = m.disp1 - m.disp2;
       const absDiffDisp = Math.abs(diffDisp);
-      const losingSpouse = diffDisp > 0 ? 2 : (diffDisp < 0 ? 1 : 0);
-      const totalAbs = Math.max(1, Math.abs(m.disp1) + Math.abs(m.disp2));
-      const bar1 = Math.max(8, Math.round((Math.abs(m.disp1) / totalAbs) * 100));
-      const bar2 = Math.max(8, 100 - bar1);
-      const leaderText = diffDisp === 0
-        ? "Netti equivalenti"
-        : `Vantaggio Coniuge ${diffDisp > 0 ? 1 : 2}: ${eur(absDiffDisp)}`;
-      const lossText = losingSpouse === 0
-        ? "Nessun coniuge in perdita rispetto all'altro"
-        : `In perdita relativa: Coniuge ${losingSpouse}`;
-
       liveNet.innerHTML = `
         <div class="live-k">
           Netto disponibile Coniuge 1
@@ -2122,17 +2093,8 @@
           <strong class="${m.disp2 >= 0 ? "ok" : "bad"}">${eur(m.disp2)}</strong>
         </div>
         <div class="live-diff">
-          <div class="live-diff-head">Differenza netti rimanenti</div>
-          <div class="live-diff-bar">
-            <div class="live-diff-c1" style="width:${bar1}%"></div>
-            <div class="live-diff-c2" style="width:${bar2}%"></div>
-          </div>
-          <div class="live-diff-meta">
-            <strong class="${diffDisp === 0 ? "warn" : "ok"}">${leaderText}</strong>
-            <strong class="${losingSpouse === 0 ? "warn" : "bad"}">${lossText}</strong>
-          </div>
           <div class="live-fabric-wrap">
-            <div class="live-fabric-caption">Visualizzazione comparativa (FabricJS)</div>
+            <div class="live-fabric-caption">Visualizzazione comparativa</div>
             <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="118"></canvas>
           </div>
         </div>
@@ -2246,6 +2208,17 @@
         fill: "#244645",
         fontFamily: "Candara",
         fontWeight: "700"
+      }));
+
+      const lossText = diffDisp === 0
+        ? "Netti equivalenti"
+        : `In perdita relativa: C${diffDisp > 0 ? 2 : 1}`;
+      fc.add(new window.fabric.Text(lossText, {
+        left: 20,
+        top: 92,
+        fontSize: 10,
+        fill: diffDisp === 0 ? "#506f6c" : "#8d4b08",
+        fontFamily: "Candara"
       }));
 
       fc.renderAll();
