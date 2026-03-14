@@ -107,7 +107,7 @@
 
     .top-actions-menu {
       position: absolute;
-      top: 42px;
+      top: calc(100% - 2px);
       left: 0;
       min-width: 250px;
       padding: 8px;
@@ -1628,15 +1628,36 @@
       const menu = wrap.querySelector(".top-actions-menu");
       if (!trigger || !menu) return;
       const supportsHover = !!(window.matchMedia && window.matchMedia("(hover: hover)").matches);
+      let hoverCloseTimer = null;
+
+      const clearHoverCloseTimer = () => {
+        if (!hoverCloseTimer) return;
+        clearTimeout(hoverCloseTimer);
+        hoverCloseTimer = null;
+      };
+
+      const scheduleHoverClose = () => {
+        clearHoverCloseTimer();
+        hoverCloseTimer = setTimeout(() => {
+          setTopActionsOpen(false);
+        }, 180);
+      };
 
       setTopActionsOpen(false);
 
       if (supportsHover) {
         wrap.addEventListener("mouseenter", () => {
+          clearHoverCloseTimer();
           setTopActionsOpen(true);
         });
         wrap.addEventListener("mouseleave", () => {
-          setTopActionsOpen(false);
+          scheduleHoverClose();
+        });
+        menu.addEventListener("mouseenter", () => {
+          clearHoverCloseTimer();
+        });
+        menu.addEventListener("mouseleave", () => {
+          scheduleHoverClose();
         });
       } else {
         trigger.addEventListener("click", (e) => {
