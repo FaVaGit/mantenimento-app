@@ -737,6 +737,83 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
     }
 
+    body.pdf-exporting {
+      background: #ffffff !important;
+    }
+
+    body.pdf-exporting .wrap {
+      margin: 0;
+      padding: 0;
+    }
+
+    body.pdf-exporting .hero {
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      box-shadow: none !important;
+    }
+
+    body.pdf-exporting .hero p,
+    body.pdf-exporting .zoom-controls,
+    body.pdf-exporting .top-actions-menu,
+    body.pdf-exporting .auth-menu-wrap,
+    body.pdf-exporting .toolbar,
+    body.pdf-exporting #expenseItemEditor,
+    body.pdf-exporting .hint,
+    body.pdf-exporting .legal-footer,
+    body.pdf-exporting details {
+      display: none !important;
+    }
+
+    body.pdf-exporting .grid {
+      display: flex !important;
+      flex-direction: row;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    body.pdf-exporting .grid > .card:first-child {
+      flex: 1.25 1 0;
+    }
+
+    body.pdf-exporting .grid > .card:last-child {
+      flex: 0.85 1 0;
+    }
+
+    body.pdf-exporting .card,
+    body.pdf-exporting .live-box,
+    body.pdf-exporting .result-pill,
+    body.pdf-exporting .kpi-item,
+    body.pdf-exporting .note {
+      box-shadow: none !important;
+    }
+
+    body.pdf-exporting .card h2 {
+      padding: 8px 10px;
+      font-size: 0.95rem;
+    }
+
+    body.pdf-exporting .content {
+      padding: 8px;
+    }
+
+    body.pdf-exporting .shared-grid,
+    body.pdf-exporting .spouse-grid,
+    body.pdf-exporting .top-inputs,
+    body.pdf-exporting .live-columns,
+    body.pdf-exporting .live-grid,
+    body.pdf-exporting .kpi {
+      gap: 6px;
+    }
+
+    body.pdf-exporting .spese-count-title,
+    body.pdf-exporting .result-pill,
+    body.pdf-exporting .live-box,
+    body.pdf-exporting .note {
+      margin-top: 6px;
+      margin-bottom: 6px;
+      padding: 7px;
+    }
+
     .kpi-item strong { display: block; font-size: 1.28rem; margin-top: 4px; }
 
     .result-pill {
@@ -1502,6 +1579,16 @@
       return setUiZoom(base, stored == null);
     }
 
+    function setTopActionsOpen(open) {
+      const wrap = document.getElementById("topActions");
+      if (!wrap) return;
+      const trigger = wrap.querySelector(".top-actions-trigger");
+      wrap.classList.toggle("is-open", !!open);
+      if (trigger) {
+        trigger.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+    }
+
     function initTopActionsMenu() {
       const wrap = document.getElementById("topActions");
       if (!wrap) return;
@@ -1509,34 +1596,29 @@
       const menu = wrap.querySelector(".top-actions-menu");
       if (!trigger || !menu) return;
 
-      const setOpen = (open) => {
-        wrap.classList.toggle("is-open", open);
-        trigger.setAttribute("aria-expanded", open ? "true" : "false");
-      };
-
-      setOpen(false);
+      setTopActionsOpen(false);
 
       trigger.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        setOpen(!wrap.classList.contains("is-open"));
+        setTopActionsOpen(!wrap.classList.contains("is-open"));
       });
 
       menu.addEventListener("click", (e) => {
         if (e.target && e.target.closest("button")) {
-          setOpen(false);
+          setTopActionsOpen(false);
         }
       });
 
       document.addEventListener("click", (e) => {
         if (!wrap.contains(e.target)) {
-          setOpen(false);
+          setTopActionsOpen(false);
         }
       });
 
       wrap.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
-          setOpen(false);
+          setTopActionsOpen(false);
           trigger.focus();
         }
       });
@@ -2806,9 +2888,25 @@
         return;
       }
 
+      const topActionsWrap = document.getElementById("topActions");
+      const authWrap = document.getElementById("authMenuWrap");
+      const historyPanel = document.getElementById("cloudHistoryPanel");
+      const prevUiState = {
+        topActionsOpen: !!(topActionsWrap && topActionsWrap.classList.contains("is-open")),
+        authMenuOpen: !!(authWrap && authWrap.classList.contains("open")),
+        historyOpen: !!(historyPanel && historyPanel.open)
+      };
+
+      setTopActionsOpen(false);
+      setAuthMenuOpen(false);
+      if (historyPanel) historyPanel.open = false;
+      document.body.classList.add("pdf-exporting");
+
       const prevZoom = getComputedStyle(document.documentElement).getPropertyValue("--ui-zoom").trim() || "1";
       if (prevZoom !== "1") {
         applyUiZoom(1);
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      } else {
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       }
 
@@ -2854,6 +2952,10 @@
         if (prevZoom !== "1") {
           applyUiZoom(prevZoom);
         }
+        document.body.classList.remove("pdf-exporting");
+        setTopActionsOpen(prevUiState.topActionsOpen);
+        setAuthMenuOpen(prevUiState.authMenuOpen);
+        if (historyPanel) historyPanel.open = prevUiState.historyOpen;
       }
     }
 
