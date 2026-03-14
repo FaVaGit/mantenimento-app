@@ -1,3 +1,5 @@
+-- Run this SQL in Supabase SQL Editor (cloud project).
+
 create table if not exists public.keylock_profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   username text not null unique,

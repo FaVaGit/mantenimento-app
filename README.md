@@ -5,7 +5,7 @@ Applicazione web standalone per il calcolo orientativo dell'assegno di mantenime
 ## Contenuto del repository
 - `index.html`: applicazione completa, eseguibile direttamente nel browser
 - `supabase-config.js`: configurazione client per autenticazione/profile cloud KeyLock
-- `supabase/`: progetto Supabase locale/versionato nello stesso workspace
+- `supabase_schema.sql`: script SQL per tabella profilo cloud e policy RLS
 - `LICENSE`: licenza MIT
 
 ## Esecuzione locale
@@ -16,36 +16,20 @@ Applicazione web standalone per il calcolo orientativo dell'assegno di mantenime
 ## KeyLock multi-device
 L'app usa Supabase per registrazione/login e per il profilo cloud cifrato dell'utente.
 
-### Cosa e gia incluso nel workspace
-- `supabase/config.toml`: configurazione progetto locale Supabase
-- `supabase/migrations/202603140001_init_keylock_profiles.sql`: schema tabella e policy RLS
-- `supabase-config.js`: file client da valorizzare con URL e anon key del progetto Supabase
-
-### Avvio locale backend
-Prerequisiti:
-- Docker Desktop
-- Supabase CLI
-
-Comandi:
-
-```powershell
-supabase start
-supabase db reset
-supabase status
-```
-
-Poi copia `API URL` e `anon key` mostrati da `supabase status` dentro `supabase-config.js`.
-
 ### Deploy pubblico con GitHub Pages
 GitHub Pages puo ospitare solo il frontend statico.
 Per avere KeyLock multi-device funzionante sull'URL pubblico serve un progetto Supabase ospitato.
 
 Passi minimi:
 1. Crea un progetto Supabase.
-2. In Supabase esegui la migration contenuta in `supabase/migrations/202603140001_init_keylock_profiles.sql`.
+2. In Supabase SQL Editor esegui lo script `supabase_schema.sql`.
 3. In `Authentication > Providers > Email` disattiva la conferma email.
 4. Inserisci URL progetto e anon key pubblica in `supabase-config.js`.
 5. Pubblica normalmente `index.html` su GitHub Pages.
+
+### Configurazione attuale
+`supabase-config.js` contiene gia URL progetto e publishable key.
+Non inserire mai nel frontend password progetto o direct connection string PostgreSQL.
 
 ## Funzioni principali
 - Modalita `Legale-proporzionale`

@@ -3,5 +3,3 @@ desktop.ini
 .DS_Store
 .env
 .env.*
-.supabase/
-supabase/.temp/
