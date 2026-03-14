@@ -868,6 +868,32 @@
                   <button class="btn-secondary" id="btnSaveMyScenario" type="button">Salva profilo cloud</button>
                   <button class="btn-secondary" id="btnLoadMyScenario" type="button">Carica profilo cloud</button>
                 </div>
+                <details id="legacyRecoveryBox">
+                  <summary>Recupero legacy (una tantum)</summary>
+                  <div class="auth-grid" style="margin-top:8px">
+                    <div class="field">
+                      <label for="legacyGithubToken" class="label-row">Token GitHub legacy
+                        <span class="hint" title="Solo per migrare vecchi dati KeyLock salvati su Gist.">i</span>
+                      </label>
+                      <input id="legacyGithubToken" type="password" autocomplete="off" placeholder="ghp_..." />
+                    </div>
+                    <div class="field">
+                      <label for="legacyGistId" class="label-row">Gist ID legacy
+                        <span class="hint" title="ID del vecchio Gist usato dalla precedente versione.">i</span>
+                      </label>
+                      <input id="legacyGistId" type="text" autocomplete="off" placeholder="es. 9f3a..." />
+                    </div>
+                    <div class="field">
+                      <label for="legacyKeylockPass" class="label-row">Password legacy
+                        <span class="hint" title="Password usata nella vecchia versione per decifrare i dati.">i</span>
+                      </label>
+                      <input id="legacyKeylockPass" type="password" autocomplete="off" placeholder="password vecchio KeyLock" />
+                    </div>
+                  </div>
+                  <div class="toolbar" style="margin-top:8px">
+                    <button class="btn-secondary" id="btnMigrateLegacy" type="button">Importa dati legacy</button>
+                  </div>
+                </details>
                 <div id="authStatus" class="auth-status">Non autenticato.</div>
               </div>
             </div>
@@ -1072,6 +1098,9 @@
     const rowsSpese = document.getElementById("rowsSpese");
     const STORAGE_DEFAULT_KEY = "appMantenimentoDefaultState";
     const KEYLOCK_PROFILE_TABLE = "keylock_profiles";
+    const LEGACY_KEYLOCK_USERS_KEY = "appMantenimentoKeyLockUsers";
+    const LEGACY_KEYLOCK_PROFILES_KEY = "appMantenimentoKeyLockProfiles";
+    const LEGACY_GIST_FILENAME = "keylock-cache.json";
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
     const SUPABASE_ANON_KEY = String(window.KEYLOCK_SUPABASE_ANON_KEY || "").trim();
     const supabaseClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -1240,6 +1269,7 @@
       document.getElementById("btnLogoutKeyLock").disabled = !logged;
       document.getElementById("btnSaveMyScenario").disabled = !logged;
       document.getElementById("btnLoadMyScenario").disabled = !logged;
+      document.getElementById("btnMigrateLegacy").disabled = !logged;
 
       if (logged) {
         setAuthStatus("", false);
@@ -1300,6 +1330,125 @@
       return true;
     }
 
+    async function upsertEncryptedScenarioForSession(encryptedPayload) {
+      return supabaseClient
+        .from(KEYLOCK_PROFILE_TABLE)
+        .upsert({
+          user_id: authSession.userId,
+          username: authSession.username,
+          scenario_cipher: encryptedPayload,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id" });
+    }
+
+    async function migrateLegacyLocalProfileIfPresent(username, password) {
+      const users = getJsonStore(LEGACY_KEYLOCK_USERS_KEY, {});
+      const profiles = getJsonStore(LEGACY_KEYLOCK_PROFILES_KEY, {});
+      const user = users[username];
+      const payload = profiles[username];
+      if (!user || !payload || !payload.iv || !payload.data) {
+        return false;
+      }
+
+      const oldSalt = base64ToBytes(user.salt);
+      const oldKeyBits = await deriveKeyBits(password, oldSalt);
+      const oldVerifier = await sha256Bytes(oldKeyBits);
+      if (bytesToBase64(oldVerifier) !== user.verifier) {
+        return false;
+      }
+
+      const state = await decryptStateForKey(payload, oldKeyBits);
+      const reEncrypted = await encryptStateForKey(state, authSession.keyBits);
+      const { error } = await upsertEncryptedScenarioForSession(reEncrypted);
+      if (error) {
+        throw new Error(error.message);
+      }
+      return true;
+    }
+
+    async function githubApiLegacyRequest(method, url, token) {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Accept": "application/vnd.github+json",
+          "Authorization": `Bearer ${token}`,
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      });
+      const txt = await res.text();
+      const data = txt ? (() => {
+        try { return JSON.parse(txt); } catch (_) { return null; }
+      })() : null;
+      if (!res.ok) {
+        const msg = data && data.message ? data.message : `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    async function readLegacyGistDoc(token, gistId) {
+      const gist = await githubApiLegacyRequest("GET", `https://api.github.com/gists/${gistId}`, token);
+      const file = gist.files && (gist.files[LEGACY_GIST_FILENAME] || Object.values(gist.files)[0]);
+      if (!file) return { users: {}, profiles: {} };
+
+      let content = file.content || "";
+      if (file.truncated && file.raw_url) {
+        const rawRes = await fetch(file.raw_url);
+        content = await rawRes.text();
+      }
+
+      let doc;
+      try {
+        doc = JSON.parse(content || "{}");
+      } catch (_) {
+        doc = {};
+      }
+      if (!doc || typeof doc !== "object") doc = {};
+      if (!doc.users || typeof doc.users !== "object") doc.users = {};
+      if (!doc.profiles || typeof doc.profiles !== "object") doc.profiles = {};
+      return doc;
+    }
+
+    async function migrateLegacyGistProfileForLoggedUser() {
+      if (!authSession.username || !authSession.userId || !authSession.keyBits) {
+        setAuthStatus("Effettua prima il login per importare i dati legacy.", true);
+        return;
+      }
+
+      const token = text("legacyGithubToken");
+      const gistId = text("legacyGistId");
+      const legacyPassword = text("legacyKeylockPass");
+      if (!token || !gistId || !legacyPassword) {
+        setAuthStatus("Per il recupero legacy inserisci token GitHub, Gist ID e password legacy.", true);
+        return;
+      }
+
+      try {
+        const doc = await readLegacyGistDoc(token, gistId);
+        const userRecord = doc.users[authSession.username];
+        const payload = doc.profiles[authSession.username];
+        if (!userRecord || !payload || !payload.iv || !payload.data) {
+          throw new Error("Nessun dato legacy trovato per questo utente nel Gist indicato");
+        }
+
+        const oldSalt = base64ToBytes(userRecord.salt);
+        const oldKeyBits = await deriveKeyBits(legacyPassword, oldSalt);
+        const verifier = await sha256Bytes(oldKeyBits);
+        if (bytesToBase64(verifier) !== userRecord.verifier) {
+          throw new Error("Password legacy non valida");
+        }
+
+        const state = await decryptStateForKey(payload, oldKeyBits);
+        const reEncrypted = await encryptStateForKey(state, authSession.keyBits);
+        const { error } = await upsertEncryptedScenarioForSession(reEncrypted);
+        if (error) throw new Error(error.message);
+
+        setAuthStatus("Migrazione legacy completata: profilo importato nel nuovo cloud.");
+      } catch (err) {
+        setAuthStatus(`Migrazione legacy fallita: ${err.message}`, true);
+      }
+    }
+
     async function registerKeyLockUser() {
       if (!await ensureSupabaseReady("registrarti")) return;
 
@@ -1335,8 +1484,19 @@
       authSession.username = username;
       authSession.userId = signInRes.data.user.id;
       authSession.keyBits = await deriveSessionKeyBits(password, signInRes.data.user.id);
+
+      let loginMsg = `Utente ${username} registrato e login effettuato.`;
+      try {
+        const migrated = await migrateLegacyLocalProfileIfPresent(username, password);
+        if (migrated) {
+          loginMsg = "Utente registrato e profilo legacy locale migrato nel cloud.";
+        }
+      } catch (_) {
+        // Non bloccare il login in caso di legacy profile non valido.
+      }
+
       updateAuthUi();
-      setAuthStatus(`Utente ${username} registrato e login effettuato.`);
+      setAuthStatus(loginMsg);
     }
 
     async function loginKeyLockUser() {
@@ -1350,7 +1510,20 @@
       }
 
       const email = usernameToPseudoEmail(username);
-      const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
+      let signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      // If user is missing in Supabase (old KeyLock-only account), auto-provision.
+      if (signInRes.error && /invalid login credentials/i.test(String(signInRes.error.message || ""))) {
+        const signUpRes = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { data: { username } }
+        });
+        if (!signUpRes.error) {
+          signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
+        }
+      }
+
       if (signInRes.error || !signInRes.data.user) {
         setAuthStatus(`Login fallito: ${signInRes.error ? signInRes.error.message : "utente non trovato"}`, true);
         return;
@@ -1359,8 +1532,19 @@
       authSession.username = username;
       authSession.userId = signInRes.data.user.id;
       authSession.keyBits = await deriveSessionKeyBits(password, signInRes.data.user.id);
+
+      let loginMsg = `Login effettuato come ${username}.`;
+      try {
+        const migrated = await migrateLegacyLocalProfileIfPresent(username, password);
+        if (migrated) {
+          loginMsg = "Login effettuato e profilo legacy locale migrato nel cloud.";
+        }
+      } catch (_) {
+        // Non bloccare il login in caso di legacy profile non valido.
+      }
+
       updateAuthUi();
-      setAuthStatus(`Login effettuato come ${username}.`);
+      setAuthStatus(loginMsg);
     }
 
     async function logoutKeyLockUser() {
@@ -1929,6 +2113,10 @@
 
     document.getElementById("btnLoadMyScenario").addEventListener("click", async () => {
       await loadScenarioForLoggedUser();
+    });
+
+    document.getElementById("btnMigrateLegacy").addEventListener("click", async () => {
+      await migrateLegacyGistProfileForLoggedUser();
     });
 
     document.addEventListener("input", (e) => {
