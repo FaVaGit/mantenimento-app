@@ -3037,7 +3037,13 @@
       const badgeW = Math.min(520, Math.max(300, w - 220));
       const badgeX = (w - badgeW) / 2;
       const badgeText = `${statusText} | Delta ${eur(absDiffDisp)}`;
-      const badgeFontSize = w < 560 ? 24 : 28;
+      // Auto-scale font to fit badge width (Candara Bold ≈ 0.58em per char)
+      const badgeMaxFontSize = w < 560 ? 24 : 28;
+      const badgeInnerW = badgeW - 32;
+      const estimatedW = badgeText.length * 0.58 * badgeMaxFontSize;
+      const badgeFontSize = estimatedW > badgeInnerW
+        ? Math.max(11, Math.floor(badgeMaxFontSize * badgeInnerW / estimatedW))
+        : badgeMaxFontSize;
       addOutcomeFigure(20, 10, 1, roleForSpouse(1));
       addOutcomeFigure(w - 96, 10, 2, roleForSpouse(2));
       const badgeHeight = w < 560 ? 56 : 62;
@@ -3053,8 +3059,9 @@
         strokeWidth: 1
       }));
       fc.add(new window.fabric.Text(badgeText, {
-        left: badgeX + 18,
-        top: w < 560 ? 34 : 32,
+        left: badgeX + badgeW / 2,
+        top: 18 + (badgeHeight - badgeFontSize) / 2,
+        originX: "center",
         fontSize: badgeFontSize,
         fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
         fontFamily: "Candara",
