@@ -873,7 +873,8 @@
                 </div>
                 <details id="legacyRecoveryBox">
                   <summary>Recupero legacy (una tantum)</summary>
-                  <form autocomplete="off" onsubmit="return false;">
+                  <form id="legacyForm" autocomplete="on" onsubmit="return false;">
+                  <input type="text" name="username" autocomplete="username" style="display:none" tabindex="-1" aria-hidden="true" />
                   <div class="auth-grid" style="margin-top:8px">
                     <div class="field">
                       <label for="legacyGithubToken" class="label-row">Token GitHub legacy
@@ -1951,8 +1952,32 @@
       }
 
       try {
+        console.log("[legacy] Lettura Gist:", gistId);
         const doc = await readLegacyGistDoc(token, gistId);
+        console.log("[legacy] Chiavi top-level doc:", Object.keys(doc));
+        console.log("[legacy] Chiavi users:", Object.keys(doc.users || {}));
+        console.log("[legacy] Chiavi profiles:", Object.keys(doc.profiles || {}));
+
+        const rawProf = (doc.profiles || {})[authSession.username]
+          || (doc.profiles || {})[normalizeUsername(authSession.username)];
+        if (rawProf) {
+          console.log("[legacy] Campi profilo trovato:", Object.keys(rawProf));
+          Object.entries(rawProf).forEach(([k, v]) => {
+            if (v && typeof v === "object") {
+              console.log(`[legacy]   ${k} -> oggetto con campi:`, Object.keys(v));
+            } else {
+              console.log(`[legacy]   ${k}:`, typeof v === "string" ? v.slice(0, 40) : v);
+            }
+          });
+        } else {
+          console.warn("[legacy] Nessun profilo trovato per username:", authSession.username);
+        }
+
         const match = resolveLegacyUserAndProfile(doc, authSession.username);
+        console.log("[legacy] userRecord trovato:", !!match.userRecord, match.userRecord ? Object.keys(match.userRecord) : "nessuno");
+        console.log("[legacy] payload cipher trovato:", !!match.payload, match.payload ? `iv:${String(match.payload.iv||'').slice(0,12)}... data:${String(match.payload.data||'').slice(0,12)}...` : "nessuno");
+        console.log("[legacy] rawProfile keys:", match.rawProfile ? Object.keys(match.rawProfile) : "nessuno");
+
         let userRecord = match.userRecord;
         const payload = match.payload;
         if (!payload || !payload.iv || !payload.data) {
@@ -1962,13 +1987,18 @@
         }
 
         if (!userRecord || !userRecord.salt || !userRecord.verifier) {
+          console.warn("[legacy] salt/verifier assenti in userRecord, cerco in altri Gist...");
           setAuthStatus("Metadati legacy mancanti nel Gist indicato: cerco salt/verifier in altri Gist del tuo account...");
           const recoveredUserRecord = await findLegacyUserRecordAcrossGists(token, authSession.username, gistId);
           if (recoveredUserRecord) {
+            console.log("[legacy] userRecord recuperato da altro Gist:", Object.keys(recoveredUserRecord));
             userRecord = recoveredUserRecord;
+          } else {
+            console.warn("[legacy] Nessun userRecord trovato in nessun Gist.");
           }
         }
 
+        console.log("[legacy] Avvio decryptLegacyStateBestEffort - userRecord:", userRecord ? Object.keys(userRecord) : null);
         const state = await decryptLegacyStateBestEffort(
           payload,
           legacyPassword,
@@ -1977,6 +2007,7 @@
           match.rawProfile,
           doc
         );
+        console.log("[legacy] Stato decifrato OK, chiavi:", state ? Object.keys(state) : null);
         const reEncrypted = await encryptStateForKey(state, authSession.keyBits);
         const { error } = await upsertEncryptedScenarioForSession(reEncrypted);
         if (error) throw new Error(error.message);
