@@ -880,7 +880,7 @@
                       <label for="legacyGithubToken" class="label-row">Token GitHub legacy
                         <span class="hint" title="Solo per migrare vecchi dati KeyLock salvati su Gist.">i</span>
                       </label>
-                      <input id="legacyGithubToken" type="password" autocomplete="new-password" placeholder="ghp_..." />
+                      <input id="legacyGithubToken" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="ghp_..." />
                     </div>
                     <div class="field">
                       <label for="legacyGistId" class="label-row">Gist ID legacy
@@ -1180,6 +1180,10 @@
 
     function isValidUsername(value) {
       return /^[a-z0-9._-]{3,40}$/.test(value);
+    }
+
+    function isUuidLike(value) {
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || "").trim());
     }
 
     const PRIMARY_PSEUDO_EMAIL_DOMAIN = "keylock-auth.app";
@@ -2019,12 +2023,17 @@
           if (!state) {
             const oldUserIdInput = String((document.getElementById("legacyOldUserId") || {}).value || "").trim();
             if (oldUserIdInput) {
-              try {
-                const oldKeyBits = await deriveSessionKeyBits(legacyPassword, oldUserIdInput);
-                state = await decryptStateForKey(payload, oldKeyBits);
-                console.log("[legacy] Decifrato con vecchio User ID:", oldUserIdInput);
-              } catch (_) {
-                console.warn("[legacy] Vecchio User ID non ha funzionato:", oldUserIdInput);
+              if (!isUuidLike(oldUserIdInput)) {
+                console.warn("[legacy] Vecchio User ID non valido (atteso UUID):", oldUserIdInput);
+                setAuthStatus("Il campo 'Vecchio User ID Supabase' richiede uno UUID (non il nome utente).", true);
+              } else {
+                try {
+                  const oldKeyBits = await deriveSessionKeyBits(legacyPassword, oldUserIdInput);
+                  state = await decryptStateForKey(payload, oldKeyBits);
+                  console.log("[legacy] Decifrato con vecchio User ID:", oldUserIdInput);
+                } catch (_) {
+                  console.warn("[legacy] Vecchio User ID non ha funzionato:", oldUserIdInput);
+                }
               }
             }
           }
@@ -2752,7 +2761,8 @@
       await loadScenarioForLoggedUser();
     });
 
-    document.getElementById("btnMigrateLegacy").addEventListener("click", async () => {
+    document.getElementById("legacyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
       await migrateLegacyGistProfileForLoggedUser();
     });
 
