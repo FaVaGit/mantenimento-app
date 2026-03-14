@@ -1409,6 +1409,29 @@
       return doc;
     }
 
+    async function findLegacyGistByUsername(token, username) {
+      const gists = await githubApiLegacyRequest("GET", "https://api.github.com/gists?per_page=100", token);
+      if (!Array.isArray(gists)) return null;
+
+      const uname = normalizeUsername(username);
+      for (const gist of gists) {
+        try {
+          const desc = String(gist.description || "").toLowerCase();
+          const hasLegacyHint = desc.includes("keylock") || desc.includes("mantenimento")
+            || !!(gist.files && gist.files[LEGACY_GIST_FILENAME]);
+          if (!hasLegacyHint) continue;
+
+          const doc = await readLegacyGistDoc(token, gist.id);
+          if ((doc.users && doc.users[uname]) || (doc.profiles && doc.profiles[uname])) {
+            return gist.id;
+          }
+        } catch (_) {
+          // Ignore bad/unreadable gist and continue.
+        }
+      }
+      return null;
+    }
+
     async function migrateLegacyGistProfileForLoggedUser() {
       if (!authSession.username || !authSession.userId || !authSession.keyBits) {
         setAuthStatus("Effettua prima il login per importare i dati legacy.", true);
@@ -1416,10 +1439,21 @@
       }
 
       const token = text("legacyGithubToken");
-      const gistId = text("legacyGistId");
+      let gistId = text("legacyGistId");
       const legacyPassword = text("legacyKeylockPass");
-      if (!token || !gistId || !legacyPassword) {
-        setAuthStatus("Per il recupero legacy inserisci token GitHub, Gist ID e password legacy.", true);
+      if (!token || !legacyPassword) {
+        setAuthStatus("Per il recupero legacy inserisci almeno token GitHub e password legacy.", true);
+        return;
+      }
+
+      if (!gistId) {
+        gistId = await findLegacyGistByUsername(token, authSession.username) || "";
+        if (gistId) {
+          document.getElementById("legacyGistId").value = gistId;
+        }
+      }
+      if (!gistId) {
+        setAuthStatus("Gist legacy non trovato automaticamente. Inserisci il Gist ID manualmente.", true);
         return;
       }
 
@@ -1521,6 +1555,14 @@
         });
         if (!signUpRes.error) {
           signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
+        } else {
+          const signUpMsg = String(signUpRes.error.message || "");
+          if (/already registered/i.test(signUpMsg)) {
+            setAuthStatus("Login fallito: utente esistente ma password non corretta.", true);
+            return;
+          }
+          setAuthStatus(`Login fallito: provisioning utente non riuscito (${signUpMsg}).`, true);
+          return;
         }
       }
 
