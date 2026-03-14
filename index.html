@@ -2315,7 +2315,7 @@
           <div class="live-fabric-wrap">
             <div class="live-fabric-caption">Visualizzazione comparativa</div>
             <div class="live-fabric-sub">Bilanciamento visivo dei netti: posizione del marker e intensita del divario tra i coniugi.</div>
-            <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="186"></canvas>
+            <canvas id="liveDiffCanvas" class="live-fabric-canvas" height="156"></canvas>
           </div>
         </div>
       `;
@@ -2350,7 +2350,7 @@
       if (!canvasEl) return;
 
       const w = Math.max(280, Math.round(canvasEl.parentElement.clientWidth - 16));
-      const h = 186;
+      const h = 156;
       canvasEl.width = w;
       canvasEl.height = h;
 
@@ -2363,8 +2363,8 @@
       netDiffFabricCanvas = fc;
 
       const centerX = w / 2;
-      const centerY = 142;
-      const radius = Math.min(56, Math.max(42, (w * 0.17)));
+      const centerY = 104;
+      const radius = Math.min(50, Math.max(38, (w * 0.16)));
       const totalAbs = Math.max(1, Math.abs(m.disp1) + Math.abs(m.disp2));
       const shift = (diffDisp / totalAbs) * (radius * 1.5);
       const pointerX = Math.max(centerX - radius * 1.6, Math.min(centerX + radius * 1.6, centerX + shift));
@@ -2422,53 +2422,6 @@
         top: w < 360 ? 29 : 27,
         fontSize: badgeFontSize,
         fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
-        fontFamily: "Candara",
-        fontWeight: "700"
-      }));
-
-      const cardTop = 62;
-      const cardH = 46;
-      const cardGap = 18;
-      const cardW = Math.min(180, Math.max(118, (w - (cardGap + 56)) / 2));
-      const leftCardX = 20;
-      const rightCardX = w - cardW - 20;
-
-      fc.add(new window.fabric.Rect({
-        left: leftCardX,
-        top: cardTop,
-        width: cardW,
-        height: cardH,
-        rx: 12,
-        ry: 12,
-        fill: "#e8f5f1",
-        stroke: "#bad9d2",
-        strokeWidth: 1
-      }));
-      fc.add(new window.fabric.Rect({
-        left: rightCardX,
-        top: cardTop,
-        width: cardW,
-        height: cardH,
-        rx: 12,
-        ry: 12,
-        fill: "#f7eddc",
-        stroke: "#e3c79d",
-        strokeWidth: 1
-      }));
-
-      fc.add(new window.fabric.Text(`C1  ${eurTiny(m.disp1)}`, {
-        left: leftCardX + 10,
-        top: cardTop + 15,
-        fontSize: 15,
-        fill: "#0d625a",
-        fontFamily: "Candara",
-        fontWeight: "700"
-      }));
-      fc.add(new window.fabric.Text(`C2  ${eurTiny(m.disp2)}`, {
-        left: rightCardX + 10,
-        top: cardTop + 15,
-        fontSize: 15,
-        fill: "#8a5a10",
         fontFamily: "Candara",
         fontWeight: "700"
       }));
@@ -2533,7 +2486,7 @@
 
       fc.add(new window.fabric.Text("C1", {
         left: 26,
-        top: 156,
+        top: 123,
         fontSize: 13,
         fill: "#145b55",
         fontFamily: "Candara",
@@ -2541,7 +2494,7 @@
       }));
       fc.add(new window.fabric.Text("C2", {
         left: w - 41,
-        top: 156,
+        top: 123,
         fontSize: 13,
         fill: "#8a580f",
         fontFamily: "Candara",
