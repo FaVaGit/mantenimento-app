@@ -1998,16 +1998,27 @@
           }
         }
 
-        console.log("[legacy] Avvio decryptLegacyStateBestEffort - userRecord:", userRecord ? Object.keys(userRecord) : null);
-        const state = await decryptLegacyStateBestEffort(
-          payload,
-          legacyPassword,
-          authSession.username,
-          userRecord,
-          match.rawProfile,
-          doc
-        );
-        console.log("[legacy] Stato decifrato OK, chiavi:", state ? Object.keys(state) : null);
+        // Primary attempt: payload was saved with the current session key (Supabase era).
+        let state = null;
+        try {
+          state = await decryptStateForKey(payload, authSession.keyBits);
+          console.log("[legacy] Decifrato con authSession.keyBits (sessione corrente) OK");
+        } catch (_) {
+          console.warn("[legacy] authSession.keyBits non ha funzionato, provo best-effort...");
+        }
+
+        if (!state) {
+          console.log("[legacy] Avvio decryptLegacyStateBestEffort - userRecord:", userRecord ? Object.keys(userRecord) : null);
+          state = await decryptLegacyStateBestEffort(
+            payload,
+            legacyPassword,
+            authSession.username,
+            userRecord,
+            match.rawProfile,
+            doc
+          );
+          console.log("[legacy] Stato decifrato OK con best-effort, chiavi:", state ? Object.keys(state) : null);
+        }
         const reEncrypted = await encryptStateForKey(state, authSession.keyBits);
         const { error } = await upsertEncryptedScenarioForSession(reEncrypted);
         if (error) throw new Error(error.message);
