@@ -1474,8 +1474,8 @@ const defaultExpenseItems = [
       expenseItems.forEach((item, idx) => {
         const labelEsc = escapeHtml(item.label);
         const helpEsc = escapeHtml(item.help);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
+        const rowEl = document.createElement("tr");
+        rowEl.innerHTML = `
           <td><span class="label-row">${labelEsc}<span class="hint" title="${helpEsc}">i</span></span></td>
           <td>
             <div class="spese-input-wrap">
@@ -1493,7 +1493,7 @@ const defaultExpenseItems = [
             <button class="btn-secondary spese-remove-btn" type="button" data-remove-expense-idx="${idx}" title="${tr("expenseRemoveTitle")}">${tr("expenseRemoveBtn")}</button>
           </td>
         `;
-        rowsSpese.appendChild(tr);
+        rowsSpese.appendChild(rowEl);
       });
     }
 
