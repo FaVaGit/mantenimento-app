@@ -1119,6 +1119,8 @@
       userId: null,
       keyBits: null
     };
+    let authFlowInProgress = false;
+    let authRateLimitedUntilTs = 0;
 
     function eur(v) {
       const n = Number(v || 0);
@@ -1186,6 +1188,35 @@
       return m.includes("rate limit") || m.includes("too many requests") || m.includes("email rate");
     }
 
+    function parseRetryAfterSeconds(msg) {
+      const m = String(msg || "").toLowerCase();
+      const secMatch = m.match(/(\d+)\s*(second|seconds|sec|s)\b/);
+      if (secMatch) return Math.max(1, Number(secMatch[1] || 0));
+      const minMatch = m.match(/(\d+)\s*(minute|minutes|min|m)\b/);
+      if (minMatch) return Math.max(1, Number(minMatch[1] || 0) * 60);
+      return 90;
+    }
+
+    function setLocalAuthCooldown(seconds) {
+      const waitSec = Math.max(15, Number(seconds || 0));
+      authRateLimitedUntilTs = Date.now() + (waitSec * 1000);
+      return waitSec;
+    }
+
+    function authCooldownRemainingSeconds() {
+      const delta = authRateLimitedUntilTs - Date.now();
+      return delta > 0 ? Math.ceil(delta / 1000) : 0;
+    }
+
+    function ensureAuthNotCoolingDown() {
+      const rem = authCooldownRemainingSeconds();
+      if (rem > 0) {
+        setAuthStatus(`Rate limit Supabase attivo. Attendi ${rem}s prima di riprovare Login/Registrati.`, true);
+        return false;
+      }
+      return true;
+    }
+
     function isInvalidCredentialAuthMessage(msg) {
       return /invalid login credentials/i.test(String(msg || ""));
     }
@@ -1201,6 +1232,8 @@
 
         lastErrorMessage = String((signInRes.error && signInRes.error.message) || "");
         if (isRateLimitAuthMessage(lastErrorMessage)) {
+          const waitSec = setLocalAuthCooldown(parseRetryAfterSeconds(lastErrorMessage));
+          lastErrorMessage = `Rate limit Supabase. Attendi ${waitSec}s e riprova.`;
           return { ok: false, email: null, result: null, lastErrorMessage };
         }
       }
@@ -1542,6 +1575,13 @@
 
     async function registerKeyLockUser() {
       if (!await ensureSupabaseReady("registrarti")) return;
+      if (authFlowInProgress) {
+        setAuthStatus("Operazione auth gia in corso, attendi qualche secondo.", true);
+        return;
+      }
+      if (!ensureAuthNotCoolingDown()) return;
+      authFlowInProgress = true;
+      try {
 
       const username = normalizeUsername(text("keylockUser"));
       const password = text("keylockPass");
@@ -1579,6 +1619,7 @@
         if (/already|registered/i.test(signUpMsg)) {
           // User already exists with primary pseudo email: continue with login flow.
         } else if (isRateLimitAuthMessage(signUpMsg)) {
+          setLocalAuthCooldown(parseRetryAfterSeconds(signUpMsg));
           signUpRateLimited = true;
         } else {
           setAuthStatus(`Registrazione fallita: ${signUpRes.error.message}`, true);
@@ -1606,10 +1647,20 @@
       setAuthStatus(signUpRateLimited
         ? `Rate limit registrazione rilevato, ma accesso effettuato: ${loginMsg}`
         : `Utente ${username} registrato e login effettuato.`);
+      } finally {
+        authFlowInProgress = false;
+      }
     }
 
     async function loginKeyLockUser() {
       if (!await ensureSupabaseReady("effettuare il login")) return;
+      if (authFlowInProgress) {
+        setAuthStatus("Operazione auth gia in corso, attendi qualche secondo.", true);
+        return;
+      }
+      if (!ensureAuthNotCoolingDown()) return;
+      authFlowInProgress = true;
+      try {
 
       const username = normalizeUsername(text("keylockUser"));
       const password = text("keylockPass");
@@ -1638,6 +1689,9 @@
         setAuthStatus(`${loginMsg} Accesso effettuato tramite alias legacy.`);
       } else {
         setAuthStatus(loginMsg);
+      }
+      } finally {
+        authFlowInProgress = false;
       }
     }
 
