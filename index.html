@@ -120,6 +120,7 @@
       backdrop-filter: blur(7px);
     }
 
+    .top-actions:hover .top-actions-menu,
     .top-actions.is-open .top-actions-menu {
       display: grid;
       gap: 6px;
@@ -1627,45 +1628,15 @@
       const trigger = wrap.querySelector(".top-actions-trigger");
       const menu = wrap.querySelector(".top-actions-menu");
       if (!trigger || !menu) return;
-      const supportsHover = !!(window.matchMedia && window.matchMedia("(hover: hover)").matches);
-      let hoverCloseTimer = null;
-
-      const clearHoverCloseTimer = () => {
-        if (!hoverCloseTimer) return;
-        clearTimeout(hoverCloseTimer);
-        hoverCloseTimer = null;
-      };
-
-      const scheduleHoverClose = () => {
-        clearHoverCloseTimer();
-        hoverCloseTimer = setTimeout(() => {
-          setTopActionsOpen(false);
-        }, 180);
-      };
 
       setTopActionsOpen(false);
 
-      if (supportsHover) {
-        wrap.addEventListener("mouseenter", () => {
-          clearHoverCloseTimer();
-          setTopActionsOpen(true);
-        });
-        wrap.addEventListener("mouseleave", () => {
-          scheduleHoverClose();
-        });
-        menu.addEventListener("mouseenter", () => {
-          clearHoverCloseTimer();
-        });
-        menu.addEventListener("mouseleave", () => {
-          scheduleHoverClose();
-        });
-      } else {
-        trigger.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setTopActionsOpen(!wrap.classList.contains("is-open"));
-        });
-      }
+      // Click/touch fallback: desktop uses CSS :hover, touch uses explicit toggle.
+      trigger.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setTopActionsOpen(!wrap.classList.contains("is-open"));
+      });
 
       menu.addEventListener("click", (e) => {
         if (e.target && e.target.closest("button")) {
@@ -1673,13 +1644,11 @@
         }
       });
 
-      if (!supportsHover) {
-        document.addEventListener("click", (e) => {
-          if (!wrap.contains(e.target)) {
-            setTopActionsOpen(false);
-          }
-        });
-      }
+      document.addEventListener("click", (e) => {
+        if (!wrap.contains(e.target)) {
+          setTopActionsOpen(false);
+        }
+      });
 
       wrap.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
