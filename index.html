@@ -1505,25 +1505,74 @@
 
     async function readLegacyGistDoc(token, gistId) {
       const gist = await githubApiLegacyRequest("GET", `https://api.github.com/gists/${gistId}`, token);
-      const file = gist.files && (gist.files[LEGACY_GIST_FILENAME] || Object.values(gist.files)[0]);
-      if (!file) return { users: {}, profiles: {} };
+      const files = gist.files ? Object.values(gist.files) : [];
+      if (!files.length) return { users: {}, profiles: {} };
 
-      let content = file.content || "";
-      if (file.truncated && file.raw_url) {
-        const rawRes = await fetch(file.raw_url);
-        content = await rawRes.text();
+      const merged = { users: {}, profiles: {} };
+
+      for (const file of files) {
+        const name = String(file.filename || "").toLowerCase();
+        const likelyJson = name.endsWith(".json") || name.includes("keylock") || name.includes("cache") || name.includes("profile");
+        if (!likelyJson) continue;
+
+        let content = file.content || "";
+        if (file.truncated && file.raw_url) {
+          const rawRes = await fetch(file.raw_url);
+          content = await rawRes.text();
+        }
+
+        let doc;
+        try {
+          doc = JSON.parse(content || "{}");
+        } catch (_) {
+          doc = null;
+        }
+        if (!doc || typeof doc !== "object") continue;
+
+        if (doc.users && typeof doc.users === "object") {
+          Object.assign(merged.users, doc.users);
+        }
+        if (doc.profiles && typeof doc.profiles === "object") {
+          Object.assign(merged.profiles, doc.profiles);
+        }
+
+        // Legacy variants may store the maps at top-level.
+        if (doc["keylockUsers"] && typeof doc["keylockUsers"] === "object") {
+          Object.assign(merged.users, doc["keylockUsers"]);
+        }
+        if (doc["keylockProfiles"] && typeof doc["keylockProfiles"] === "object") {
+          Object.assign(merged.profiles, doc["keylockProfiles"]);
+        }
       }
 
-      let doc;
-      try {
-        doc = JSON.parse(content || "{}");
-      } catch (_) {
-        doc = {};
+      return merged;
+    }
+
+    function normalizeLegacyCipherPayload(rawPayload) {
+      if (!rawPayload || typeof rawPayload !== "object") return null;
+      if (rawPayload.iv && rawPayload.data) {
+        return { iv: rawPayload.iv, data: rawPayload.data };
       }
-      if (!doc || typeof doc !== "object") doc = {};
-      if (!doc.users || typeof doc.users !== "object") doc.users = {};
-      if (!doc.profiles || typeof doc.profiles !== "object") doc.profiles = {};
-      return doc;
+      if (rawPayload.cipher && rawPayload.cipher.iv && rawPayload.cipher.data) {
+        return { iv: rawPayload.cipher.iv, data: rawPayload.cipher.data };
+      }
+      if (rawPayload.scenario_cipher && rawPayload.scenario_cipher.iv && rawPayload.scenario_cipher.data) {
+        return { iv: rawPayload.scenario_cipher.iv, data: rawPayload.scenario_cipher.data };
+      }
+      return null;
+    }
+
+    function extractLegacyUserRecord(userRecord, payload) {
+      const out = userRecord && typeof userRecord === "object" ? { ...userRecord } : {};
+      const src = payload && typeof payload === "object" ? payload : {};
+
+      if (!out.salt && src.salt) out.salt = src.salt;
+      if (!out.verifier && src.verifier) out.verifier = src.verifier;
+      if (!out.salt && src.keySalt) out.salt = src.keySalt;
+      if (!out.verifier && src.keyVerifier) out.verifier = src.keyVerifier;
+
+      if (!out.salt || !out.verifier) return null;
+      return out;
     }
 
     function findLegacyMapMatchByUsername(mapObj, username) {
@@ -1562,9 +1611,12 @@
         userRecord = doc.users[profileMatch.key];
       }
 
+      userRecord = extractLegacyUserRecord(userRecord, payload);
+      const cipherPayload = normalizeLegacyCipherPayload(payload);
+
       return {
         userRecord,
-        payload,
+        payload: cipherPayload,
         userKey: userMatch ? userMatch.key : "",
         profileKey: profileMatch ? profileMatch.key : ""
       };
