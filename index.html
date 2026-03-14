@@ -101,7 +101,7 @@
       color: #164440;
       padding: 8px 14px;
       font-weight: 800;
-      cursor: default;
+      cursor: pointer;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
@@ -120,8 +120,7 @@
       backdrop-filter: blur(7px);
     }
 
-    .top-actions:hover .top-actions-menu,
-    .top-actions:focus-within .top-actions-menu {
+    .top-actions.is-open .top-actions-menu {
       display: grid;
       gap: 6px;
     }
@@ -1110,8 +1109,8 @@
       </p>
       <div class="hero-tools">
         <div class="top-actions" id="topActions" tabindex="0">
-          <button class="top-actions-trigger" type="button">Azioni rapide</button>
-          <div class="top-actions-menu" aria-label="Azioni applicazione">
+          <button class="top-actions-trigger" type="button" aria-expanded="false" aria-controls="topActionsMenu">Azioni rapide</button>
+          <div class="top-actions-menu" id="topActionsMenu" aria-label="Azioni applicazione">
             <button class="btn-secondary" id="btnReset" type="button">Reset valori</button>
             <button class="btn-secondary" id="btnExportJson" type="button">Esporta JSON cifrato</button>
             <button class="btn-secondary" id="btnImportJson" type="button">Carica JSON cifrato</button>
@@ -1443,6 +1442,46 @@
       const defaultZoom = window.matchMedia && window.matchMedia("(max-width: 640px)").matches ? 1.1 : 1;
       const base = stored == null ? defaultZoom : Number(stored);
       return setUiZoom(base, stored == null);
+    }
+
+    function initTopActionsMenu() {
+      const wrap = document.getElementById("topActions");
+      if (!wrap) return;
+      const trigger = wrap.querySelector(".top-actions-trigger");
+      const menu = wrap.querySelector(".top-actions-menu");
+      if (!trigger || !menu) return;
+
+      const setOpen = (open) => {
+        wrap.classList.toggle("is-open", open);
+        trigger.setAttribute("aria-expanded", open ? "true" : "false");
+      };
+
+      setOpen(false);
+
+      trigger.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen(!wrap.classList.contains("is-open"));
+      });
+
+      menu.addEventListener("click", (e) => {
+        if (e.target && e.target.closest("button")) {
+          setOpen(false);
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!wrap.contains(e.target)) {
+          setOpen(false);
+        }
+      });
+
+      wrap.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          setOpen(false);
+          trigger.focus();
+        }
+      });
     }
 
     function eur(v) {
@@ -2943,6 +2982,7 @@
 
     buildExpenseRows();
     initUiZoom();
+    initTopActionsMenu();
     initAuthMenu();
     updateAuthUi();
     renderCloudHistoryPanel();
