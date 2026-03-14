@@ -183,6 +183,8 @@ const defaultExpenseItems = [
         incomeHintAnnual: "Entrate nette annuali di {spouse}: il sistema converte automaticamente in quota mensile (/12).",
         incomeHintMonthly: "Entrate nette mensili disponibili di {spouse}.",
         liveNetAvailablePerson: "Netto disponibile {spouse}",
+        liveNetPostSupportPerson: "Netto post-assegno {spouse}",
+        liveDaysWithSpouse: "{days} gg con {spouse}",
         liveTotalIncome: "Entrate totali (reddito + assegni + INPS)",
         livePaidToOther: "Assegno mantenimento pagato all'altro coniuge",
         livePaidExternal: "Assegno mantenimento pagato esterno",
@@ -379,6 +381,8 @@ const defaultExpenseItems = [
         incomeHintAnnual: "Yearly net income for {spouse}: automatically converted to monthly amount (/12).",
         incomeHintMonthly: "Available monthly net income for {spouse}.",
         liveNetAvailablePerson: "Net available {spouse}",
+        liveNetPostSupportPerson: "Post-support net {spouse}",
+        liveDaysWithSpouse: "{days} days with {spouse}",
         liveTotalIncome: "Total income (income + support + INPS)",
         livePaidToOther: "Support paid to the other spouse",
         livePaidExternal: "External support paid",
@@ -1849,16 +1853,17 @@ const defaultExpenseItems = [
       const hasSuggestedSupport = Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0.005;
       const shownDisp1 = hasSuggestedSupport ? m.post1 : m.disp1;
       const shownDisp2 = hasSuggestedSupport ? m.post2 : m.disp2;
+      const liveNetLabelKey = hasSuggestedSupport ? "liveNetPostSupportPerson" : "liveNetAvailablePerson";
       const diffDisp = shownDisp1 - shownDisp2;
       const absDiffDisp = Math.abs(diffDisp);
 
       liveNet.innerHTML = `
         <div class="live-k">
-          ${msg("liveNetAvailablePerson", { spouse: c1n() })}
+          ${msg(liveNetLabelKey, { spouse: c1n() })}
           <strong class="${shownDisp1 >= 0 ? "ok" : "bad"}">${eur(shownDisp1)}</strong>
         </div>
         <div class="live-k">
-          ${msg("liveNetAvailablePerson", { spouse: c2n() })}
+          ${msg(liveNetLabelKey, { spouse: c2n() })}
           <strong class="${shownDisp2 >= 0 ? "ok" : "bad"}">${eur(shownDisp2)}</strong>
         </div>
         <div class="live-diff">
@@ -2161,14 +2166,22 @@ const defaultExpenseItems = [
         shadow: "0 2px 7px rgba(0,0,0,0.24)"
       }));
 
-      // Side labels: full names, anchored to edges, with adaptive font size.
-      const sideLabelTop = centerY + 21;
+      // Side labels: names plus effective days out of 30.
+      const sideLabelTop = centerY + 18;
+      const sideDaysTop = sideLabelTop + 15;
       const sideLabelMaxW = Math.max(58, trackWidth / 2 - 34);
       const sideBaseFont = 13;
       const sideFontFamily = "Candara";
       const sideFontWeight = "700";
 
       const leftName = c1n();
+      const rightName = c2n();
+      const days1 = Math.round((m.perm1 / 100) * 30 * 10) / 10;
+      const days2 = Math.round((m.perm2 / 100) * 30 * 10) / 10;
+      const fmtDays = (v) => Number.isInteger(v) ? String(v) : v.toFixed(1);
+      const leftDaysLabel = msg("liveDaysWithSpouse", { days: fmtDays(days1), spouse: leftName });
+      const rightDaysLabel = msg("liveDaysWithSpouse", { days: fmtDays(days2), spouse: rightName });
+
       const leftProbe = new window.fabric.Text(leftName, {
         fontSize: sideBaseFont,
         fontFamily: sideFontFamily,
@@ -2178,7 +2191,6 @@ const defaultExpenseItems = [
         ? sideBaseFont
         : Math.max(10, Math.floor(sideBaseFont * sideLabelMaxW / leftProbe.width));
 
-      const rightName = c2n();
       const rightProbe = new window.fabric.Text(rightName, {
         fontSize: sideBaseFont,
         fontFamily: sideFontFamily,
@@ -2187,6 +2199,24 @@ const defaultExpenseItems = [
       const rightFont = rightProbe.width <= sideLabelMaxW
         ? sideBaseFont
         : Math.max(10, Math.floor(sideBaseFont * sideLabelMaxW / rightProbe.width));
+
+      const leftDaysProbe = new window.fabric.Text(leftDaysLabel, {
+        fontSize: 10,
+        fontFamily: sideFontFamily,
+        fontWeight: "700"
+      });
+      const leftDaysFont = leftDaysProbe.width <= sideLabelMaxW
+        ? 10
+        : Math.max(8, Math.floor(10 * sideLabelMaxW / leftDaysProbe.width));
+
+      const rightDaysProbe = new window.fabric.Text(rightDaysLabel, {
+        fontSize: 10,
+        fontFamily: sideFontFamily,
+        fontWeight: "700"
+      });
+      const rightDaysFont = rightDaysProbe.width <= sideLabelMaxW
+        ? 10
+        : Math.max(8, Math.floor(10 * sideLabelMaxW / rightDaysProbe.width));
 
       fc.add(new window.fabric.Text(leftName, {
         left: trackLeft,
@@ -2205,6 +2235,24 @@ const defaultExpenseItems = [
         fill: "#7c4b09",
         fontFamily: sideFontFamily,
         fontWeight: sideFontWeight
+      }));
+      fc.add(new window.fabric.Text(leftDaysLabel, {
+        left: trackLeft,
+        top: sideDaysTop,
+        originX: "left",
+        fontSize: leftDaysFont,
+        fill: "#2e6963",
+        fontFamily: sideFontFamily,
+        fontWeight: "700"
+      }));
+      fc.add(new window.fabric.Text(rightDaysLabel, {
+        left: trackLeft + trackWidth,
+        top: sideDaysTop,
+        originX: "right",
+        fontSize: rightDaysFont,
+        fill: "#8a5b1f",
+        fontFamily: sideFontFamily,
+        fontWeight: "700"
       }));
 
       fc.renderAll();
