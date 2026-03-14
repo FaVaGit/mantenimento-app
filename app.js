@@ -574,6 +574,22 @@ const defaultExpenseItems = [
       });
     }
 
+    function initCoffeeFloatVisibility() {
+      const footer = document.querySelector(".legal-footer");
+      const coffeeFloat = document.querySelector(".coffee-float");
+      if (!footer || !coffeeFloat || !("IntersectionObserver" in window)) return;
+
+      const observer = new IntersectionObserver((entries) => {
+        const isFooterVisible = entries.some((entry) => entry.isIntersecting);
+        document.body.classList.toggle("footer-visible", isFooterVisible);
+      }, {
+        root: null,
+        threshold: 0.08
+      });
+
+      observer.observe(footer);
+    }
+
     async function deriveSessionKeyBits(password, userId) {
       const enc = new TextEncoder();
       const salt = await sha256Bytes(enc.encode(`keylock:${userId}`));
@@ -2333,6 +2349,7 @@ const defaultExpenseItems = [
     initUiZoom();
     initTopActionsMenu();
     initAuthMenu();
+    initCoffeeFloatVisibility();
     updateAuthUi();
     renderCloudHistoryPanel();
     syncPermanenza();
