@@ -395,6 +395,17 @@
 
     .spese-table input { min-width: 86px; }
 
+    .spese-table .col-actions {
+      width: 78px;
+      text-align: center;
+    }
+
+    .spese-remove-btn {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      line-height: 1;
+    }
+
     .spese-input-wrap {
       display: flex;
       align-items: center;
@@ -1015,6 +1026,10 @@
       gap: 8px;
     }
 
+    .spese-editor-grid select {
+      width: 100%;
+    }
+
     .spese-editor-grid .field:last-child {
       grid-column: 1 / -1;
     }
@@ -1401,6 +1416,14 @@
           <div class="spese-editor is-hidden" id="expenseItemEditor">
             <div class="spese-editor-grid">
               <div class="field">
+                <label for="suggestedExpenseSelect" class="label-row">Suggerimenti utili (linee guida)
+                  <span class="hint" title="Seleziona una voce frequente per precompilare nome e descrizione.">i</span>
+                </label>
+                <select id="suggestedExpenseSelect">
+                  <option value="">Seleziona una voce suggerita</option>
+                </select>
+              </div>
+              <div class="field">
                 <label for="customExpenseLabel" class="label-row">Nome voce spesa
                   <span class="hint" title="Titolo che comparira nella tabella spese.">i</span>
                 </label>
@@ -1425,6 +1448,7 @@
                 <th>Voce spesa</th>
                 <th>Coniuge 1 (EUR)</th>
                 <th>Coniuge 2 (EUR)</th>
+                <th class="col-actions">Azioni</th>
               </tr>
             </thead>
             <tbody id="rowsSpese"></tbody>
@@ -1492,8 +1516,17 @@
       { label: "Amministrazione condominio", help: "Quote condominiali ordinarie e costi amministrativi ricorrenti." },
       { label: "Spese scolastiche/mensa", help: "Costi scolastici ricorrenti, mensa e contributi periodici." },
       { label: "Spese sanitarie ricorrenti", help: "Farmaci, visite periodiche e terapie ricorrenti." },
-      { label: "Sport/attivita figli", help: "Costi medi mensili per sport e attivita extrascolastiche." },
-      { label: "Altre", help: "Voce generica per altre spese mensili ordinarie non incluse sopra." }
+      { label: "Sport/attivita figli", help: "Costi medi mensili per sport e attivita extrascolastiche." }
+    ];
+    const suggestedExpenseCatalog = [
+      { label: "Trasporto scolastico", help: "Abbonamenti bus/treno, navetta scolastica o carburante dedicato ai trasferimenti scuola." },
+      { label: "Libri e materiale didattico", help: "Testi scolastici, quaderni, cancelleria e materiali ricorrenti per lo studio." },
+      { label: "Doposcuola / ripetizioni", help: "Supporto didattico continuativo o corsi di recupero con cadenza periodica." },
+      { label: "Centro estivo", help: "Quota media mensile stimata per centri estivi e attivita educative stagionali." },
+      { label: "Spese mediche non coperte SSN", help: "Visite specialistiche, terapie e farmaci ricorrenti non totalmente rimborsati." },
+      { label: "Attivita artistiche/musicali", help: "Corsi ricorrenti (musica, teatro, danza) e quote di frequenza periodiche." },
+      { label: "Tecnologia per studio", help: "Canone internet, software didattici e strumenti digitali con costo ricorrente." },
+      { label: "Abbigliamento stagionale figli", help: "Spesa periodica media per rinnovo abbigliamento in relazione alla stagione." }
     ];
     let expenseItems = defaultExpenseItems.map((item) => ({ ...item }));
 
@@ -1653,6 +1686,18 @@
       const label = rawLabel || `Voce personalizzata ${fallbackIdx + 1}`;
       const help = rawHelp || `Voce aggiunta manualmente: ${label}.`;
       return { label, help };
+    }
+
+    function populateSuggestedExpenseOptions() {
+      const select = document.getElementById("suggestedExpenseSelect");
+      if (!select) return;
+      select.innerHTML = `<option value="">Seleziona una voce suggerita</option>`;
+      suggestedExpenseCatalog.forEach((item, idx) => {
+        const option = document.createElement("option");
+        option.value = String(idx);
+        option.textContent = item.label;
+        select.appendChild(option);
+      });
     }
 
     function num(id) {
@@ -2289,6 +2334,9 @@
               <span class="spese-partial" id="p2_${idx}" title="Somma parziale progressiva">Tot: ${eurTiny(0)}</span>
             </div>
           </td>
+          <td class="col-actions">
+            <button class="btn-secondary spese-remove-btn" type="button" data-remove-expense-idx="${idx}" title="Rimuovi voce spesa">Rimuovi</button>
+          </td>
         `;
         rowsSpese.appendChild(tr);
       });
@@ -2306,6 +2354,22 @@
         if (c1) c1.value = Number.isFinite(Number(row && row.c1)) ? Number(row.c1) : 0;
         if (c2) c2.value = Number.isFinite(Number(row && row.c2)) ? Number(row.c2) : 0;
       });
+    }
+
+    function removeExpenseItemAt(index) {
+      if (!Number.isInteger(index) || index < 0 || index >= expenseItems.length) return;
+      if (expenseItems.length <= 1) {
+        alert("Deve restare almeno una voce spesa.");
+        return;
+      }
+
+      const currentValues = snapshotExpenseValues();
+      expenseItems.splice(index, 1);
+      currentValues.splice(index, 1);
+      buildExpenseRows();
+      restoreExpenseValues(currentValues);
+      updateExpensePartials();
+      renderAll();
     }
 
     function updateExpensePartials() {
@@ -3099,13 +3163,23 @@
 
     document.getElementById("btnAddExpenseItem").addEventListener("click", () => {
       document.getElementById("expenseItemEditor").classList.remove("is-hidden");
+      document.getElementById("suggestedExpenseSelect").value = "";
       document.getElementById("customExpenseLabel").focus();
     });
 
     document.getElementById("btnCancelExpenseItem").addEventListener("click", () => {
       document.getElementById("expenseItemEditor").classList.add("is-hidden");
+      document.getElementById("suggestedExpenseSelect").value = "";
       document.getElementById("customExpenseLabel").value = "";
       document.getElementById("customExpenseHelp").value = "";
+    });
+
+    document.getElementById("suggestedExpenseSelect").addEventListener("change", (e) => {
+      const idx = Number(e.target.value);
+      if (!Number.isInteger(idx) || idx < 0 || idx >= suggestedExpenseCatalog.length) return;
+      const selected = suggestedExpenseCatalog[idx];
+      document.getElementById("customExpenseLabel").value = selected.label;
+      document.getElementById("customExpenseHelp").value = selected.help;
     });
 
     document.getElementById("btnCreateExpenseItem").addEventListener("click", () => {
@@ -3127,7 +3201,15 @@
 
       document.getElementById("customExpenseLabel").value = "";
       document.getElementById("customExpenseHelp").value = "";
+      document.getElementById("suggestedExpenseSelect").value = "";
       document.getElementById("expenseItemEditor").classList.add("is-hidden");
+    });
+
+    rowsSpese.addEventListener("click", (e) => {
+      const btn = e.target && e.target.closest("button[data-remove-expense-idx]");
+      if (!btn) return;
+      const idx = Number(btn.getAttribute("data-remove-expense-idx"));
+      removeExpenseItemAt(idx);
     });
 
     document.getElementById("btnZoomOut").addEventListener("click", () => {
@@ -3216,6 +3298,7 @@
       }
     });
 
+    populateSuggestedExpenseOptions();
     buildExpenseRows();
     initUiZoom();
     initTopActionsMenu();
