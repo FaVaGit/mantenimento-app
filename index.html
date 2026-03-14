@@ -896,6 +896,14 @@
                     </div>
                   </div>
                   <div class="toolbar" style="margin-top:8px">
+                                        <div class="field" style="grid-column:1/-1">
+                                          <label for="legacyOldUserId" class="label-row">Vecchio User ID Supabase (opzionale)
+                                            <span class="hint" title="UUID del vecchio account Supabase. Trovalo in: Supabase dashboard > Authentication > Users. Serve se i dati erano cifrati con una sessione precedente.">i</span>
+                                          </label>
+                                          <input id="legacyOldUserId" type="text" autocomplete="off" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:monospace;font-size:0.82rem" />
+                                        </div>
+                                      </div>
+                                      <div class="toolbar" style="margin-top:8px">
                     <button class="btn-secondary" id="btnMigrateLegacy" type="submit">Importa dati legacy</button>
                   </div>
                   </form>
@@ -2006,6 +2014,20 @@
         } catch (_) {
           console.warn("[legacy] authSession.keyBits non ha funzionato, provo best-effort...");
         }
+
+          // Try with old user ID if provided by the user.
+          if (!state) {
+            const oldUserIdInput = String((document.getElementById("legacyOldUserId") || {}).value || "").trim();
+            if (oldUserIdInput) {
+              try {
+                const oldKeyBits = await deriveSessionKeyBits(legacyPassword, oldUserIdInput);
+                state = await decryptStateForKey(payload, oldKeyBits);
+                console.log("[legacy] Decifrato con vecchio User ID:", oldUserIdInput);
+              } catch (_) {
+                console.warn("[legacy] Vecchio User ID non ha funzionato:", oldUserIdInput);
+              }
+            }
+          }
 
         if (!state) {
           console.log("[legacy] Avvio decryptLegacyStateBestEffort - userRecord:", userRecord ? Object.keys(userRecord) : null);
