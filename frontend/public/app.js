@@ -185,6 +185,7 @@ const defaultExpenseItems = [
         liveNetAvailablePerson: "Netto disponibile {spouse}",
         liveNetPostSupportPerson: "Netto post-assegno {spouse}",
         liveDaysWithSpouse: "{days} gg con {spouse}",
+        langDaysSuffix: "gg",
         liveTotalIncome: "Entrate totali (reddito + assegni + INPS)",
         livePaidToOther: "Assegno mantenimento pagato all'altro coniuge",
         livePaidExternal: "Assegno mantenimento pagato esterno",
@@ -383,6 +384,7 @@ const defaultExpenseItems = [
         liveNetAvailablePerson: "Net available {spouse}",
         liveNetPostSupportPerson: "Post-support net {spouse}",
         liveDaysWithSpouse: "{days} days with {spouse}",
+        langDaysSuffix: "d",
         liveTotalIncome: "Total income (income + support + INPS)",
         livePaidToOther: "Support paid to the other spouse",
         livePaidExternal: "External support paid",
@@ -2166,9 +2168,8 @@ const defaultExpenseItems = [
         shadow: "0 2px 7px rgba(0,0,0,0.24)"
       }));
 
-      // Side labels: names plus effective days out of 30.
-      const sideLabelTop = centerY + 18;
-      const sideDaysTop = sideLabelTop + 15;
+      // Side labels: names below bar; effective days shown inside each gradient bar half.
+      const sideLabelTop = centerY + 22;
       const sideLabelMaxW = Math.max(58, trackWidth / 2 - 34);
       const sideBaseFont = 13;
       const sideFontFamily = "Candara";
@@ -2179,8 +2180,7 @@ const defaultExpenseItems = [
       const days1 = Math.round((m.perm1 / 100) * 30 * 10) / 10;
       const days2 = Math.round((m.perm2 / 100) * 30 * 10) / 10;
       const fmtDays = (v) => Number.isInteger(v) ? String(v) : v.toFixed(1);
-      const leftDaysLabel = msg("liveDaysWithSpouse", { days: fmtDays(days1), spouse: leftName });
-      const rightDaysLabel = msg("liveDaysWithSpouse", { days: fmtDays(days2), spouse: rightName });
+      const daysSuffix = tr("langDaysSuffix");
 
       const leftProbe = new window.fabric.Text(leftName, {
         fontSize: sideBaseFont,
@@ -2200,24 +2200,31 @@ const defaultExpenseItems = [
         ? sideBaseFont
         : Math.max(10, Math.floor(sideBaseFont * sideLabelMaxW / rightProbe.width));
 
-      const leftDaysProbe = new window.fabric.Text(leftDaysLabel, {
-        fontSize: 10,
+      // Days count centered inside each colored half of the gradient bar (white text on teal/amber).
+      fc.add(new window.fabric.Text(fmtDays(days1) + " " + daysSuffix, {
+        left: trackLeft + trackWidth / 4,
+        top: centerY,
+        originX: "center",
+        originY: "center",
+        fontSize: 12,
+        fill: "#ffffff",
         fontFamily: sideFontFamily,
-        fontWeight: "700"
-      });
-      const leftDaysFont = leftDaysProbe.width <= sideLabelMaxW
-        ? 10
-        : Math.max(8, Math.floor(10 * sideLabelMaxW / leftDaysProbe.width));
-
-      const rightDaysProbe = new window.fabric.Text(rightDaysLabel, {
-        fontSize: 10,
+        fontWeight: "700",
+        shadow: "0 1px 3px rgba(0,0,0,0.35)"
+      }));
+      fc.add(new window.fabric.Text(fmtDays(days2) + " " + daysSuffix, {
+        left: trackLeft + (trackWidth * 3 / 4),
+        top: centerY,
+        originX: "center",
+        originY: "center",
+        fontSize: 12,
+        fill: "#ffffff",
         fontFamily: sideFontFamily,
-        fontWeight: "700"
-      });
-      const rightDaysFont = rightDaysProbe.width <= sideLabelMaxW
-        ? 10
-        : Math.max(8, Math.floor(10 * sideLabelMaxW / rightDaysProbe.width));
+        fontWeight: "700",
+        shadow: "0 1px 3px rgba(0,0,0,0.35)"
+      }));
 
+      // Name labels below bar.
       fc.add(new window.fabric.Text(leftName, {
         left: trackLeft,
         top: sideLabelTop,
@@ -2235,24 +2242,6 @@ const defaultExpenseItems = [
         fill: "#7c4b09",
         fontFamily: sideFontFamily,
         fontWeight: sideFontWeight
-      }));
-      fc.add(new window.fabric.Text(leftDaysLabel, {
-        left: trackLeft,
-        top: sideDaysTop,
-        originX: "left",
-        fontSize: leftDaysFont,
-        fill: "#2e6963",
-        fontFamily: sideFontFamily,
-        fontWeight: "700"
-      }));
-      fc.add(new window.fabric.Text(rightDaysLabel, {
-        left: trackLeft + trackWidth,
-        top: sideDaysTop,
-        originX: "right",
-        fontSize: rightDaysFont,
-        fill: "#8a5b1f",
-        fontFamily: sideFontFamily,
-        fontWeight: "700"
       }));
 
       fc.renderAll();
