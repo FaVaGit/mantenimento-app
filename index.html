@@ -1857,6 +1857,26 @@
       return null;
     }
 
+    async function findLegacyUserRecordAcrossGists(token, username, excludeGistId = "") {
+      const gists = await githubApiLegacyRequest("GET", "https://api.github.com/gists?per_page=100", token);
+      if (!Array.isArray(gists)) return null;
+
+      const skipId = String(excludeGistId || "").trim();
+      for (const gist of gists) {
+        try {
+          if (skipId && gist.id === skipId) continue;
+          const doc = await readLegacyGistDoc(token, gist.id);
+          const match = resolveLegacyUserAndProfile(doc, username);
+          if (match.userRecord && match.userRecord.salt && match.userRecord.verifier) {
+            return match.userRecord;
+          }
+        } catch (_) {
+          // Ignore unreadable gist and continue.
+        }
+      }
+      return null;
+    }
+
     async function migrateLegacyGistProfileForLoggedUser() {
       if (!authSession.username || !authSession.userId || !authSession.keyBits) {
         setAuthStatus("Effettua prima il login per importare i dati legacy.", true);
@@ -1885,12 +1905,20 @@
       try {
         const doc = await readLegacyGistDoc(token, gistId);
         const match = resolveLegacyUserAndProfile(doc, authSession.username);
-        const userRecord = match.userRecord;
+        let userRecord = match.userRecord;
         const payload = match.payload;
         if (!payload || !payload.iv || !payload.data) {
           const userKeys = Object.keys(doc.users || {}).slice(0, 8).join(", ");
           const profileKeys = Object.keys(doc.profiles || {}).slice(0, 8).join(", ");
           throw new Error(`Nessun dato legacy trovato nel formato atteso. Chiavi users: [${userKeys || "vuoto"}] - chiavi profiles: [${profileKeys || "vuoto"}]`);
+        }
+
+        if (!userRecord || !userRecord.salt || !userRecord.verifier) {
+          setAuthStatus("Metadati legacy mancanti nel Gist indicato: cerco salt/verifier in altri Gist del tuo account...");
+          const recoveredUserRecord = await findLegacyUserRecordAcrossGists(token, authSession.username, gistId);
+          if (recoveredUserRecord) {
+            userRecord = recoveredUserRecord;
+          }
         }
 
         const state = await decryptLegacyStateBestEffort(
