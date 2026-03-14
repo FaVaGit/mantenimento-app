@@ -1650,6 +1650,81 @@
       return null;
     }
 
+    function safeBase64ToBytes(value) {
+      try {
+        const bytes = base64ToBytes(value);
+        return bytes && bytes.length ? bytes : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function collectSaltTextCandidates(userRecord, rawProfile, doc, username) {
+      const out = [];
+      const seen = new Set();
+      const saltFields = ["salt", "keySalt", "kdfSalt", "pbkdf2Salt", "userSalt", "legacySalt"];
+
+      const push = (v) => {
+        const val = String(v || "").trim();
+        if (!val) return;
+        if (seen.has(val)) return;
+        seen.add(val);
+        out.push(val);
+      };
+
+      saltFields.forEach((f) => {
+        if (userRecord && typeof userRecord === "object") push(userRecord[f]);
+        if (rawProfile && typeof rawProfile === "object") push(rawProfile[f]);
+      });
+
+      const uname = normalizeUsername(username);
+      const objs = collectNestedObjects(doc, 7);
+      objs.forEach((obj) => {
+        if (!obj || typeof obj !== "object") return;
+        const embeddedUser = normalizeUsername(obj.username || obj.user || obj.login || obj.handle || "");
+        if (embeddedUser && embeddedUser !== uname) return;
+        saltFields.forEach((f) => push(obj[f]));
+      });
+
+      return out;
+    }
+
+    async function decryptLegacyStateBestEffort(cipherPayload, password, username, userRecord, rawProfile, doc) {
+      const strictSalt = userRecord && userRecord.salt ? safeBase64ToBytes(userRecord.salt) : null;
+      if (strictSalt && userRecord && userRecord.verifier) {
+        const strictKeyBits = await deriveKeyBits(password, strictSalt);
+        const strictVerifier = await sha256Bytes(strictKeyBits);
+        if (bytesToBase64(strictVerifier) !== userRecord.verifier) {
+          throw new Error("Password legacy non valida");
+        }
+        return decryptStateForKey(cipherPayload, strictKeyBits);
+      }
+
+      const saltTextCandidates = collectSaltTextCandidates(userRecord, rawProfile, doc, username);
+      const saltByteCandidates = saltTextCandidates
+        .map((v) => safeBase64ToBytes(v))
+        .filter((v) => !!v);
+
+      // Deterministic fallback candidates for old variants.
+      const enc = new TextEncoder();
+      saltByteCandidates.push(await sha256Bytes(enc.encode(`keylock:${normalizeUsername(username)}`)));
+      saltByteCandidates.push(await sha256Bytes(enc.encode(normalizeUsername(username))));
+
+      for (const saltBytes of saltByteCandidates) {
+        try {
+          const keyBits = await deriveKeyBits(password, saltBytes);
+          const state = await decryptStateForKey(cipherPayload, keyBits);
+          if (state && typeof state === "object") {
+            return state;
+          }
+        } catch (_) {
+          // Try next salt candidate.
+        }
+      }
+
+      throw new Error("Profilo legacy trovato ma non decifrabile con la password indicata (metadati salt/verifier assenti o formato differente)");
+    }
+
     function findLegacyMapMatchByUsername(mapObj, username) {
       if (!mapObj || typeof mapObj !== "object") return null;
       const uname = normalizeUsername(username);
@@ -1692,6 +1767,7 @@
       return {
         userRecord,
         payload: cipherPayload,
+        rawProfile: payload,
         userKey: userMatch ? userMatch.key : "",
         profileKey: profileMatch ? profileMatch.key : ""
       };
@@ -1750,20 +1826,20 @@
         const match = resolveLegacyUserAndProfile(doc, authSession.username);
         const userRecord = match.userRecord;
         const payload = match.payload;
-        if (!userRecord || !payload || !payload.iv || !payload.data) {
+        if (!payload || !payload.iv || !payload.data) {
           const userKeys = Object.keys(doc.users || {}).slice(0, 8).join(", ");
           const profileKeys = Object.keys(doc.profiles || {}).slice(0, 8).join(", ");
           throw new Error(`Nessun dato legacy trovato nel formato atteso. Chiavi users: [${userKeys || "vuoto"}] - chiavi profiles: [${profileKeys || "vuoto"}]`);
         }
 
-        const oldSalt = base64ToBytes(userRecord.salt);
-        const oldKeyBits = await deriveKeyBits(legacyPassword, oldSalt);
-        const verifier = await sha256Bytes(oldKeyBits);
-        if (bytesToBase64(verifier) !== userRecord.verifier) {
-          throw new Error("Password legacy non valida");
-        }
-
-        const state = await decryptStateForKey(payload, oldKeyBits);
+        const state = await decryptLegacyStateBestEffort(
+          payload,
+          legacyPassword,
+          authSession.username,
+          userRecord,
+          match.rawProfile,
+          doc
+        );
         const reEncrypted = await encryptStateForKey(state, authSession.keyBits);
         const { error } = await upsertEncryptedScenarioForSession(reEncrypted);
         if (error) throw new Error(error.message);
