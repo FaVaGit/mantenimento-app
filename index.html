@@ -1166,8 +1166,65 @@
       return /^[a-z0-9._-]{3,40}$/.test(value);
     }
 
+    const PRIMARY_PSEUDO_EMAIL_DOMAIN = "keylock-auth.app";
+    const LEGACY_PSEUDO_EMAIL_DOMAINS = ["keylock.app", "keylock.local"];
+
+    function buildPseudoEmailCandidates(username) {
+      const base = normalizeUsername(username);
+      const domains = [PRIMARY_PSEUDO_EMAIL_DOMAIN, ...LEGACY_PSEUDO_EMAIL_DOMAINS]
+        .map((d) => String(d || "").trim().toLowerCase())
+        .filter((d, i, arr) => d && arr.indexOf(d) === i);
+      return domains.map((domain) => `${base}@${domain}`);
+    }
+
     function usernameToPseudoEmail(username) {
-      return `${normalizeUsername(username)}@keylock-auth.app`;
+      return buildPseudoEmailCandidates(username)[0];
+    }
+
+    function isRateLimitAuthMessage(msg) {
+      const m = String(msg || "").toLowerCase();
+      return m.includes("rate limit") || m.includes("too many requests") || m.includes("email rate");
+    }
+
+    function isInvalidCredentialAuthMessage(msg) {
+      return /invalid login credentials/i.test(String(msg || ""));
+    }
+
+    async function signInWithPseudoEmailCandidates(username, password) {
+      const emails = buildPseudoEmailCandidates(username);
+      let lastErrorMessage = "";
+      for (const email of emails) {
+        const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (!signInRes.error && signInRes.data && signInRes.data.user) {
+          return { ok: true, email, result: signInRes, lastErrorMessage };
+        }
+
+        lastErrorMessage = String((signInRes.error && signInRes.error.message) || "");
+        if (isRateLimitAuthMessage(lastErrorMessage)) {
+          return { ok: false, email: null, result: null, lastErrorMessage };
+        }
+      }
+
+      return { ok: false, email: null, result: null, lastErrorMessage };
+    }
+
+    async function completeAuthSession(username, password, user) {
+      authSession.username = username;
+      authSession.userId = user.id;
+      authSession.keyBits = await deriveSessionKeyBits(password, user.id);
+
+      let loginMsg = `Login effettuato come ${username}.`;
+      try {
+        const migrated = await migrateLegacyLocalProfileIfPresent(username, password);
+        if (migrated) {
+          loginMsg = "Login effettuato e profilo legacy locale migrato nel cloud.";
+        }
+      } catch (_) {
+        // Non bloccare il login in caso di legacy profile non valido.
+      }
+
+      updateAuthUi();
+      return loginMsg;
     }
 
     function bytesToBase64(bytes) {
@@ -1497,6 +1554,17 @@
         return;
       }
 
+      const preLogin = await signInWithPseudoEmailCandidates(username, password);
+      if (preLogin.ok) {
+        const loginMsg = await completeAuthSession(username, password, preLogin.result.data.user);
+        if (preLogin.email !== usernameToPseudoEmail(username)) {
+          setAuthStatus(`${loginMsg} Rilevato account legacy e autenticato automaticamente.`);
+        } else {
+          setAuthStatus(loginMsg);
+        }
+        return;
+      }
+
       const email = usernameToPseudoEmail(username);
       const signUpRes = await supabaseClient.auth.signUp({
         email,
@@ -1507,11 +1575,10 @@
       let signUpRateLimited = false;
 
       if (signUpRes.error) {
-        const signUpMsg = String(signUpRes.error.message || "").toLowerCase();
-        if (signUpMsg.includes("already") || signUpMsg.includes("registered")) {
-          // User already exists: continue with login flow.
-        } else if (signUpMsg.includes("rate limit") || signUpMsg.includes("email rate")) {
-          // Continue with login attempt: if user already exists this still works.
+        const signUpMsg = String(signUpRes.error.message || "");
+        if (/already|registered/i.test(signUpMsg)) {
+          // User already exists with primary pseudo email: continue with login flow.
+        } else if (isRateLimitAuthMessage(signUpMsg)) {
           signUpRateLimited = true;
         } else {
           setAuthStatus(`Registrazione fallita: ${signUpRes.error.message}`, true);
@@ -1519,36 +1586,26 @@
         }
       }
 
-      const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (signInRes.error || !signInRes.data.user) {
-        if (signUpRateLimited) {
-          setAuthStatus("Rate limit Supabase sulla registrazione: se l'utente esiste usa Login; se e nuovo attendi qualche minuto e riprova Registrati.", true);
+      const postLogin = await signInWithPseudoEmailCandidates(username, password);
+      if (!postLogin.ok) {
+        if (signUpRateLimited || isRateLimitAuthMessage(postLogin.lastErrorMessage)) {
+          setAuthStatus("Rate limit Supabase su registrazione/login. Se l'utente esiste, attendi 1-2 minuti e riprova Login. Se e nuovo, attendi e riprova Registrati.", true);
           return;
         }
+
+        if (isInvalidCredentialAuthMessage(postLogin.lastErrorMessage)) {
+          setAuthStatus("Registrazione non completata o credenziali non corrette. Riprova Login e, se necessario, usa Recupero legacy dopo l'accesso.", true);
+          return;
+        }
+
         setAuthStatus("Registrazione eseguita ma login non completato. In Supabase disattiva la conferma email per usare KeyLock con solo utente/password.", true);
         return;
       }
 
-      authSession.username = username;
-      authSession.userId = signInRes.data.user.id;
-      authSession.keyBits = await deriveSessionKeyBits(password, signInRes.data.user.id);
-
-      let loginMsg = `Utente ${username} registrato e login effettuato.`;
-      try {
-        const migrated = await migrateLegacyLocalProfileIfPresent(username, password);
-        if (migrated) {
-          loginMsg = "Utente registrato e profilo legacy locale migrato nel cloud.";
-        }
-      } catch (_) {
-        // Non bloccare il login in caso di legacy profile non valido.
-      }
-
-      updateAuthUi();
-      if (signUpRateLimited) {
-        setAuthStatus(`Rate limit registrazione rilevato, ma login effettuato come ${username}.`);
-      } else {
-        setAuthStatus(loginMsg);
-      }
+      const loginMsg = await completeAuthSession(username, password, postLogin.result.data.user);
+      setAuthStatus(signUpRateLimited
+        ? `Rate limit registrazione rilevato, ma accesso effettuato: ${loginMsg}`
+        : `Utente ${username} registrato e login effettuato.`);
     }
 
     async function loginKeyLockUser() {
@@ -1561,35 +1618,27 @@
         return;
       }
 
-      const email = usernameToPseudoEmail(username);
-      const signInRes = await supabaseClient.auth.signInWithPassword({ email, password });
-
-      if (signInRes.error || !signInRes.data.user) {
-        const loginMsg = String((signInRes.error && signInRes.error.message) || "");
-        if (/invalid login credentials/i.test(loginMsg)) {
-          setAuthStatus("Login fallito: credenziali non valide oppure utente non ancora registrato nel nuovo cloud. Usa prima 'Registrati' con le stesse credenziali, poi 'Recupero legacy'.", true);
+      const signIn = await signInWithPseudoEmailCandidates(username, password);
+      if (!signIn.ok) {
+        const loginMsg = String(signIn.lastErrorMessage || "");
+        if (isRateLimitAuthMessage(loginMsg)) {
+          setAuthStatus("Troppi tentativi ravvicinati. Attendi 1-2 minuti e riprova il Login.", true);
+          return;
+        }
+        if (isInvalidCredentialAuthMessage(loginMsg)) {
+          setAuthStatus("Login fallito: credenziali non valide o utente non presente nel nuovo cloud. Usa Registrati solo se l'utente non e mai stato creato su Supabase.", true);
           return;
         }
         setAuthStatus(`Login fallito: ${loginMsg || "utente non trovato"}`, true);
         return;
       }
 
-      authSession.username = username;
-      authSession.userId = signInRes.data.user.id;
-      authSession.keyBits = await deriveSessionKeyBits(password, signInRes.data.user.id);
-
-      let loginMsg = `Login effettuato come ${username}.`;
-      try {
-        const migrated = await migrateLegacyLocalProfileIfPresent(username, password);
-        if (migrated) {
-          loginMsg = "Login effettuato e profilo legacy locale migrato nel cloud.";
-        }
-      } catch (_) {
-        // Non bloccare il login in caso di legacy profile non valido.
+      const loginMsg = await completeAuthSession(username, password, signIn.result.data.user);
+      if (signIn.email !== usernameToPseudoEmail(username)) {
+        setAuthStatus(`${loginMsg} Accesso effettuato tramite alias legacy.`);
+      } else {
+        setAuthStatus(loginMsg);
       }
-
-      updateAuthUi();
-      setAuthStatus(loginMsg);
     }
 
     async function logoutKeyLockUser() {
