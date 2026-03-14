@@ -1548,31 +1548,106 @@
       return merged;
     }
 
+    function parseMaybeJsonObject(value) {
+      if (!value) return null;
+      if (typeof value === "object") return value;
+      if (typeof value !== "string") return null;
+      try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === "object" ? parsed : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function collectNestedObjects(root, maxDepth = 6) {
+      const out = [];
+      const seen = new WeakSet();
+
+      function walk(node, depth) {
+        if (!node || typeof node !== "object") return;
+        if (seen.has(node)) return;
+        seen.add(node);
+        out.push(node);
+        if (depth >= maxDepth) return;
+
+        if (Array.isArray(node)) {
+          node.forEach((item) => walk(item, depth + 1));
+          return;
+        }
+
+        Object.values(node).forEach((v) => {
+          const parsed = parseMaybeJsonObject(v);
+          if (parsed) {
+            walk(parsed, depth + 1);
+          }
+        });
+      }
+
+      walk(root, 0);
+      return out;
+    }
+
     function normalizeLegacyCipherPayload(rawPayload) {
-      if (!rawPayload || typeof rawPayload !== "object") return null;
-      if (rawPayload.iv && rawPayload.data) {
-        return { iv: rawPayload.iv, data: rawPayload.data };
-      }
-      if (rawPayload.cipher && rawPayload.cipher.iv && rawPayload.cipher.data) {
-        return { iv: rawPayload.cipher.iv, data: rawPayload.cipher.data };
-      }
-      if (rawPayload.scenario_cipher && rawPayload.scenario_cipher.iv && rawPayload.scenario_cipher.data) {
-        return { iv: rawPayload.scenario_cipher.iv, data: rawPayload.scenario_cipher.data };
+      const candidates = collectNestedObjects(parseMaybeJsonObject(rawPayload));
+      for (const c of candidates) {
+        if (c && c.iv && c.data) {
+          return { iv: c.iv, data: c.data };
+        }
+        if (c && c.cipher && c.cipher.iv && c.cipher.data) {
+          return { iv: c.cipher.iv, data: c.cipher.data };
+        }
+        if (c && c.scenario_cipher && c.scenario_cipher.iv && c.scenario_cipher.data) {
+          return { iv: c.scenario_cipher.iv, data: c.scenario_cipher.data };
+        }
+        if (c && c.encrypted && c.encrypted.iv && c.encrypted.data) {
+          return { iv: c.encrypted.iv, data: c.encrypted.data };
+        }
+        if (c && c.cipherIv && c.cipherData) {
+          return { iv: c.cipherIv, data: c.cipherData };
+        }
       }
       return null;
     }
 
-    function extractLegacyUserRecord(userRecord, payload) {
+    function extractLegacyUserRecord(userRecord, payload, doc, username) {
       const out = userRecord && typeof userRecord === "object" ? { ...userRecord } : {};
       const src = payload && typeof payload === "object" ? payload : {};
+      const uname = normalizeUsername(username);
 
       if (!out.salt && src.salt) out.salt = src.salt;
       if (!out.verifier && src.verifier) out.verifier = src.verifier;
       if (!out.salt && src.keySalt) out.salt = src.keySalt;
       if (!out.verifier && src.keyVerifier) out.verifier = src.keyVerifier;
 
+      if ((!out.salt || !out.verifier) && doc) {
+        const objs = collectNestedObjects(doc, 7);
+        for (const obj of objs) {
+          if (!obj || typeof obj !== "object") continue;
+          const embeddedUser = normalizeUsername(obj.username || obj.user || obj.login || obj.handle || "");
+          const sameUserOrUnknown = !embeddedUser || embeddedUser === uname;
+          if (!sameUserOrUnknown) continue;
+
+          if (!out.salt && (obj.salt || obj.keySalt)) out.salt = obj.salt || obj.keySalt;
+          if (!out.verifier && (obj.verifier || obj.keyVerifier)) out.verifier = obj.verifier || obj.keyVerifier;
+          if (out.salt && out.verifier) break;
+        }
+      }
+
       if (!out.salt || !out.verifier) return null;
       return out;
+    }
+
+    function findFallbackLegacyPayload(doc, username) {
+      const uname = normalizeUsername(username);
+      const objs = collectNestedObjects(doc, 7);
+      for (const obj of objs) {
+        const embeddedUser = normalizeUsername((obj && (obj.username || obj.user || obj.login || obj.handle)) || "");
+        if (embeddedUser && embeddedUser !== uname) continue;
+        const payload = normalizeLegacyCipherPayload(obj);
+        if (payload) return payload;
+      }
+      return null;
     }
 
     function findLegacyMapMatchByUsername(mapObj, username) {
@@ -1611,8 +1686,8 @@
         userRecord = doc.users[profileMatch.key];
       }
 
-      userRecord = extractLegacyUserRecord(userRecord, payload);
-      const cipherPayload = normalizeLegacyCipherPayload(payload);
+      const cipherPayload = normalizeLegacyCipherPayload(payload) || findFallbackLegacyPayload(doc, username);
+      userRecord = extractLegacyUserRecord(userRecord, payload, doc, username);
 
       return {
         userRecord,
