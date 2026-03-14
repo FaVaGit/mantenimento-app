@@ -3174,7 +3174,13 @@
     });
 
     document.getElementById("suggestedExpenseSelect").addEventListener("change", (e) => {
-      const idx = Number(e.target.value);
+      const raw = String(e.target.value || "").trim();
+      if (raw === "") {
+        document.getElementById("customExpenseLabel").value = "";
+        document.getElementById("customExpenseHelp").value = "";
+        return;
+      }
+      const idx = Number(raw);
       if (!Number.isInteger(idx) || idx < 0 || idx >= suggestedExpenseCatalog.length) {
         document.getElementById("customExpenseLabel").value = "";
         document.getElementById("customExpenseHelp").value = "";
