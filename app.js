@@ -1155,20 +1155,36 @@ const defaultExpenseItems = [
 
     function initCoffeeDonationPicker() {
       const heroCoffeeBtn = document.querySelector(".btn-coffee-hero");
+      const heroDonateWrap = document.querySelector(".hero-donate");
+      const heroDonateMenu = document.querySelector(".hero-donate-menu");
       const coffeeFloat = document.querySelector(".coffee-float");
       const floatBtn = document.querySelector(".coffee-float-btn");
       const floatCard = document.querySelector(".coffee-float-card");
       const donateBanner = document.querySelector(".donate-banner");
       if (!heroCoffeeBtn || !coffeeFloat || !floatBtn || !floatCard) return;
 
+      function setHeroDonateOpen(open) {
+        if (!heroDonateWrap) return;
+        heroDonateWrap.classList.toggle("is-open", !!open);
+        heroCoffeeBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
       floatBtn.setAttribute("aria-haspopup", "true");
       floatBtn.setAttribute("aria-expanded", "false");
+      heroCoffeeBtn.setAttribute("aria-haspopup", "true");
+      heroCoffeeBtn.setAttribute("aria-expanded", "false");
 
       heroCoffeeBtn.addEventListener("click", (e) => {
-        // Keep the href as no-JS fallback, but open the local payment chooser when JS is active.
         e.preventDefault();
-        setCoffeePickerOpen(true);
+        const willOpen = !(heroDonateWrap && heroDonateWrap.classList.contains("is-open"));
+        setHeroDonateOpen(willOpen);
       });
+
+      if (heroDonateMenu) {
+        heroDonateMenu.addEventListener("click", (e) => {
+          if (e.target && e.target.closest("a")) setHeroDonateOpen(false);
+        });
+      }
 
       if (donateBanner) {
         donateBanner.addEventListener("click", (e) => {
@@ -1198,12 +1214,16 @@ const defaultExpenseItems = [
       });
 
       document.addEventListener("click", (e) => {
-        if (e.target.closest(".coffee-float") || e.target.closest(".btn-coffee-hero")) return;
+        if (e.target.closest(".coffee-float") || e.target.closest(".hero-donate")) return;
+        setHeroDonateOpen(false);
         setCoffeePickerOpen(false);
       });
 
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") setCoffeePickerOpen(false);
+        if (e.key === "Escape") {
+          setHeroDonateOpen(false);
+          setCoffeePickerOpen(false);
+        }
       });
     }
 
@@ -1893,6 +1913,13 @@ const defaultExpenseItems = [
       const shift = (diffDisp / totalAbs) * (radius * 1.5);
       const pointerX = Math.max(centerX - radius * 1.6, Math.min(centerX + radius * 1.6, centerX + shift));
 
+      const grad = (x1, y1, x2, y2, stops) => new window.fabric.Gradient({
+        type: "linear",
+        gradientUnits: "pixels",
+        coords: { x1, y1, x2, y2 },
+        colorStops: stops
+      });
+
       fc.add(new window.fabric.Rect({
         left: 8,
         top: 8,
@@ -1927,10 +1954,10 @@ const defaultExpenseItems = [
 
       function addOutcomeFigure(left, top, spouseId, role) {
         const palette = role === "winner"
-          ? { bg: "#ddf2ec", stroke: "#9ccfc2", ink: "#0d625a" }
+          ? { bgA: "#ecfff9", bgB: "#9bd9cb", stroke: "#8ec9bb", ink: "#0d625a" }
           : role === "loser"
-            ? { bg: "#f8ecd9", stroke: "#dfbf8f", ink: "#8a580f" }
-            : { bg: "#eaf2f0", stroke: "#bfd2cd", ink: "#3d5c59" };
+            ? { bgA: "#fff8e8", bgB: "#f2be75", stroke: "#e3b677", ink: "#8a580f" }
+            : { bgA: "#f6faf9", bgB: "#c5dbd6", stroke: "#bfd2cd", ink: "#3d5c59" };
 
         const scale = figRadius / 38;
 
@@ -1938,7 +1965,10 @@ const defaultExpenseItems = [
           left,
           top,
           radius: figRadius,
-          fill: palette.bg,
+          fill: grad(left, top, left, top + (figRadius * 2), [
+            { offset: 0, color: palette.bgA },
+            { offset: 1, color: palette.bgB }
+          ]),
           stroke: palette.stroke,
           strokeWidth: 1.5,
           shadow: "0 2px 6px rgba(0,0,0,0.10)"
@@ -1993,63 +2023,51 @@ const defaultExpenseItems = [
 
       }
 
-      const reservedForFigures = (figDiameter * 2) + (figMargin * 2) + 16;
-      const badgeAvailableW = Math.max(120, Math.min(w - 20, w - reservedForFigures));
-      const badgeW = Math.min(520, badgeAvailableW);
-      const badgeX = (w - badgeW) / 2;
-      const badgeText = `${statusText} | ${tr("pdfDelta")} ${eur(absDiffDisp)}`;
-      const badgeMaxFontSize = isNarrow ? 16 : (w < 560 ? 24 : 28);
-      const badgeMinFontSize = isNarrow ? 12 : 10;
-      const badgeInnerW = badgeW - 36;
-      const badgeBaseHeight = isNarrow ? 46 : (w < 560 ? 56 : 62);
-
-      // Allow multiline on narrow screens: shrink font only if needed, then grow badge height if text still wraps.
-      let badgeFontSize = badgeMaxFontSize;
-      let badgeProbe = new window.fabric.Textbox(badgeText, {
-        width: badgeInnerW,
-        fontSize: badgeFontSize,
-        fontFamily: "Candara",
-        fontWeight: "700",
-        textAlign: "center",
-        lineHeight: 1.05
-      });
-      while (badgeProbe.height > (badgeBaseHeight - 10) && badgeFontSize > badgeMinFontSize) {
-        badgeFontSize -= 1;
-        badgeProbe = new window.fabric.Textbox(badgeText, {
-          width: badgeInnerW,
-          fontSize: badgeFontSize,
-          fontFamily: "Candara",
-          fontWeight: "700",
-          textAlign: "center",
-          lineHeight: 1.05
-        });
-      }
+      const badgeDiameter = isNarrow ? 96 : Math.max(98, Math.min(122, Math.round(w * 0.22)));
+      const badgeRadius = badgeDiameter / 2;
+      const badgeCenterY = isNarrow ? 60 : 58;
+      const badgeInnerW = badgeDiameter - 18;
+      const badgeLine1 = statusText;
+      const badgeLine2 = `${tr("pdfDelta")} ${eur(absDiffDisp)}`;
 
       addOutcomeFigure(figMargin, figTop, 1, roleForSpouse(1));
       addOutcomeFigure(w - figMargin - figDiameter, figTop, 2, roleForSpouse(2));
-      const badgeHeight = Math.max(badgeBaseHeight, Math.ceil(badgeProbe.height) + 10);
-      fc.add(new window.fabric.Rect({
-        left: badgeX,
-        top: 18,
-        width: badgeW,
-        height: badgeHeight,
-        rx: 20,
-        ry: 20,
-        fill: "#ffffff",
-        stroke: diffDisp === 0 ? "#98b8b3" : (diffDisp > 0 ? "#8ec3b9" : "#d9b47e"),
-        strokeWidth: 1
+      fc.add(new window.fabric.Circle({
+        left: centerX - badgeRadius,
+        top: badgeCenterY - badgeRadius,
+        radius: badgeRadius,
+        fill: diffDisp === 0
+          ? grad(centerX - badgeRadius, badgeCenterY - badgeRadius, centerX - badgeRadius, badgeCenterY + badgeRadius, [{ offset: 0, color: "#ffffff" }, { offset: 1, color: "#d6ebe6" }])
+          : (diffDisp > 0
+              ? grad(centerX - badgeRadius, badgeCenterY - badgeRadius, centerX - badgeRadius, badgeCenterY + badgeRadius, [{ offset: 0, color: "#f4fffc" }, { offset: 1, color: "#a9ddd2" }])
+              : grad(centerX - badgeRadius, badgeCenterY - badgeRadius, centerX - badgeRadius, badgeCenterY + badgeRadius, [{ offset: 0, color: "#fffaf0" }, { offset: 1, color: "#f1cd93" }])
+            ),
+        stroke: diffDisp === 0 ? "#98b8b3" : (diffDisp > 0 ? "#7bbdb0" : "#d4a864"),
+        strokeWidth: 1.5,
+        shadow: "0 4px 10px rgba(0,0,0,0.12)"
       }));
-      fc.add(new window.fabric.Textbox(badgeText, {
-        left: badgeX + badgeW / 2,
-        top: 18 + (badgeHeight - badgeProbe.height) / 2,
+      fc.add(new window.fabric.Textbox(badgeLine1, {
+        left: centerX,
+        top: badgeCenterY - 21,
         width: badgeInnerW,
         originX: "center",
         textAlign: "center",
         lineHeight: 1.05,
-        fontSize: badgeFontSize,
+        fontSize: isNarrow ? 10 : 11,
         fill: diffDisp === 0 ? "#355a57" : (diffDisp > 0 ? "#0e655f" : "#85520c"),
         fontFamily: "Candara",
         fontWeight: "700"
+      }));
+      fc.add(new window.fabric.Textbox(badgeLine2, {
+        left: centerX,
+        top: badgeCenterY + 7,
+        width: badgeInnerW,
+        originX: "center",
+        textAlign: "center",
+        fontSize: isNarrow ? 10 : 12,
+        fill: diffDisp === 0 ? "#2f5551" : (diffDisp > 0 ? "#0f5c56" : "#7a4b0b"),
+        fontFamily: "Candara",
+        fontWeight: "800"
       }));
 
       const trackLeft = 26;
@@ -2072,7 +2090,10 @@ const defaultExpenseItems = [
         height: 18,
         rx: 9,
         ry: 9,
-        fill: "#bfe3da"
+        fill: grad(trackLeft, centerY - 9, trackLeft + (trackWidth / 2), centerY + 9, [
+          { offset: 0, color: "#bfe9df" },
+          { offset: 1, color: "#6ec0b0" }
+        ])
       }));
       fc.add(new window.fabric.Rect({
         left: centerX,
@@ -2081,7 +2102,10 @@ const defaultExpenseItems = [
         height: 18,
         rx: 9,
         ry: 9,
-        fill: "#efd7b0"
+        fill: grad(centerX, centerY - 9, centerX + (trackWidth / 2), centerY + 9, [
+          { offset: 0, color: "#f2d8ab" },
+          { offset: 1, color: "#deaa59" }
+        ])
       }));
 
       fc.add(new window.fabric.Rect({
@@ -2104,7 +2128,9 @@ const defaultExpenseItems = [
         left: pointerX - 12,
         top: centerY - 12,
         radius: 12,
-        fill: diffDisp >= 0 ? "#0b6e66" : "#c77a11",
+        fill: diffDisp >= 0
+          ? grad(pointerX - 12, centerY - 12, pointerX - 12, centerY + 12, [{ offset: 0, color: "#1a8f85" }, { offset: 1, color: "#0b6e66" }])
+          : grad(pointerX - 12, centerY - 12, pointerX - 12, centerY + 12, [{ offset: 0, color: "#e39b35" }, { offset: 1, color: "#c77a11" }]),
         stroke: "#ffffff",
         strokeWidth: 3,
         shadow: "0 2px 7px rgba(0,0,0,0.24)"

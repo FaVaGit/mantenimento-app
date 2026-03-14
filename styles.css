@@ -137,6 +137,12 @@
     }
 
     /* ── COFFEE BUTTON (hero) ── */
+    .hero-donate {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
     .btn-coffee-hero {
       display: inline-flex;
       align-items: center;
@@ -159,6 +165,33 @@
       background: linear-gradient(135deg, #fff3cc, #ffd966);
       transform: translateY(-1px);
       box-shadow: 0 3px 10px rgba(180,120,0,0.22);
+    }
+
+    .hero-donate-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 42;
+      display: none;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid #f0c36d;
+      background: linear-gradient(135deg, #fff8ee 0%, #fff3e0 100%);
+      box-shadow: 0 8px 20px rgba(120, 70, 8, 0.18);
+    }
+
+    .hero-donate:hover .hero-donate-menu,
+    .hero-donate.is-open .hero-donate-menu {
+      display: inline-flex;
+    }
+
+    .hero-donate-menu .btn-donate {
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      line-height: 1;
     }
 
     /* ── FLOATING COFFEE ── */
@@ -1268,10 +1301,10 @@
       justify-content: space-between;
       gap: 14px;
       flex-wrap: wrap;
+    }
 
     .donate-banner[role="button"] {
       cursor: pointer;
-    }
     }
 
     .donate-text {
@@ -1496,7 +1529,13 @@
       /* donate + coffee responsive */
       .donate-banner { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 14px; }
       .donate-buttons { width: 100%; justify-content: center; }
+      .hero-donate { width: 100%; justify-content: center; }
       .btn-coffee-hero { font-size: 0.78rem; padding: 6px 10px; justify-content: center; }
+      .hero-donate-menu {
+        right: 50%;
+        transform: translateX(50%);
+        top: calc(100% + 6px);
+      }
       .coffee-float { bottom: 12px; right: 12px; }
       .coffee-float-card { width: min(200px, calc(100vw - 32px)); }
       .coffee-float-btn { width: 42px; height: 42px; font-size: 1.3rem; }
