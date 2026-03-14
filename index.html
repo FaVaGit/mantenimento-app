@@ -211,6 +211,11 @@
       border-color: var(--brand);
     }
 
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--brand);
+    }
+
     input[readonly] {
       background: #eef2ee;
       color: #455a57;
@@ -758,6 +763,8 @@
     }
 
     @media (max-width: 640px) {
+      .wrap { margin: 12px auto; padding: 0 8px 14px; }
+      .content { padding: 10px; }
       .live-columns { grid-template-columns: 1fr; }
       .shared-grid { grid-template-columns: 1fr; }
       .spouse-grid { grid-template-columns: 1fr; }
@@ -773,7 +780,22 @@
       }
       .spese-table th:first-child,
       .spese-table td:first-child { width: 42%; }
-      .spese-table input { min-width: 90px; }
+      .spese-table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+      }
+      .spese-table input { min-width: 74px; }
+      .spese-input-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+      .spese-partial { font-size: 0.64rem; }
+      .legal-footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
 
     @media print {
@@ -897,9 +919,15 @@
             </div>
             <div class="field">
               <label for="perm2" class="label-row">Permanenza figli presso Coniuge 2 (%)
-                <span class="hint" title="Si aggiorna automaticamente a 100 - permanenza Coniuge 1.">i</span>
+                <span class="hint" title="La somma con Coniuge 1 viene sempre mantenuta a 100%.">i</span>
               </label>
-              <input id="perm2" type="number" min="0" max="100" step="1" value="60" readonly />
+              <input id="perm2" type="number" min="0" max="100" step="1" value="60" />
+            </div>
+            <div class="field">
+              <label for="permSlider" class="label-row">Slider permanenza (Coniuge 1)
+                <span class="hint" title="Trascina per regolare la permanenza: il valore del Coniuge 2 si adatta automaticamente.">i</span>
+              </label>
+              <input id="permSlider" type="range" min="0" max="100" step="1" value="40" />
             </div>
           </div>
 
@@ -1301,10 +1329,19 @@
       return data;
     }
 
+    function normalizeCloudDoc(doc) {
+      let out = doc;
+      if (!out || typeof out !== "object") out = { version: 2, users: {}, profiles: {} };
+      if (!out.users || typeof out.users !== "object") out.users = {};
+      if (!out.profiles || typeof out.profiles !== "object") out.profiles = {};
+      if (!out.version) out.version = 2;
+      return out;
+    }
+
     async function readGistCacheDoc(token, gistId) {
       const gist = await githubApiRequest("GET", `https://api.github.com/gists/${gistId}`, token);
       const file = gist.files && (gist.files[KEYLOCK_GIST_FILENAME] || Object.values(gist.files)[0]);
-      if (!file) return { gistId: gist.id, doc: { version: 1, profiles: {} } };
+      if (!file) return { gistId: gist.id, doc: normalizeCloudDoc(null) };
       let content = file.content || "";
       if (file.truncated && file.raw_url) {
         const rawRes = await fetch(file.raw_url);
@@ -1314,11 +1351,9 @@
       try {
         doc = JSON.parse(content || "{}");
       } catch (_) {
-        doc = { version: 1, profiles: {} };
+        doc = normalizeCloudDoc(null);
       }
-      if (!doc || typeof doc !== "object") doc = { version: 1, profiles: {} };
-      if (!doc.profiles || typeof doc.profiles !== "object") doc.profiles = {};
-      return { gistId: gist.id, doc };
+      return { gistId: gist.id, doc: normalizeCloudDoc(doc) };
     }
 
     async function ensureGistCacheDoc(token, gistId) {
@@ -1326,7 +1361,7 @@
       if (cleanId) {
         return readGistCacheDoc(token, cleanId);
       }
-      const initial = { version: 1, profiles: {} };
+      const initial = normalizeCloudDoc(null);
       const created = await githubApiRequest("POST", "https://api.github.com/gists", token, {
         description: "KeyLock cloud cache - Calcolatore Mantenimento",
         public: false,
@@ -1365,6 +1400,21 @@
       setJsonStore(KEYLOCK_PROFILES_KEY, profiles);
     }
 
+    async function syncCloudUserRecord(username, userRecord) {
+      const token = text("cloudGithubToken");
+      if (!token) return { synced: false, reason: "missing-token" };
+
+      const { gistId, doc } = await ensureGistCacheDoc(token, text("cloudGistId"));
+      const existing = doc.users[username];
+      if (existing && existing.verifier !== userRecord.verifier) {
+        throw new Error("Utente gia presente su cloud con credenziali diverse");
+      }
+      doc.users[username] = userRecord;
+      await writeGistCacheDoc(token, gistId, doc);
+      document.getElementById("cloudGistId").value = gistId;
+      return { synced: true, gistId };
+    }
+
     async function registerKeyLockUser() {
       if (!(window.crypto && window.crypto.subtle)) {
         setAuthStatus("KeyLock non supportato da questo browser.", true);
@@ -1395,10 +1445,24 @@
       };
       setKeyLockUsers(users);
 
+      let registerStatus = `Utente ${username} registrato e login effettuato.`;
+      let registerIsError = false;
+
+      // Optional cloud sync: enables login from other devices/browsers.
+      try {
+        const cloud = await syncCloudUserRecord(username, users[username]);
+        if (cloud.synced) {
+          registerStatus = `Utente ${username} registrato e sincronizzato su cloud (Gist ${cloud.gistId}).`;
+        }
+      } catch (err) {
+        registerStatus = `Utente registrato in locale, sync cloud non riuscita: ${err.message}`;
+        registerIsError = true;
+      }
+
       authSession.username = username;
       authSession.keyBits = keyBits;
       updateAuthUi();
-      setAuthStatus(`Utente ${username} registrato e login effettuato.`);
+      setAuthStatus(registerStatus, registerIsError);
     }
 
     async function loginKeyLockUser() {
@@ -1409,10 +1473,29 @@
       const username = normalizeUsername(text("keylockUser"));
       const password = text("keylockPass");
       const users = getKeyLockUsers();
-      const user = users[username];
+      let user = users[username];
+      let userFromCloud = false;
 
       if (!user) {
-        setAuthStatus("Utente non registrato su questo browser.", true);
+        const token = text("cloudGithubToken");
+        const gistId = text("cloudGistId");
+        if (token && gistId) {
+          try {
+            const { doc } = await readGistCacheDoc(token, gistId);
+            if (doc.users[username]) {
+              user = doc.users[username];
+              users[username] = user;
+              setKeyLockUsers(users);
+              userFromCloud = true;
+            }
+          } catch (_) {
+            // Fallback to local-only error below.
+          }
+        }
+      }
+
+      if (!user) {
+        setAuthStatus("Utente non trovato. Per accesso da altro dispositivo, inserisci Token GitHub e Gist ID.", true);
         return;
       }
 
@@ -1427,7 +1510,9 @@
       authSession.username = username;
       authSession.keyBits = keyBits;
       updateAuthUi();
-      setAuthStatus(`Login effettuato come ${username}.`);
+      setAuthStatus(userFromCloud
+        ? `Login effettuato come ${username} (utente recuperato da cloud).`
+        : `Login effettuato come ${username}.`);
     }
 
     function logoutKeyLockUser() {
@@ -1571,11 +1656,23 @@
       });
     }
 
-    function syncPermanenza() {
-      const p1 = Math.min(100, Math.max(0, num("perm1")));
-      const p2 = 100 - p1;
+    function syncPermanenza(source = "perm1") {
+      let p1 = Math.min(100, Math.max(0, num("perm1")));
+      let p2 = Math.min(100, Math.max(0, num("perm2")));
+
+      if (source === "perm2") {
+        p1 = 100 - p2;
+      } else if (source === "slider") {
+        p1 = Math.min(100, Math.max(0, num("permSlider")));
+      }
+
+      p1 = Math.round(p1);
+      p2 = 100 - p1;
+
       document.getElementById("perm1").value = p1;
       document.getElementById("perm2").value = p2;
+      const slider = document.getElementById("permSlider");
+      if (slider) slider.value = p1;
     }
 
     function sumSpese(prefix) {
@@ -2027,9 +2124,17 @@
     });
 
     document.addEventListener("input", (e) => {
+      if (e.target && e.target.id === "permSlider") {
+        syncPermanenza("slider");
+        renderAll();
+        return;
+      }
+
       if (e.target && e.target.matches("input[type='number']")) {
         if (e.target.id === "perm1") {
-          syncPermanenza();
+          syncPermanenza("perm1");
+        } else if (e.target.id === "perm2") {
+          syncPermanenza("perm2");
         }
         renderAll();
       }
