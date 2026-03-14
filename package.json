@@ -10,6 +10,7 @@
     "start": "npm run build:frontend && node backend/server.js"
   },
   "dependencies": {
+    "dotenv": "^17.3.1",
     "express": "^4.21.2"
   },
   "devDependencies": {

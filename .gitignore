@@ -3,6 +3,7 @@ desktop.ini
 .DS_Store
 .env
 .env.*
+!.env.example
 node_modules/
 npm-debug.log*
 frontend/public/app.min.js
