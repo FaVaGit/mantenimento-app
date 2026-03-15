@@ -272,25 +272,27 @@
                 </div>
                 <input id="perm2" type="number" min="0" max="100" step="1" value="60" aria-label="Permanenza figli presso Coniuge 2 (%)" />
               </div>
-              <div class="perm-calendar" id="permCalendarWrap">
-                <div class="perm-calendar-head">
-                  <div>
-                    <div class="perm-calendar-title" id="permCalendarTitle">Calendario permanenza reale</div>
-                    <div class="perm-calendar-note" id="permCalendarNote">Assegna ogni giorno al coniuge con cui il minore pernotta: la percentuale si aggiorna automaticamente.</div>
+              <details class="perm-calendar" id="permCalendarDetails" open>
+                <summary class="perm-calendar-title"><span id="permCalendarTitle">Calendario permanenza reale</span></summary>
+                <div class="perm-calendar-content" id="permCalendarWrap">
+                  <div class="perm-calendar-head">
+                    <div>
+                      <div class="perm-calendar-note" id="permCalendarNote">Assegna ogni giorno al coniuge con cui il minore pernotta: la percentuale si aggiorna automaticamente.</div>
+                    </div>
+                    <div class="perm-calendar-actions">
+                      <label for="permCalendarMonth" id="permCalendarMonthLabel">Mese</label>
+                      <input id="permCalendarMonth" type="month" />
+                      <button class="btn-secondary" type="button" id="btnPermCalendarReset">Reset mese</button>
+                    </div>
                   </div>
-                  <div class="perm-calendar-actions">
-                    <label for="permCalendarMonth" id="permCalendarMonthLabel">Mese</label>
-                    <input id="permCalendarMonth" type="month" />
-                    <button class="btn-secondary" type="button" id="btnPermCalendarReset">Reset mese</button>
+                  <div class="perm-calendar-legend">
+                    <span class="legend-pill legend-pill-c1" id="permLegendC1">Coniuge 1</span>
+                    <span class="legend-pill legend-pill-c2" id="permLegendC2">Coniuge 2</span>
                   </div>
+                  <div class="perm-calendar-grid" id="permCalendarGrid" role="grid" aria-label="Calendario permanenza"></div>
+                  <div class="perm-calendar-summary" id="permCalendarSummary"></div>
                 </div>
-                <div class="perm-calendar-legend">
-                  <span class="legend-pill legend-pill-c1" id="permLegendC1">Coniuge 1</span>
-                  <span class="legend-pill legend-pill-c2" id="permLegendC2">Coniuge 2</span>
-                </div>
-                <div class="perm-calendar-grid" id="permCalendarGrid" role="grid" aria-label="Calendario permanenza"></div>
-                <div class="perm-calendar-summary" id="permCalendarSummary"></div>
-              </div>
+              </details>
             </div>
           </div>
 
@@ -446,7 +448,7 @@
 
           <div class="kpi" id="kpi"></div>
 
-          <details>
+          <details id="formulaDetails">
             <summary>Come viene calcolato</summary>
             <div class="note" id="formulaNote">
               1) Disponibilita netta per coniuge = reddito netto + assegni percepiti - assegni pagati - spese imputate.

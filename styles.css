@@ -647,7 +647,24 @@
       border: 1px solid #c8ddd8;
       border-radius: 12px;
       background: linear-gradient(180deg, #f8fcfb, #edf6f4);
-      padding: 10px;
+      padding: 8px 10px;
+    }
+
+    .perm-calendar > summary {
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .perm-calendar > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .perm-calendar[open] > summary {
+      margin-bottom: 8px;
+    }
+
+    .perm-calendar-content {
+      padding-top: 2px;
     }
 
     .perm-calendar-head {
