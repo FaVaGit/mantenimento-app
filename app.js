@@ -68,6 +68,14 @@ const defaultExpenseItems = [
         howCalc: "Come viene calcolato",
         orientative: "Questo strumento e solo orientativo e non sostituisce una valutazione legale/professionale del caso concreto.",
         authLogin: "Login",
+        authHead: "KeyLock Cloud",
+        authModeLogin: "Login",
+        authModeSignup: "Signup",
+        authEmailLabelSignup: "Email di registrazione",
+        authVerifyCodeLabel: "Codice verifica email",
+        authLoginBtn: "Login",
+        authSignupBtn: "Registrati",
+        authVerifyCodeBtn: "Verifica codice",
         modeGuidelinePrefix: "Riferimento modalita selezionata:",
         modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
         redditoAnnuale: "Reddito annuale netto",
@@ -102,6 +110,10 @@ const defaultExpenseItems = [
         authRegisterNoAutoLogin: "Registrazione eseguita ma login non completato. In Supabase disattiva la conferma email per usare KeyLock con solo utente/password.",
         authRegisterRateLimitedLoggedIn: "Rate limit registrazione rilevato, ma accesso effettuato: {loginMsg}",
         authRegisteredAndLogged: "Utente {username} registrato e login effettuato.",
+        authNeedSignupVerification: "Completa prima la registrazione in modalita Signup.",
+        authNeedVerificationCode: "Inserisci il codice di verifica ricevuto via email.",
+        authVerifyCodeFailed: "Verifica codice fallita: {message}",
+        authVerifyCodeSuccess: "Email verificata. Account attivato come {username}.",
         authInvalidUsername: "Nome utente non valido.",
         authNeedUserOrEmail: "Inserisci utente oppure email per il login.",
         authLoginRateLimit: "Troppi tentativi ravvicinati. Attendi 1-2 minuti e riprova il Login.",
@@ -302,6 +314,14 @@ const defaultExpenseItems = [
         howCalc: "How it is calculated",
         orientative: "This tool is indicative only and does not replace legal/professional assessment of the specific case.",
         authLogin: "KeyLock Login",
+        authHead: "KeyLock Cloud",
+        authModeLogin: "Login",
+        authModeSignup: "Signup",
+        authEmailLabelSignup: "Registration email",
+        authVerifyCodeLabel: "Email verification code",
+        authLoginBtn: "Login",
+        authSignupBtn: "Sign up",
+        authVerifyCodeBtn: "Verify code",
         modeGuidelinePrefix: "Selected mode reference:",
         modeGuidelineLink: "Genoa Court guidelines (PDF)",
         redditoAnnuale: "Annual net income",
@@ -336,6 +356,10 @@ const defaultExpenseItems = [
         authRegisterNoAutoLogin: "Registration completed but login not completed. Keep email confirmation enabled in Supabase and verify your email.",
         authRegisterRateLimitedLoggedIn: "Registration rate limit detected, but access completed: {loginMsg}",
         authRegisteredAndLogged: "User {username} registered and logged in.",
+        authNeedSignupVerification: "Complete signup mode registration first.",
+        authNeedVerificationCode: "Enter the verification code received by email.",
+        authVerifyCodeFailed: "Code verification failed: {message}",
+        authVerifyCodeSuccess: "Email verified. Account activated as {username}.",
         authInvalidUsername: "Invalid username.",
         authNeedUserOrEmail: "Enter username or email for login.",
         authLoginRateLimit: "Too many attempts. Wait 1-2 minutes and retry Login.",
@@ -534,6 +558,10 @@ const defaultExpenseItems = [
       username: null,
       userId: null,
       keyBits: null
+    };
+    const authUiState = {
+      mode: "login",
+      pendingVerification: null
     };
     const cloudProfileSession = {
       loaded: null,
@@ -845,6 +873,14 @@ const defaultExpenseItems = [
       const btnZoomIn = document.getElementById("btnZoomIn");
       const lblLang = document.getElementById("lblLang");
       const lblCurrency = document.getElementById("lblCurrency");
+      const authHead = document.getElementById("authHead");
+      const btnAuthModeLogin = document.getElementById("btnAuthModeLogin");
+      const btnAuthModeSignup = document.getElementById("btnAuthModeSignup");
+      const lblKeylockEmail = document.getElementById("lblKeylockEmail");
+      const lblKeylockEmailOtp = document.getElementById("lblKeylockEmailOtp");
+      const btnVerifyEmailCode = document.getElementById("btnVerifyEmailCode");
+      const btnLoginKeyLock = document.getElementById("btnLoginKeyLock");
+      const btnRegisterKeyLock = document.getElementById("btnRegisterKeyLock");
       const coffeeHero = document.querySelector(".btn-coffee-hero");
       const calcMode = document.getElementById("calcMode");
       const incomeMode = document.getElementById("incomeMode");
@@ -862,6 +898,14 @@ const defaultExpenseItems = [
       if (btnZoomReset) btnZoomReset.title = tr("btnZoomResetTitle");
       if (lblLang) lblLang.textContent = tr("lang");
       if (lblCurrency) lblCurrency.textContent = tr("currency");
+      if (authHead) authHead.textContent = tr("authHead");
+      if (btnAuthModeLogin) btnAuthModeLogin.textContent = tr("authModeLogin");
+      if (btnAuthModeSignup) btnAuthModeSignup.textContent = tr("authModeSignup");
+      if (lblKeylockEmail) lblKeylockEmail.childNodes[0].textContent = tr("authEmailLabelSignup");
+      if (lblKeylockEmailOtp) lblKeylockEmailOtp.childNodes[0].textContent = tr("authVerifyCodeLabel");
+      if (btnVerifyEmailCode) btnVerifyEmailCode.textContent = tr("authVerifyCodeBtn");
+      if (btnLoginKeyLock) btnLoginKeyLock.textContent = tr("authLoginBtn");
+      if (btnRegisterKeyLock) btnRegisterKeyLock.textContent = tr("authSignupBtn");
       if (coffeeHero) {
         coffeeHero.title = tr("coffeeHero");
         coffeeHero.innerHTML = "&#9749; " + tr("coffeeHero");
@@ -1362,6 +1406,37 @@ const defaultExpenseItems = [
       el.textContent = message;
     }
 
+    function updateAuthModeUi() {
+      const isSignup = authUiState.mode === "signup";
+      const loginModeBtn = document.getElementById("btnAuthModeLogin");
+      const signupModeBtn = document.getElementById("btnAuthModeSignup");
+      const emailWrap = document.getElementById("authEmailFieldWrap");
+      const loginBtn = document.getElementById("btnLoginKeyLock");
+      const registerBtn = document.getElementById("btnRegisterKeyLock");
+      const verifySection = document.getElementById("authVerifySection");
+
+      if (loginModeBtn) {
+        loginModeBtn.classList.toggle("is-active", !isSignup);
+        loginModeBtn.setAttribute("aria-selected", isSignup ? "false" : "true");
+      }
+      if (signupModeBtn) {
+        signupModeBtn.classList.toggle("is-active", isSignup);
+        signupModeBtn.setAttribute("aria-selected", isSignup ? "true" : "false");
+      }
+      if (emailWrap) emailWrap.classList.toggle("is-hidden", !isSignup);
+      if (loginBtn) loginBtn.classList.toggle("is-hidden", isSignup);
+      if (registerBtn) registerBtn.classList.toggle("is-hidden", !isSignup);
+      if (verifySection) {
+        const shouldShowVerify = isSignup && !!authUiState.pendingVerification;
+        verifySection.classList.toggle("is-hidden", !shouldShowVerify);
+      }
+    }
+
+    function setAuthMode(mode) {
+      authUiState.mode = mode === "signup" ? "signup" : "login";
+      updateAuthModeUi();
+    }
+
     function updateAuthUi() {
       const logged = !!authSession.username;
       const loginSection = document.getElementById("authLoginSection");
@@ -1377,8 +1452,17 @@ const defaultExpenseItems = [
         toggleBtn.querySelector("span").textContent = logged ? `${tr("authUserPrefix")}: ${authSession.username}` : tr("authLogin");
       }
 
+      if (logged) {
+        authUiState.pendingVerification = null;
+        const otpInput = document.getElementById("keylockEmailOtp");
+        if (otpInput) otpInput.value = "";
+      }
+      updateAuthModeUi();
+
       document.getElementById("btnRegisterKeyLock").disabled = logged;
       document.getElementById("btnLoginKeyLock").disabled = logged;
+      const verifyBtn = document.getElementById("btnVerifyEmailCode");
+      if (verifyBtn) verifyBtn.disabled = logged;
       document.getElementById("btnLogoutKeyLock").disabled = !logged;
       document.getElementById("btnSaveMyScenario").disabled = !logged;
       document.getElementById("btnLoadMyScenario").disabled = !logged;
@@ -1769,15 +1853,13 @@ const defaultExpenseItems = [
         }
       });
 
-      let signUpRateLimited = false;
-
       if (signUpRes.error) {
         const signUpMsg = String(signUpRes.error.message || "");
         if (/already|registered/i.test(signUpMsg)) {
-          // User may already exist: continue with login flow.
+          setAuthStatus(msg("authRegisterFailed", { message: signUpRes.error.message }), true);
+          return;
         } else if (isRateLimitAuthMessage(signUpMsg)) {
           const waitSec = setLocalAuthCooldown(parseRetryAfterSeconds(signUpMsg));
-          signUpRateLimited = true;
           setAuthStatus(msg("authRegisterRateLimit", { seconds: waitSec }), true);
           return;
         } else {
@@ -1786,35 +1868,73 @@ const defaultExpenseItems = [
         }
       }
 
-      const hasSession = !!(signUpRes.data && signUpRes.data.session);
-      if (!hasSession) {
-        setAuthStatus(msg("authRegisterVerifyEmail", { email }), false);
+      if (signUpRes.data && signUpRes.data.session) {
+        await supabaseClient.auth.signOut();
+      }
+
+      authUiState.pendingVerification = { username, email, password };
+      const otpInput = document.getElementById("keylockEmailOtp");
+      if (otpInput) otpInput.value = "";
+      updateAuthModeUi();
+      setAuthStatus(msg("authRegisterVerifyEmail", { email }), false);
+      } finally {
+        authFlowInProgress = false;
+      }
+    }
+
+    async function verifySignupEmailCode() {
+      if (!await ensureSupabaseReady("verificare la email")) return;
+      if (authFlowInProgress) {
+        setAuthStatus(tr("authOperationInProgress"), true);
+        return;
+      }
+      if (!ensureAuthNotCoolingDown()) return;
+
+      const pending = authUiState.pendingVerification;
+      if (!pending) {
+        setAuthStatus(tr("authNeedSignupVerification"), true);
         return;
       }
 
-      const postLogin = await signInWithEmailCandidates(username, password, email);
-      if (!postLogin.ok) {
-        if (signUpRateLimited || isRateLimitAuthMessage(postLogin.lastErrorMessage)) {
-          setAuthStatus(tr("authRegisterLoginRateLimit"), true);
-          return;
-        }
-
-        if (isInvalidCredentialAuthMessage(postLogin.lastErrorMessage)) {
-          setAuthStatus(tr("authRegisterIncomplete"), true);
-          return;
-        }
-
-        setAuthStatus(tr("authRegisterNoAutoLogin"), true);
+      const token = String(text("keylockEmailOtp") || "").replace(/\s+/g, "");
+      if (token.length < 4) {
+        setAuthStatus(tr("authNeedVerificationCode"), true);
         return;
       }
 
-      const loginMsg = await completeAuthSession(username, password, postLogin.result.data.user);
-      if (signUpRateLimited) {
-        setAuthStatus(msg("authRegisterRateLimitedLoggedIn", { loginMsg }));
-      } else {
-        setAuthStatus(msg("authRegisteredAndLogged", { username }));
-      }
-      await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
+      authFlowInProgress = true;
+      try {
+        const verifyRes = await supabaseClient.auth.verifyOtp({
+          email: pending.email,
+          token,
+          type: "signup"
+        });
+
+        if (verifyRes.error) {
+          setAuthStatus(msg("authVerifyCodeFailed", { message: verifyRes.error.message }), true);
+          return;
+        }
+
+        let verifiedUser = verifyRes.data && verifyRes.data.user ? verifyRes.data.user : null;
+        if (!verifiedUser) {
+          const signIn = await signInWithEmailCandidates(pending.username, pending.password, pending.email);
+          if (!signIn.ok) {
+            const loginMsg = String(signIn.lastErrorMessage || "");
+            if (isRateLimitAuthMessage(loginMsg)) {
+              setAuthStatus(tr("authLoginRateLimit"), true);
+              return;
+            }
+            setAuthStatus(msg("authLoginFailed", { message: loginMsg || tr("authUserFallback") }), true);
+            return;
+          }
+          verifiedUser = signIn.result.data.user;
+        }
+
+        await completeAuthSession(pending.username, pending.password, verifiedUser);
+        authUiState.pendingVerification = null;
+        setAuthMode("login");
+        setAuthStatus(msg("authVerifyCodeSuccess", { username: pending.username }));
+        await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
       } finally {
         authFlowInProgress = false;
       }
@@ -4026,7 +4146,23 @@ ${scenarioLab.length ? `
 
     document.getElementById("authLoginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      await loginKeyLockUser();
+      if (authUiState.mode === "signup") {
+        await registerKeyLockUser();
+      } else {
+        await loginKeyLockUser();
+      }
+    });
+
+    document.getElementById("btnAuthModeLogin").addEventListener("click", () => {
+      setAuthMode("login");
+    });
+
+    document.getElementById("btnAuthModeSignup").addEventListener("click", () => {
+      setAuthMode("signup");
+    });
+
+    document.getElementById("btnVerifyEmailCode").addEventListener("click", async () => {
+      await verifySignupEmailCode();
     });
 
     document.getElementById("btnLogoutKeyLock").addEventListener("click", async () => {
@@ -4123,6 +4259,7 @@ ${scenarioLab.length ? `
     initCoffeeFloatVisibility();
     initCoffeeDonationPicker();
     void initVisitorCounters();
+    setAuthMode("login");
     updateAuthUi();
     renderCloudHistoryPanel();
     syncPermanenza();
