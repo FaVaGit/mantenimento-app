@@ -76,11 +76,10 @@ const defaultExpenseItems = [
         authLoginBtn: "Login",
         authSignupBtn: "Registrati",
         authVerifyCodeBtn: "Verifica codice",
-        normProfileLabel: "Profilo normativo/territoriale",
-        normProfileHint: "Profilo versione regole: traccia il riferimento normativo/territoriale usato in simulazione e report.",
-        normProfileNational: "Italia nazionale (v2026.1)",
-        normProfileGenova: "Italia - Genova guideline (v2026.1)",
-        normProfileCustom: "Bozza personalizzata (v2026.1)",
+        calcProfileLabel: "Profilo calcolo",
+        calcProfileHint: "Selezione unica che combina riferimento normativo/territoriale e motore di calcolo.",
+        calcProfileNational: "Italia nazionale - Legale proporzionale (v2026.1)",
+        calcProfileGenova: "Italia - Genova guideline (v2026.1)",
         modeGuidelinePrefix: "Riferimento modalita selezionata:",
         modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
         redditoAnnuale: "Reddito annuale netto",
@@ -97,6 +96,10 @@ const defaultExpenseItems = [
         authHistoryVersion: "Versione",
         authDateUnavailable: "Data non disponibile",
         authRestore: "Ripristina",
+        authDeleteVersion: "Elimina",
+        authDeleteVersionConfirm: "Eliminare definitivamente questa versione dallo storico cloud?",
+        authHistoryDeleteDone: "Versione storica rimossa dal cloud.",
+        authHistoryDeleteFailed: "Impossibile eliminare la versione storica: {message}",
         authRateLimitActive: "Rate limit Supabase attivo. Attendi {seconds}s prima di riprovare Login/Registrati.",
         authNeedValidUserOrEmail: "Inserisci un utente valido o una email valida.",
         authRateLimitRetry: "Rate limit Supabase. Attendi {seconds}s e riprova.",
@@ -359,11 +362,10 @@ const defaultExpenseItems = [
         authLoginBtn: "Login",
         authSignupBtn: "Sign up",
         authVerifyCodeBtn: "Verify code",
-        normProfileLabel: "Normative/territorial profile",
-        normProfileHint: "Versioned rule profile: tracks the normative/territorial reference used in simulation and report.",
-        normProfileNational: "Italy national (v2026.1)",
-        normProfileGenova: "Italy - Genoa guideline (v2026.1)",
-        normProfileCustom: "Custom draft (v2026.1)",
+        calcProfileLabel: "Calculation profile",
+        calcProfileHint: "Single selection combining normative/territorial reference and calculation engine.",
+        calcProfileNational: "Italy national - Legal proportional (v2026.1)",
+        calcProfileGenova: "Italy - Genoa guideline (v2026.1)",
         modeGuidelinePrefix: "Selected mode reference:",
         modeGuidelineLink: "Genoa Court guidelines (PDF)",
         redditoAnnuale: "Annual net income",
@@ -380,6 +382,10 @@ const defaultExpenseItems = [
         authHistoryVersion: "Version",
         authDateUnavailable: "Date unavailable",
         authRestore: "Restore",
+        authDeleteVersion: "Delete",
+        authDeleteVersionConfirm: "Permanently delete this version from cloud history?",
+        authHistoryDeleteDone: "History version removed from cloud.",
+        authHistoryDeleteFailed: "Cannot delete history version: {message}",
         authRateLimitActive: "Supabase rate limit active. Wait {seconds}s before trying Login/Register again.",
         authNeedValidUserOrEmail: "Enter a valid username or email.",
         authRateLimitRetry: "Supabase rate limit. Wait {seconds}s and retry.",
@@ -1050,11 +1056,10 @@ const defaultExpenseItems = [
       const btnLoginKeyLock = document.getElementById("btnLoginKeyLock");
       const btnRegisterKeyLock = document.getElementById("btnRegisterKeyLock");
       const coffeeHero = document.querySelector(".btn-coffee-hero");
-      const calcMode = document.getElementById("calcMode");
+      const calcProfile = document.getElementById("calcProfile");
       const incomeMode = document.getElementById("incomeMode");
-      const normProfile = document.getElementById("normProfile");
-      const lblNormProfile = document.getElementById("lblNormProfile");
-      const hintNormProfile = document.getElementById("hintNormProfile");
+      const lblCalcProfile = document.getElementById("lblCalcProfile");
+      const hintCalcProfile = document.getElementById("hintCalcProfile");
       const cardTitles = document.querySelectorAll(".card h2");
       const calcSummary = document.querySelector("#formulaDetails > summary");
       const orientativeNote = document.querySelectorAll(".card .content > p.note")[0];
@@ -1093,19 +1098,13 @@ const defaultExpenseItems = [
         coffeeHero.title = tr("coffeeHero");
         coffeeHero.innerHTML = "&#9749; " + tr("coffeeHero");
       }
-      if (calcMode) {
-        const legal = calcMode.querySelector("option[value='legal']");
-        const simple = calcMode.querySelector("option[value='simple']");
-        const genova = calcMode.querySelector("option[value='genova']");
-        if (currentLang === "en") {
-          if (legal) legal.textContent = "Legal-proportional (recommended)";
-          if (simple) simple.textContent = "Simplified: net difference x %";
-          if (genova) genova.textContent = "Genoa Court guidelines";
-        } else {
-          if (legal) legal.textContent = "Legale-proporzionale (consigliata)";
-          if (simple) simple.textContent = "Semplificata: differenza netti x %";
-          if (genova) genova.textContent = "Linee guida Tribunale di Genova";
-        }
+      if (lblCalcProfile) lblCalcProfile.childNodes[0].textContent = tr("calcProfileLabel");
+      if (hintCalcProfile) hintCalcProfile.title = tr("calcProfileHint");
+      if (calcProfile) {
+        const n1 = calcProfile.querySelector("option[value='it-national-2026.1']");
+        const n2 = calcProfile.querySelector("option[value='it-genova-2026.1']");
+        if (n1) n1.textContent = tr("calcProfileNational");
+        if (n2) n2.textContent = tr("calcProfileGenova");
       }
       if (incomeMode) {
         const monthly = incomeMode.querySelector("option[value='monthly']");
@@ -1120,16 +1119,6 @@ const defaultExpenseItems = [
           if (annual) annual.textContent = "Reddito annuale (conversione /12)";
           if (cu) cu.textContent = "Certificazione Unica (lordo annuale -> netto stimato)";
         }
-      }
-      if (lblNormProfile) lblNormProfile.childNodes[0].textContent = tr("normProfileLabel");
-      if (hintNormProfile) hintNormProfile.title = tr("normProfileHint");
-      if (normProfile) {
-        const n1 = normProfile.querySelector("option[value='it-national-2026.1']");
-        const n2 = normProfile.querySelector("option[value='it-genova-2026.1']");
-        const n3 = normProfile.querySelector("option[value='custom-draft-2026.1']");
-        if (n1) n1.textContent = tr("normProfileNational");
-        if (n2) n2.textContent = tr("normProfileGenova");
-        if (n3) n3.textContent = tr("normProfileCustom");
       }
       if (cardTitles[0]) cardTitles[0].textContent = tr("inputsTitle");
       if (cardTitles[1]) cardTitles[1].textContent = tr("resultsTitle");
@@ -1357,7 +1346,7 @@ const defaultExpenseItems = [
         .map((entry, idx) => {
           const ts = entry && entry.savedAt ? new Date(entry.savedAt).toLocaleString(getCurrentLocale()) : tr("authDateUnavailable");
           const originalIndex = cloudProfileSession.history.length - 1 - idx;
-          return `<div class="history-item"><div><strong>${tr("authHistoryVersion")} ${idx + 1}</strong><small>${ts}</small></div><button class="btn-secondary" type="button" data-history-idx="${originalIndex}">${tr("authRestore")}</button></div>`;
+          return `<div class="history-item"><div><strong>${tr("authHistoryVersion")} ${idx + 1}</strong><small>${ts}</small></div><div class="history-actions"><button class="btn-secondary" type="button" data-history-idx="${originalIndex}">${tr("authRestore")}</button><button class="btn-secondary" type="button" data-history-delete-idx="${originalIndex}">${tr("authDeleteVersion")}</button></div></div>`;
         })
         .join("");
 
@@ -2319,6 +2308,45 @@ const defaultExpenseItems = [
       }
     }
 
+    async function deleteCloudHistoryEntry(historyIndex) {
+      if (!authSession.username || !authSession.userId || !authSession.keyBits) {
+        setAuthStatus(tr("authLoginRequired"), true);
+        return;
+      }
+      if (!Number.isInteger(historyIndex) || historyIndex < 0 || historyIndex >= cloudProfileSession.history.length) {
+        return;
+      }
+      if (!confirm(tr("authDeleteVersionConfirm"))) {
+        return;
+      }
+
+      const nextHistory = cloudProfileSession.history.filter((_, idx) => idx !== historyIndex);
+      const currentState = cloudProfileSession.loaded && cloudProfileSession.loaded.current
+        ? cloudProfileSession.loaded.current
+        : serializeState();
+      const cloudDoc = {
+        format: CLOUD_PROFILE_FORMAT,
+        current: safeJsonClone(currentState),
+        history: safeJsonClone(nextHistory),
+        updatedAt: new Date().toISOString()
+      };
+
+      try {
+        const encrypted = await encryptStateForKey(cloudDoc, authSession.keyBits);
+        const { error } = await upsertEncryptedScenarioForSession(encrypted);
+        if (error) {
+          setAuthStatus(msg("authHistoryDeleteFailed", { message: error.message }), true);
+          return;
+        }
+        cloudProfileSession.loaded = cloudDoc;
+        cloudProfileSession.history = nextHistory;
+        renderCloudHistoryPanel();
+        setAuthStatus(tr("authHistoryDeleteDone"));
+      } catch (err) {
+        setAuthStatus(msg("authHistoryDeleteFailed", { message: err && err.message ? err.message : String(err) }), true);
+      }
+    }
+
     function buildExpenseRows() {
       rowsSpese.innerHTML = "";
       document.getElementById("speseCountNote").textContent = msg("expenseCountNote", { count: expenseItems.length });
@@ -2856,16 +2884,18 @@ const defaultExpenseItems = [
     }
 
     function updateModeUi() {
-      const mode = document.getElementById("calcMode").value || "legal";
+      const mode = getActiveCalcMode();
       const incomeMode = document.getElementById("incomeMode").value || "monthly";
       const simplePerc = document.getElementById("simplePerc");
       const simplePercField = document.getElementById("simplePercField");
       const isSimple = mode === "simple";
-      simplePerc.disabled = !isSimple;
+      if (simplePerc) {
+        simplePerc.disabled = !isSimple;
+        simplePerc.title = isSimple
+          ? tr("simplePercTitleEnabled")
+          : tr("simplePercTitleDisabled");
+      }
       if (simplePercField) simplePercField.classList.toggle("is-hidden", !isSimple);
-      simplePerc.title = isSimple
-        ? tr("simplePercTitleEnabled")
-        : tr("simplePercTitleDisabled");
 
       const redditoLabel1 = document.getElementById("lblReddito1");
       const redditoLabel2 = document.getElementById("lblReddito2");
@@ -2913,14 +2943,16 @@ const defaultExpenseItems = [
       if (extra1 > 0) c1Spese.push(extra1);
       if (extra2 > 0) c2Spese.push(extra2);
 
+      const calcProfileCfg = getCalcProfileConfig(getSelectedCalcProfileId());
       return {
         incomeMode: document.getElementById("incomeMode").value || "monthly",
-        normProfile: document.getElementById("normProfile")?.value || "it-national-2026.1",
+        calcProfile: calcProfileCfg.id,
+        normProfile: calcProfileCfg.normProfile,
         r1Raw: num("reddito1"),
         r2Raw: num("reddito2"),
         figli: Math.max(1, Math.round(num("numFigli"))),
         perm1: Math.min(100, Math.max(0, num("perm1"))),
-        mode: document.getElementById("calcMode").value || "legal",
+        mode: calcProfileCfg.mode,
         simplePerc: Math.min(100, Math.max(0, num("simplePerc"))),
         aPerc1: num("assegnoPercepito1"),
         aPag1: num("assegnoPagato1"),
@@ -3050,11 +3082,39 @@ const defaultExpenseItems = [
     function c1n() { return (document.getElementById("nome1").value || "").trim() || tr("spouse1Default"); }
     function c2n() { return (document.getElementById("nome2").value || "").trim() || tr("spouse2Default"); }
 
+    function getCalcProfileConfig(profileId) {
+      const normalized = String(profileId || "").trim().toLowerCase();
+      if (normalized === "it-genova-2026.1") {
+        return { id: "it-genova-2026.1", mode: "genova", normProfile: "it-genova-2026.1" };
+      }
+      return { id: "it-national-2026.1", mode: "legal", normProfile: "it-national-2026.1" };
+    }
+
+    function resolveCalcProfileIdFromState(base) {
+      const profileFromBase = base && base.calcProfile ? getCalcProfileConfig(base.calcProfile).id : "";
+      if (profileFromBase) return profileFromBase;
+      const profileFromNorm = base && base.normProfile ? getCalcProfileConfig(base.normProfile).id : "";
+      if (profileFromNorm) return profileFromNorm;
+      if (base && String(base.calcMode || "").toLowerCase() === "genova") return "it-genova-2026.1";
+      return "it-national-2026.1";
+    }
+
+    function getSelectedCalcProfileId() {
+      const select = document.getElementById("calcProfile");
+      if (!select) return "it-national-2026.1";
+      return getCalcProfileConfig(select.value).id;
+    }
+
+    function getActiveCalcMode() {
+      const cfg = getCalcProfileConfig(getSelectedCalcProfileId());
+      return cfg.mode;
+    }
+
     function getSelectedNormProfileLabel() {
-      const select = document.getElementById("normProfile");
-      if (!select) return tr("normProfileNational");
+      const select = document.getElementById("calcProfile");
+      if (!select) return tr("calcProfileNational");
       const option = select.options[select.selectedIndex];
-      return option ? option.textContent : tr("normProfileNational");
+      return option ? option.textContent : tr("calcProfileNational");
     }
 
     function updateSpouseLabels() {
@@ -4538,14 +4598,16 @@ ${scenarioLab.length ? `
 
     function serializeState() {
       captureUiViewStateFromDom();
+      const calcProfileCfg = getCalcProfileConfig(getSelectedCalcProfileId());
       const base = {
         reddito1: num("reddito1"),
         reddito2: num("reddito2"),
         incomeMode: document.getElementById("incomeMode").value,
-        normProfile: document.getElementById("normProfile").value,
+        calcProfile: calcProfileCfg.id,
+        normProfile: calcProfileCfg.normProfile,
         numFigli: num("numFigli"),
         perm1: num("perm1"),
-        calcMode: document.getElementById("calcMode").value,
+        calcMode: calcProfileCfg.mode,
         simplePerc: num("simplePerc"),
         assegnoPercepito1: num("assegnoPercepito1"),
         assegnoPagato1: num("assegnoPagato1"),
@@ -4612,6 +4674,10 @@ ${scenarioLab.length ? `
         uiViewState.permCalendarOpen = view.permCalendarOpen !== undefined ? !!view.permCalendarOpen : true;
         uiViewState.cloudHistoryOpen = !!view.cloudHistoryOpen;
       }
+      const calcProfileEl = document.getElementById("calcProfile");
+      if (calcProfileEl) {
+        calcProfileEl.value = resolveCalcProfileIdFromState(state.base);
+      }
       const langSelect = document.getElementById("langSelect");
       const currencySelect = document.getElementById("currencySelect");
       if (langSelect) langSelect.value = currentLang;
@@ -4621,7 +4687,7 @@ ${scenarioLab.length ? `
       importPermanenceCalendarState(state.permanenceCalendar);
       updateSpouseLabels();
       buildExpenseRows();
-      syncPermanenza();
+      syncPermanenza("calendar");
       state.spese.forEach((row, i) => {
         const c1 = document.getElementById(`c1_${i}`);
         const c2 = document.getElementById(`c2_${i}`);
@@ -4811,10 +4877,17 @@ ${scenarioLab.length ? `
       panel.open = !panel.open;
     });
 
-    document.getElementById("cloudHistoryList").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-history-idx]");
-      if (!btn) return;
-      const idx = Number(btn.getAttribute("data-history-idx"));
+    document.getElementById("cloudHistoryList").addEventListener("click", async (e) => {
+      const deleteBtn = e.target.closest("button[data-history-delete-idx]");
+      if (deleteBtn) {
+        const idx = Number(deleteBtn.getAttribute("data-history-delete-idx"));
+        await deleteCloudHistoryEntry(idx);
+        return;
+      }
+
+      const restoreBtn = e.target.closest("button[data-history-idx]");
+      if (!restoreBtn) return;
+      const idx = Number(restoreBtn.getAttribute("data-history-idx"));
       if (!Number.isInteger(idx) || idx < 0 || idx >= cloudProfileSession.history.length) return;
       const entry = cloudProfileSession.history[idx];
       if (!entry || !entry.state) return;
@@ -4861,7 +4934,7 @@ ${scenarioLab.length ? `
     });
 
     document.addEventListener("change", (e) => {
-      if (e.target && (e.target.id === "calcMode" || e.target.id === "incomeMode" || e.target.id === "normProfile")) {
+      if (e.target && (e.target.id === "calcProfile" || e.target.id === "incomeMode")) {
         if (e.target.id === "incomeMode") {
           const nextMode = document.getElementById("incomeMode").value || "monthly";
           convertIncomeValuesForModeChange(incomeModeLast, nextMode);
