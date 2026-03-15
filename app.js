@@ -3349,47 +3349,59 @@ const defaultExpenseItems = [
       }).join("");
 
       const scenarioMetrics = [
-        { label: tr("scenarioColAssegno"), val: (sm) => Math.max(sm.assegnoDa1a2, sm.assegnoDa2a1), fmt: (v) => eur(v) },
-        { label: tr("scenarioColDisp1"), val: (sm) => sm.disp1, fmt: (v) => eur(v) },
-        { label: tr("scenarioColDisp2"), val: (sm) => sm.disp2, fmt: (v) => eur(v) },
-        { label: tr("scenarioColPost1"), val: (sm) => sm.post1, fmt: (v) => eur(v) },
-        { label: tr("scenarioColPost2"), val: (sm) => sm.post2, fmt: (v) => eur(v) },
-        { label: tr("scenarioColFabb"), val: (sm) => sm.fabbisognoFigli, fmt: (v) => eur(v) }
+        { label: tr("scenarioColMode"), val: (sm) => getModeName(sm.mode, sm.simplePerc), fmt: (v) => escapeHtml(v), numeric: false },
+        { label: tr("scenarioColAssegno"), val: (sm) => Math.max(sm.assegnoDa1a2, sm.assegnoDa2a1), fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColDisp1").replace("C1", c1Name), val: (sm) => sm.disp1, fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColDisp2").replace("C2", c2Name), val: (sm) => sm.disp2, fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColPost1").replace("C1", c1Name), val: (sm) => sm.post1, fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColPost2").replace("C2", c2Name), val: (sm) => sm.post2, fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColFabb"), val: (sm) => sm.fabbisognoFigli, fmt: (v) => eur(v), numeric: true }
       ];
 
-      const scenarioPdfRows = scenarioLab.map((scenario, idx) => {
-        const baseline = scenarioLab[0] && scenarioLab[0].model ? scenarioLab[0].model : null;
-        const entries = scenarioMetrics.map((metric) => {
-          const value = metric.val(scenario.model);
-          const delta = baseline ? (value - metric.val(baseline)) : 0;
-          const deltaSign = delta > 0.005 ? "+" : "";
-          const deltaClass = delta > 0.005 ? "delta-pos" : (delta < -0.005 ? "delta-neg" : "delta-zero");
-          const deltaText = idx === 0 ? tr("pdfScenarioBaseline") : `${deltaSign}${eur(delta)}`;
-          return `<tr>
-            <td>${escapeHtml(metric.label)}</td>
-            <td class="num">${metric.fmt(value)}</td>
-            <td class="num ${deltaClass}">${deltaText}</td>
-          </tr>`;
+      const scenarioPdfTable = (() => {
+        if (!scenarioLab.length) return "";
+
+        let headerCells = `<th class="metric-col">${tr("scenarioColMetric")}</th>`;
+        scenarioLab.forEach((scenario, idx) => {
+          const n1 = escapeHtml(scenario.payload._nome1 || tr("spouse1Default"));
+          const n2 = escapeHtml(scenario.payload._nome2 || tr("spouse2Default"));
+          headerCells += `<th class="scenario-col"><span class="scenario-chip">Sc ${escapeHtml(scenario.label)}</span><span class="scenario-sub">${n1} / ${n2}</span></th>`;
+          if (idx > 0) {
+            headerCells += `<th class="delta-col-head">${tr("scenarioDeltaLabel")} ${escapeHtml(scenario.label)}</th>`;
+          }
+        });
+
+        const baseline = scenarioLab[0].model;
+        const bodyRows = scenarioMetrics.map((metric) => {
+          let row = `<tr><td class="metric-col">${escapeHtml(metric.label)}</td>`;
+          scenarioLab.forEach((scenario, idx) => {
+            const value = metric.val(scenario.model);
+            row += `<td class="num">${metric.fmt(value)}</td>`;
+
+            if (idx > 0) {
+              if (metric.numeric) {
+                const diff = value - metric.val(baseline);
+                const cls = diff > 0.005 ? "delta-pos" : (diff < -0.005 ? "delta-neg" : "delta-zero");
+                const sign = diff > 0.005 ? "+" : "";
+                row += `<td class="num ${cls}">${sign}${eur(diff)}</td>`;
+              } else {
+                row += `<td class="num delta-zero">&ndash;</td>`;
+              }
+            }
+          });
+          row += `</tr>`;
+          return row;
         }).join("");
 
-        const modeNameScenario = escapeHtml(getModeName(scenario.model.mode, scenario.model.simplePerc));
-        const scenName = escapeHtml(`${tr("pdfScenarioName")} ${scenario.label}`);
-        const scenPeople = `${escapeHtml(scenario.payload._nome1 || tr("spouse1Default"))} / ${escapeHtml(scenario.payload._nome2 || tr("spouse2Default"))}`;
-        return `<div class="scenario-box">
-          <div class="scenario-box-head">${scenName} <small>${scenPeople}</small></div>
-          <div class="scenario-mode">${tr("scenarioColMode")}: <strong>${modeNameScenario}</strong></div>
-          <table>
-            <thead>
-              <tr>
-                <th>${tr("scenarioColMetric")}</th>
-                <th class="num">${tr("pdfScenarioName")}</th>
-                <th class="num">${tr("pdfScenarioDelta")}</th>
-              </tr>
-            </thead>
-            <tbody>${entries}</tbody>
-          </table>
-        </div>`;
-      }).join("");
+        return `
+          <div class="scenario-compare-wrap">
+            <table class="scenario-compare-table">
+              <thead><tr>${headerCells}</tr></thead>
+              <tbody>${bodyRows}</tbody>
+            </table>
+          </div>
+        `;
+      })();
 
       const html = `<!DOCTYPE html>
 <html lang="${pdfLang}">
@@ -3514,11 +3526,15 @@ const defaultExpenseItems = [
   .kpi-val.bad { color: #c0392b; }
 
   /* ── SCENARIO LAB ── */
-  .scenario-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-  .scenario-box { border: 1.5px solid #c9e2dd; border-radius: 8px; background: #f7fcfb; padding: 8px 10px; }
-  .scenario-box-head { font-size: 9pt; font-weight: 700; color: #0e5c55; margin-bottom: 4px; }
-  .scenario-box-head small { font-weight: 500; color: #54756f; margin-left: 4px; }
-  .scenario-mode { font-size: 8pt; color: #3f6a64; margin-bottom: 6px; }
+  .scenario-compare-wrap { overflow-x: auto; }
+  .scenario-compare-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+  .scenario-compare-table th, .scenario-compare-table td { border: 1px solid #c6ddd8; padding: 5px 8px; }
+  .scenario-compare-table thead th { background: linear-gradient(90deg,#f0f7f5,#e6f1ee); color: #183d39; font-weight: 700; }
+  .scenario-compare-table .metric-col { text-align: left; min-width: 140px; font-weight: 700; background: #f6fbf9; }
+  .scenario-compare-table .scenario-col { text-align: center; min-width: 170px; }
+  .scenario-compare-table .delta-col-head { text-align: center; min-width: 86px; }
+  .scenario-chip { display: inline-block; background: #0b6e66; color: #fff; border-radius: 5px; padding: 1px 8px; font-size: 7.5pt; font-weight: 700; }
+  .scenario-sub { display: block; margin-top: 4px; font-size: 7.2pt; color: #4c6964; font-weight: 600; }
   .delta-pos { color: #0b6e66; }
   .delta-neg { color: #c0392b; }
   .delta-zero { color: #6a7f7b; }
@@ -3802,7 +3818,7 @@ const defaultExpenseItems = [
 ${scenarioLab.length ? `
 <div class="section">
   <div class="section-title">${tr("pdfScenarioSection")}</div>
-  <div class="scenario-grid">${scenarioPdfRows}</div>
+  ${scenarioPdfTable}
 </div>
 ` : ""}
 
