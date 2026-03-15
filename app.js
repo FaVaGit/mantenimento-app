@@ -161,6 +161,10 @@ const defaultExpenseItems = [
         pdfAmountPerChild: "Importo per figlio",
         pdfTheoreticalShare: "Quota teorica",
         pdfDirectShareC1C2: "Quota diretta C1 / C2",
+        pdfScenarioSection: "Scenario Lab",
+        pdfScenarioName: "Scenario",
+        pdfScenarioBaseline: "Base",
+        pdfScenarioDelta: "Delta vs base",
         pdfFooter: "Calcolatore Mantenimento Figli — Uso privato e riservato — {date}",
         pdfNoTransfer: "Nessun trasferimento",
         pdfMethodology: "Note metodologiche",
@@ -371,6 +375,10 @@ const defaultExpenseItems = [
         pdfAmountPerChild: "Amount per child",
         pdfTheoreticalShare: "Theoretical share",
         pdfDirectShareC1C2: "Direct share C1 / C2",
+        pdfScenarioSection: "Scenario Lab",
+        pdfScenarioName: "Scenario",
+        pdfScenarioBaseline: "Baseline",
+        pdfScenarioDelta: "Delta vs baseline",
         pdfFooter: "Child Support Calculator — Private and reserved use — {date}",
         pdfNoTransfer: "No transfer",
         pdfMethodology: "Methodological notes",
@@ -1017,6 +1025,25 @@ const defaultExpenseItems = [
       throw new Error("Profilo cloud non valido");
     }
 
+    function normalizeScenarioLabState(rawScenarios) {
+      if (!Array.isArray(rawScenarios) || !rawScenarios.length) return [];
+
+      const normalized = [];
+      rawScenarios.slice(0, SCENARIO_LAB_MAX).forEach((entry, idx) => {
+        if (!entry || typeof entry !== "object" || !entry.payload || typeof entry.payload !== "object") return;
+        const payload = safeJsonClone(entry.payload);
+        if (!payload) return;
+
+        normalized.push({
+          label: SCENARIO_LABELS[idx],
+          payload,
+          model: computeModelLocal(payload)
+        });
+      });
+
+      return normalized;
+    }
+
     function renderCloudHistoryPanel() {
       const panel = document.getElementById("cloudHistoryPanel");
       const list = document.getElementById("cloudHistoryList");
@@ -1351,18 +1378,23 @@ const defaultExpenseItems = [
 
     function initCoffeeFloatVisibility() {
       const footer = document.querySelector(".legal-footer");
+      const donateBanner = document.querySelector(".donate-banner");
       const coffeeFloat = document.querySelector(".coffee-float");
-      if (!footer || !coffeeFloat || !("IntersectionObserver" in window)) return;
+      if (!coffeeFloat || !("IntersectionObserver" in window)) return;
+
+      const targets = [donateBanner, footer].filter(Boolean);
+      if (!targets.length) return;
 
       const observer = new IntersectionObserver((entries) => {
-        const isFooterVisible = entries.some((entry) => entry.isIntersecting);
-        document.body.classList.toggle("footer-visible", isFooterVisible);
+        // Hide the floating cup as soon as any pixel of donate/footer section becomes visible.
+        const isBottomSectionVisible = entries.some((entry) => entry.isIntersecting);
+        document.body.classList.toggle("footer-visible", isBottomSectionVisible);
       }, {
         root: null,
-        threshold: 0.08
+        threshold: 0
       });
 
-      observer.observe(footer);
+      targets.forEach((target) => observer.observe(target));
     }
 
     function setCoffeePickerOpen(open) {
@@ -3036,6 +3068,49 @@ const defaultExpenseItems = [
         </tr>`;
       }).join("");
 
+      const scenarioMetrics = [
+        { label: tr("scenarioColAssegno"), val: (sm) => Math.max(sm.assegnoDa1a2, sm.assegnoDa2a1), fmt: (v) => eur(v) },
+        { label: tr("scenarioColDisp1"), val: (sm) => sm.disp1, fmt: (v) => eur(v) },
+        { label: tr("scenarioColDisp2"), val: (sm) => sm.disp2, fmt: (v) => eur(v) },
+        { label: tr("scenarioColPost1"), val: (sm) => sm.post1, fmt: (v) => eur(v) },
+        { label: tr("scenarioColPost2"), val: (sm) => sm.post2, fmt: (v) => eur(v) },
+        { label: tr("scenarioColFabb"), val: (sm) => sm.fabbisognoFigli, fmt: (v) => eur(v) }
+      ];
+
+      const scenarioPdfRows = scenarioLab.map((scenario, idx) => {
+        const baseline = scenarioLab[0] && scenarioLab[0].model ? scenarioLab[0].model : null;
+        const entries = scenarioMetrics.map((metric) => {
+          const value = metric.val(scenario.model);
+          const delta = baseline ? (value - metric.val(baseline)) : 0;
+          const deltaSign = delta > 0.005 ? "+" : "";
+          const deltaClass = delta > 0.005 ? "delta-pos" : (delta < -0.005 ? "delta-neg" : "delta-zero");
+          const deltaText = idx === 0 ? tr("pdfScenarioBaseline") : `${deltaSign}${eur(delta)}`;
+          return `<tr>
+            <td>${escapeHtml(metric.label)}</td>
+            <td class="num">${metric.fmt(value)}</td>
+            <td class="num ${deltaClass}">${deltaText}</td>
+          </tr>`;
+        }).join("");
+
+        const modeNameScenario = escapeHtml(getModeName(scenario.model.mode, scenario.model.simplePerc));
+        const scenName = escapeHtml(`${tr("pdfScenarioName")} ${scenario.label}`);
+        const scenPeople = `${escapeHtml(scenario.payload._nome1 || tr("spouse1Default"))} / ${escapeHtml(scenario.payload._nome2 || tr("spouse2Default"))}`;
+        return `<div class="scenario-box">
+          <div class="scenario-box-head">${scenName} <small>${scenPeople}</small></div>
+          <div class="scenario-mode">${tr("scenarioColMode")}: <strong>${modeNameScenario}</strong></div>
+          <table>
+            <thead>
+              <tr>
+                <th>${tr("scenarioColMetric")}</th>
+                <th class="num">${tr("pdfScenarioName")}</th>
+                <th class="num">${tr("pdfScenarioDelta")}</th>
+              </tr>
+            </thead>
+            <tbody>${entries}</tbody>
+          </table>
+        </div>`;
+      }).join("");
+
       const html = `<!DOCTYPE html>
 <html lang="${pdfLang}">
 <head>
@@ -3157,6 +3232,16 @@ const defaultExpenseItems = [
   .kpi-val.ok { color: #0b6e66; }
   .kpi-val.warn { color: #c77a11; }
   .kpi-val.bad { color: #c0392b; }
+
+  /* ── SCENARIO LAB ── */
+  .scenario-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .scenario-box { border: 1.5px solid #c9e2dd; border-radius: 8px; background: #f7fcfb; padding: 8px 10px; }
+  .scenario-box-head { font-size: 9pt; font-weight: 700; color: #0e5c55; margin-bottom: 4px; }
+  .scenario-box-head small { font-weight: 500; color: #54756f; margin-left: 4px; }
+  .scenario-mode { font-size: 8pt; color: #3f6a64; margin-bottom: 6px; }
+  .delta-pos { color: #0b6e66; }
+  .delta-neg { color: #c0392b; }
+  .delta-zero { color: #6a7f7b; }
 
   /* ── NOTE & FOOTER ── */
   .note-box { background: #f8fcfb; border-left: 3px solid #0b6e66;
@@ -3388,6 +3473,13 @@ const defaultExpenseItems = [
   </div>
 </div>
 
+${scenarioLab.length ? `
+<div class="section">
+  <div class="section-title">${tr("pdfScenarioSection")}</div>
+  <div class="scenario-grid">${scenarioPdfRows}</div>
+</div>
+` : ""}
+
 <!-- NOTE METODOLOGICHE -->
 <div class="note-box">
   <strong>${tr("pdfMethodology")}</strong> — ${tr("pdfMethodologyText")}
@@ -3493,7 +3585,12 @@ const defaultExpenseItems = [
       };
       const spese = expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
       const expenseItemsState = expenseItems.map((item) => ({ label: item.label, help: item.help }));
+      const scenariosState = scenarioLab.map((scenario, idx) => ({
+        label: SCENARIO_LABELS[idx],
+        payload: safeJsonClone(scenario.payload)
+      }));
       return { base, spese, expenseItems: expenseItemsState,
+        scenarioLab: scenariosState,
         nome1: document.getElementById("nome1").value,
         nome2: document.getElementById("nome2").value };
     }
@@ -3512,6 +3609,7 @@ const defaultExpenseItems = [
       while (expenseItems.length < state.spese.length) {
         expenseItems.push(normalizeExpenseItem(null, expenseItems.length));
       }
+      scenarioLab = normalizeScenarioLabState(state.scenarioLab);
       if (state.nome1 !== undefined) document.getElementById("nome1").value = state.nome1;
       if (state.nome2 !== undefined) document.getElementById("nome2").value = state.nome2;
       updateSpouseLabels();
