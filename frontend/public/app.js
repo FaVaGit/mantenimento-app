@@ -2342,7 +2342,7 @@ const defaultExpenseItems = [
             <div class="spese-input-wrap">
               <div class="spese-input-main">
                 <input type="number" min="0" step="0.01" id="c1_${idx}" value="0" />
-                <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c1d_${idx}" data-detail-wrap="c1dw_${idx}" title="${tr("expenseDetailTitle")}">${tr("expenseDetailBtn")}</button>
+                <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c1d_${idx}" data-detail-wrap="c1dw_${idx}" title="${tr("expenseDetailTitle")}"><span class="spese-detail-label">${tr("expenseDetailBtn")}</span></button>
               </div>
               <div class="spese-detail-wrap is-hidden" id="c1dw_${idx}">
                 <textarea id="c1d_${idx}" class="spese-detail-text" rows="2" maxlength="280" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}"></textarea>
@@ -2354,7 +2354,7 @@ const defaultExpenseItems = [
             <div class="spese-input-wrap">
               <div class="spese-input-main">
                 <input type="number" min="0" step="0.01" id="c2_${idx}" value="0" />
-                <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c2d_${idx}" data-detail-wrap="c2dw_${idx}" title="${tr("expenseDetailTitle")}">${tr("expenseDetailBtn")}</button>
+                <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c2d_${idx}" data-detail-wrap="c2dw_${idx}" title="${tr("expenseDetailTitle")}"><span class="spese-detail-label">${tr("expenseDetailBtn")}</span></button>
               </div>
               <div class="spese-detail-wrap is-hidden" id="c2dw_${idx}">
                 <textarea id="c2d_${idx}" class="spese-detail-text" rows="2" maxlength="280" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}"></textarea>

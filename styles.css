@@ -966,28 +966,71 @@
     }
 
     .spese-detail-btn {
-      padding: 6px 8px;
-      font-size: 0.73rem;
-      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-shrink: 0;
+      height: 26px;
+      max-width: 26px;
+      border-radius: 13px;
+      padding: 0;
+      overflow: hidden;
       white-space: nowrap;
+      line-height: 1;
+      transition: max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+                  padding-right 0.22s ease,
+                  background-color 0.15s ease,
+                  color 0.15s ease,
+                  border-color 0.15s ease;
+      cursor: pointer;
     }
 
     .spese-detail-btn::before {
-      content: "[]";
-      margin-right: 4px;
+      content: "✎";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      min-width: 26px;
+      font-size: 12px;
       font-weight: 900;
+      margin-right: 0;
+    }
+
+    .spese-detail-label {
+      font-size: 0.72rem;
+      max-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      transition: max-width 0.22s ease, padding-right 0.22s ease;
+      padding-right: 0;
+      line-height: 1;
+    }
+
+    .spese-detail-btn:hover,
+    .spese-detail-btn.is-open {
+      max-width: 110px;
+      padding-right: 9px;
+      border-color: #0b6e66;
+      box-shadow: inset 0 0 0 1px rgba(11, 110, 102, 0.2);
+    }
+
+    .spese-detail-btn:hover .spese-detail-label,
+    .spese-detail-btn.is-open .spese-detail-label {
+      max-width: 80px;
     }
 
     .spese-detail-btn.has-note {
+      max-width: 110px;
+      padding-right: 9px;
       border-color: #0b6e66;
       color: #0b6e66;
       background: #e8f6f2;
       font-weight: 700;
     }
 
-    .spese-detail-btn.is-open {
-      border-color: #0b6e66;
-      box-shadow: inset 0 0 0 1px rgba(11, 110, 102, 0.25);
+    .spese-detail-btn.has-note .spese-detail-label {
+      max-width: 80px;
     }
 
     .spese-detail-wrap {
@@ -1828,12 +1871,12 @@
       font-weight: 900;
     }
 
-    #btnSaveMyScenario::before { content: "^"; }
-    #btnLoadMyScenario::before { content: "v"; }
-    #btnHistoryMyScenario::before { content: "#"; }
-    #btnPdf::before { content: "[]"; }
-    .scenario-select-btn::before { content: "+"; }
-    .scenario-remove-btn::before { content: "x"; }
+    #btnSaveMyScenario::before { content: "⬆"; }
+    #btnLoadMyScenario::before { content: "⬇"; }
+    #btnHistoryMyScenario::before { content: "☰"; }
+    #btnPdf::before { content: "⎙"; }
+    .scenario-select-btn::before { content: "✓"; }
+    .scenario-remove-btn::before { content: "✕"; }
 
     .live-row {
       font-size: 0.9rem;
@@ -2159,8 +2202,13 @@
         width: 100%;
       }
       .spese-detail-btn {
-        font-size: 0.7rem;
-        padding: 5px 7px;
+        height: 24px;
+        max-width: 24px;
+        border-radius: 12px;
+      }
+      .spese-detail-btn::before {
+        min-width: 24px;
+        font-size: 11px;
       }
       .spese-editor-grid {
         grid-template-columns: 1fr;
