@@ -1467,6 +1467,40 @@
       color: #fff;
     }
 
+    .contacts-card {
+      margin-top: 14px;
+    }
+
+    .contacts-content {
+      display: grid;
+      gap: 10px;
+    }
+
+    .contacts-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .contact-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid #c9dbd4;
+      background: linear-gradient(180deg, #fcfffd, #f1f8f5);
+      color: #0f5f57;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.84rem;
+    }
+
+    .contact-chip:hover {
+      text-decoration: underline;
+      border-color: #9bc3b8;
+      background: linear-gradient(180deg, #f6fdfa, #e6f3ee);
+    }
+
     details {
       border: 1px solid #d8ddd2;
       border-radius: 12px;
