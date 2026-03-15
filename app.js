@@ -645,6 +645,53 @@ const defaultExpenseItems = [
       return storedBase || configBase;
     }
 
+    function getRuntimeVariantLabels() {
+      const labels = [];
+
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        const frontendVariant = String(params.get("frontend") || "").trim().toLowerCase();
+        const envVariant = String(params.get("env") || "").trim().toLowerCase();
+        const apiBaseVariant = String(params.get("apiBase") || "").trim();
+
+        if (frontendVariant === "dev" || window.location.host.includes("githack.com")) {
+          labels.push("dev-frontend");
+        }
+        if (envVariant === "dev" || !!apiBaseVariant) {
+          labels.push("dev-api");
+        }
+      } catch (_) {}
+
+      return labels;
+    }
+
+    function renderRuntimeBadge() {
+      const heroTools = document.querySelector(".hero-tools");
+      if (!heroTools) return;
+
+      const labels = getRuntimeVariantLabels();
+      let badge = document.getElementById("runtimeEnvBadge");
+
+      if (!labels.length) {
+        if (badge) badge.remove();
+        return;
+      }
+
+      if (!badge) {
+        badge = document.createElement("div");
+        badge.id = "runtimeEnvBadge";
+        badge.className = "runtime-badge";
+        heroTools.prepend(badge);
+      }
+
+      badge.innerHTML = labels.map((label) => {
+        if (label === "dev-frontend") {
+          return '<span class="runtime-badge-chip runtime-badge-chip--frontend">DEV FRONTEND</span>';
+        }
+        return '<span class="runtime-badge-chip runtime-badge-chip--api">DEV API</span>';
+      }).join("");
+    }
+
     function tr(key) {
       const table = I18N[currentLang] || I18N.it;
       return table[key] || I18N.it[key] || key;
@@ -842,6 +889,7 @@ const defaultExpenseItems = [
       if (cardTitles[0]) cardTitles[0].textContent = tr("inputsTitle");
       if (cardTitles[1]) cardTitles[1].textContent = tr("resultsTitle");
       if (cardTitles[2]) cardTitles[2].textContent = tr("scenarioLabTitle");
+      renderRuntimeBadge();
       const btnSaveScenarioTr = document.getElementById("btnSaveScenario");
       const btnClearScenariosTr = document.getElementById("btnClearScenarios");
       if (btnSaveScenarioTr) btnSaveScenarioTr.textContent = tr("scenarioLabSaveBtn");
@@ -2981,26 +3029,26 @@ const defaultExpenseItems = [
             <div class="spieg-item">
               <div class="spieg-item-label">${tr("spiegRedditiLabel")}</div>
               <div class="spieg-item-body">
-                ${n1}: ${eur(m.disp1)} &nbsp;|&nbsp; ${n2}: ${eur(m.disp2)}<br>
-                ${tr("pdfWeight")}: <strong>${n1} ${peso1Pct}%</strong> / <strong>${n2} ${peso2Pct}%</strong>
+                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${eur(m.disp1)}</strong> <span class="spieg-sep">|</span> <span>${n2}:</span> <strong class="spieg-value">${eur(m.disp2)}</strong></div>
+                <div class="spieg-line">${tr("pdfWeight")}: <strong class="spieg-value">${n1} ${peso1Pct}%</strong> / <strong class="spieg-value">${n2} ${peso2Pct}%</strong></div>
               </div>
             </div>
             <div class="spieg-item">
               <div class="spieg-item-label">${tr("spiegSpeseLabel")}</div>
               <div class="spieg-item-body">
-                ${eur(m.speseTot)} &times; 35% = <strong>${eur(m.fabbisognoFigli)}</strong>
+                <div class="spieg-line"><strong class="spieg-value">${eur(m.speseTot)}</strong> &times; 35% = <strong class="spieg-value">${eur(m.fabbisognoFigli)}</strong></div>
               </div>
             </div>
             <div class="spieg-item">
               <div class="spieg-item-label">${tr("spiegPermLabel")}</div>
               <div class="spieg-item-body">
-                ${n1}: ${m.perm1.toFixed(0)}% (${days1} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta1)}<br>
-                ${n2}: ${m.perm2.toFixed(0)}% (${days2} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta2)}
+                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta1)}</strong></div>
+                <div class="spieg-line"><span>${n2}:</span> <strong class="spieg-value">${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta2)}</strong></div>
               </div>
             </div>
             <div class="spieg-item spieg-item--result">
               <div class="spieg-item-label">${tr("spiegResultLabel")}</div>
-              <div class="spieg-item-body">${resultHtml}</div>
+              <div class="spieg-item-body spieg-item-body--result">${resultHtml}</div>
             </div>
           </div>
         </details>
