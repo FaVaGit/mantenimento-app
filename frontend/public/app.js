@@ -23,6 +23,9 @@ const defaultExpenseItems = [
       { label: "Abbigliamento stagionale figli", help: "Spesa periodica media per rinnovo abbigliamento in relazione alla stagione." }
     ];
     let expenseItems = defaultExpenseItems.map((item) => ({ ...item }));
+    let scenarioLab = [];
+    const SCENARIO_LAB_MAX = 3;
+    const SCENARIO_LABELS = ["A", "B", "C"];
 
     const QUOTA_MANTENIMENTO_PERC = 35;
 
@@ -250,6 +253,26 @@ const defaultExpenseItems = [
         kpiIncomeBaseMonthly: "Mensile",
         kpiIncomeBaseCu: "CU lordo annuale (netto stimato)",
         kpiCuNetGrossRatioSpouse: "Rapporto netto/lordo CU {spouse}",
+        scenarioLabTitle: "Scenario Lab",
+        scenarioLabSaveBtn: "Salva scenario corrente",
+        scenarioLabClearBtn: "Azzera scenari",
+        scenarioLabEmpty: "Nessuno scenario salvato. Configura i parametri e clicca \u00abSalva scenario corrente\u00bb.",
+        scenarioLabMaxReached: "Massimo 3 scenari salvabili. Rimuovi uno scenario per salvarne un altro.",
+        scenarioLabRemoveBtn: "Rimuovi",
+        scenarioColMetric: "Metrica",
+        scenarioColMode: "Modalit\u00e0",
+        scenarioColAssegno: "Assegno",
+        scenarioColDisp1: "Netto C1",
+        scenarioColDisp2: "Netto C2",
+        scenarioColPost1: "Post-ass. C1",
+        scenarioColPost2: "Post-ass. C2",
+        scenarioColFabb: "Fabbis. figli",
+        scenarioDeltaLabel: "\u0394 vs A",
+        spiegTitle: "Perch\u00e9 questo risultato?",
+        spiegRedditiLabel: "Redditi (peso contributivo)",
+        spiegSpeseLabel: "Spese \u2192 fabbisogno figli",
+        spiegPermLabel: "Permanenza \u2192 quota diretta",
+        spiegResultLabel: "Come si forma l'assegno",
         footerVisitorsTotal: "Visitatori totali",
         footerVisitorsActive: "Visitatori attivi",
         footerLoggedUsers: "Utenti loggati",
@@ -460,6 +483,26 @@ const defaultExpenseItems = [
         kpiIncomeBaseMonthly: "Monthly",
         kpiIncomeBaseCu: "CU gross yearly (estimated net)",
         kpiCuNetGrossRatioSpouse: "CU net/gross ratio {spouse}",
+        scenarioLabTitle: "Scenario Lab",
+        scenarioLabSaveBtn: "Save current scenario",
+        scenarioLabClearBtn: "Clear all scenarios",
+        scenarioLabEmpty: "No scenario saved yet. Configure parameters and click \u00abSave current scenario\u00bb.",
+        scenarioLabMaxReached: "Maximum 3 scenarios. Remove one to save another.",
+        scenarioLabRemoveBtn: "Remove",
+        scenarioColMetric: "Metric",
+        scenarioColMode: "Mode",
+        scenarioColAssegno: "Support",
+        scenarioColDisp1: "Net C1",
+        scenarioColDisp2: "Net C2",
+        scenarioColPost1: "Post-supp. C1",
+        scenarioColPost2: "Post-supp. C2",
+        scenarioColFabb: "Children needs",
+        scenarioDeltaLabel: "\u0394 vs A",
+        spiegTitle: "Why this result?",
+        spiegRedditiLabel: "Income (contribution weight)",
+        spiegSpeseLabel: "Expenses \u2192 children needs",
+        spiegPermLabel: "Permanence \u2192 direct share",
+        spiegResultLabel: "How the support is formed",
         footerVisitorsTotal: "Total visitors",
         footerVisitorsActive: "Active visitors",
         footerLoggedUsers: "Logged users",
@@ -704,6 +747,11 @@ const defaultExpenseItems = [
       }
       if (cardTitles[0]) cardTitles[0].textContent = tr("inputsTitle");
       if (cardTitles[1]) cardTitles[1].textContent = tr("resultsTitle");
+      if (cardTitles[2]) cardTitles[2].textContent = tr("scenarioLabTitle");
+      const btnSaveScenarioTr = document.getElementById("btnSaveScenario");
+      const btnClearScenariosTr = document.getElementById("btnClearScenarios");
+      if (btnSaveScenarioTr) btnSaveScenarioTr.textContent = tr("scenarioLabSaveBtn");
+      if (btnClearScenariosTr) btnClearScenariosTr.textContent = tr("scenarioLabClearBtn");
       if (calcSummary) calcSummary.textContent = tr("howCalc");
       if (orientativeNote) orientativeNote.textContent = tr("orientative");
 
@@ -2729,6 +2777,142 @@ const defaultExpenseItems = [
       fc.renderAll();
     }
 
+    function saveCurrentScenario() {
+      if (scenarioLab.length >= SCENARIO_LAB_MAX) {
+        alert(tr("scenarioLabMaxReached"));
+        return;
+      }
+      const label = SCENARIO_LABELS[scenarioLab.length];
+      const payload = collectCalculationPayload();
+      payload._nome1 = c1n();
+      payload._nome2 = c2n();
+      const model = computeModelLocal(payload);
+      scenarioLab.push({ label, payload, model });
+      renderScenarioLab();
+    }
+
+    function removeScenario(idx) {
+      scenarioLab.splice(idx, 1);
+      scenarioLab.forEach((s, i) => { s.label = SCENARIO_LABELS[i]; });
+      renderScenarioLab();
+    }
+
+    function renderScenarioLab() {
+      const body = document.getElementById("scenarioLabBody");
+      if (!body) return;
+
+      if (scenarioLab.length === 0) {
+        body.innerHTML = `<p class="note scenario-lab-empty">${tr("scenarioLabEmpty")}</p>`;
+        return;
+      }
+
+      const hasMultiple = scenarioLab.length > 1;
+      const metrics = [
+        { label: () => tr("scenarioColMode"),    fmt: (m) => escapeHtml(getModeName(m.mode, m.simplePerc)), numeric: false },
+        { label: () => tr("scenarioColAssegno"), fmt: (m) => eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1)), numeric: true,  val: (m) => Math.max(m.assegnoDa1a2, m.assegnoDa2a1) },
+        { label: () => tr("scenarioColDisp1"),   fmt: (m) => eur(m.disp1),           numeric: true,  val: (m) => m.disp1 },
+        { label: () => tr("scenarioColDisp2"),   fmt: (m) => eur(m.disp2),           numeric: true,  val: (m) => m.disp2 },
+        { label: () => tr("scenarioColPost1"),   fmt: (m) => eur(m.post1),           numeric: true,  val: (m) => m.post1 },
+        { label: () => tr("scenarioColPost2"),   fmt: (m) => eur(m.post2),           numeric: true,  val: (m) => m.post2 },
+        { label: () => tr("scenarioColFabb"),    fmt: (m) => eur(m.fabbisognoFigli), numeric: true,  val: (m) => m.fabbisognoFigli }
+      ];
+
+      let headerRow = `<tr><th class="metric-label">${tr("scenarioColMetric")}</th>`;
+      scenarioLab.forEach((s, si) => {
+        const n1 = escapeHtml(s.payload._nome1 || tr("spouse1Default"));
+        const n2 = escapeHtml(s.payload._nome2 || tr("spouse2Default"));
+        headerRow += `<th class="scenario-col-head"><span class="scenario-badge">Sc ${escapeHtml(s.label)}</span><br><small>${n1} / ${n2}</small><br><button class="btn-secondary scenario-remove-btn" data-scenario-idx="${si}" type="button">${tr("scenarioLabRemoveBtn")}</button></th>`;
+        if (hasMultiple && si > 0) {
+          headerRow += `<th class="delta-col-head">${tr("scenarioDeltaLabel")} ${escapeHtml(s.label)}</th>`;
+        }
+      });
+      headerRow += `</tr>`;
+
+      let dataRows = "";
+      metrics.forEach((metric) => {
+        dataRows += `<tr><td class="metric-label">${metric.label()}</td>`;
+        scenarioLab.forEach((s, si) => {
+          const m = s.model;
+          dataRows += `<td class="scenario-val">${metric.fmt(m)}</td>`;
+          if (hasMultiple && si > 0) {
+            if (metric.numeric) {
+              const diff = metric.val(m) - metric.val(scenarioLab[0].model);
+              const sign = diff > 0.005 ? "+" : "";
+              const cls = diff > 0.005 ? "delta-pos" : diff < -0.005 ? "delta-neg" : "delta-zero";
+              dataRows += `<td class="delta-col ${cls}">${sign}${eur(diff)}</td>`;
+            } else {
+              dataRows += `<td class="delta-col delta-zero">&ndash;</td>`;
+            }
+          }
+        });
+        dataRows += `</tr>`;
+      });
+
+      body.innerHTML = `
+        <div class="scenario-table-wrap">
+          <table class="scenario-table">
+            <thead>${headerRow}</thead>
+            <tbody>${dataRows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderSpiegabilita(m) {
+      const panel = document.getElementById("spiegPanel");
+      if (!panel) return;
+
+      const peso1Pct = (m.peso1 * 100).toFixed(1);
+      const peso2Pct = (m.peso2 * 100).toFixed(1);
+      const days1 = ((m.perm1 / 100) * 30).toFixed(1);
+      const days2 = ((m.perm2 / 100) * 30).toFixed(1);
+      const isAssegno1 = m.assegnoDa1a2 > 0.005;
+      const isAssegno2 = m.assegnoDa2a1 > 0.005;
+      const n1 = escapeHtml(c1n());
+      const n2 = escapeHtml(c2n());
+
+      let resultHtml;
+      if (isAssegno1) {
+        resultHtml = `${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)} = <strong class="ok">${eur(m.assegnoDa1a2)}</strong>`;
+      } else if (isAssegno2) {
+        resultHtml = `${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)} = <strong class="ok">${eur(m.assegnoDa2a1)}</strong>`;
+      } else {
+        resultHtml = `<span class="ok">${tr("calcNoTransferSuggested")}</span>`;
+      }
+
+      panel.innerHTML = `
+        <details class="spieg-details">
+          <summary class="spieg-title">${tr("spiegTitle")}</summary>
+          <div class="spieg-grid">
+            <div class="spieg-item">
+              <div class="spieg-item-label">${tr("spiegRedditiLabel")}</div>
+              <div class="spieg-item-body">
+                ${n1}: ${eur(m.disp1)} &nbsp;|&nbsp; ${n2}: ${eur(m.disp2)}<br>
+                ${tr("pdfWeight")}: <strong>${n1} ${peso1Pct}%</strong> / <strong>${n2} ${peso2Pct}%</strong>
+              </div>
+            </div>
+            <div class="spieg-item">
+              <div class="spieg-item-label">${tr("spiegSpeseLabel")}</div>
+              <div class="spieg-item-body">
+                ${eur(m.speseTot)} &times; 35% = <strong>${eur(m.fabbisognoFigli)}</strong>
+              </div>
+            </div>
+            <div class="spieg-item">
+              <div class="spieg-item-label">${tr("spiegPermLabel")}</div>
+              <div class="spieg-item-body">
+                ${n1}: ${m.perm1.toFixed(0)}% (${days1} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta1)}<br>
+                ${n2}: ${m.perm2.toFixed(0)}% (${days2} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta2)}
+              </div>
+            </div>
+            <div class="spieg-item spieg-item--result">
+              <div class="spieg-item-label">${tr("spiegResultLabel")}</div>
+              <div class="spieg-item-body">${resultHtml}</div>
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
     function getModeName(mode, simplePerc) {
       if (mode === "legal") return tr("calcModeLegalName");
       if (mode === "simple") return msg("calcModeSimpleName", { perc: simplePerc.toFixed(0) });
@@ -2848,6 +3032,8 @@ const defaultExpenseItems = [
       updateExpensePartials();
       renderLivePanel(m);
       calculate(m);
+      renderSpiegabilita(m);
+      renderScenarioLab();
     }
 
     function applyState(state) {
@@ -3415,6 +3601,24 @@ const defaultExpenseItems = [
 
     document.getElementById("btnPdf").addEventListener("click", () => {
       exportPdfDirect();
+    });
+
+    document.getElementById("btnSaveScenario").addEventListener("click", () => {
+      saveCurrentScenario();
+    });
+
+    document.getElementById("btnClearScenarios").addEventListener("click", () => {
+      scenarioLab = [];
+      renderScenarioLab();
+    });
+
+    document.getElementById("scenarioLabBody").addEventListener("click", (e) => {
+      const btn = e.target && e.target.closest("button[data-scenario-idx]");
+      if (!btn) return;
+      const idx = Number(btn.getAttribute("data-scenario-idx"));
+      if (Number.isInteger(idx) && idx >= 0 && idx < scenarioLab.length) {
+        removeScenario(idx);
+      }
     });
 
     document.getElementById("btnAddExpenseItem").addEventListener("click", () => {
