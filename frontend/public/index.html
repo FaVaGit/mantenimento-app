@@ -217,13 +217,12 @@
 
           <div class="shared-grid">
             <div class="field">
-              <label for="calcMode" class="label-row">Modalita calcolo
-                <span class="hint" title="Scegli tra modalita legale-proporzionale, semplificata o linea guida Tribunale di Genova.">i</span>
+              <label for="calcProfile" class="label-row" id="lblCalcProfile">Profilo calcolo
+                <span class="hint" id="hintCalcProfile" title="Selezione unica che combina riferimento normativo/territoriale e motore di calcolo.">i</span>
               </label>
-              <select id="calcMode">
-                <option value="legal" selected>Legale-proporzionale (consigliata)</option>
-                <option value="simple">Semplificata: differenza netti x %</option>
-                <option value="genova">Linee guida Tribunale di Genova</option>
+              <select id="calcProfile">
+                <option value="it-national-2026.1" selected>Italia nazionale - Legale proporzionale (v2026.1)</option>
+                <option value="it-genova-2026.1">Italia - Genova guideline (v2026.1)</option>
               </select>
               <div class="mode-guideline" id="modeGuideline"></div>
             </div>
@@ -235,16 +234,6 @@
                 <option value="monthly" selected>Reddito mensile</option>
                 <option value="annual">Reddito annuale (conversione /12)</option>
                 <option value="cu">Certificazione Unica (lordo annuale → netto stimato)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="normProfile" class="label-row" id="lblNormProfile">Profilo normativo/territoriale
-                <span class="hint" id="hintNormProfile" title="Profilo versione regole: traccia il riferimento normativo/territoriale usato in simulazione e report.">i</span>
-              </label>
-              <select id="normProfile">
-                <option value="it-national-2026.1" selected>Italia nazionale (v2026.1)</option>
-                <option value="it-genova-2026.1">Italia - Genova guideline (v2026.1)</option>
-                <option value="custom-draft-2026.1">Bozza personalizzata (v2026.1)</option>
               </select>
             </div>
             <div class="field">
