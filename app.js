@@ -1686,6 +1686,14 @@ const defaultExpenseItems = [
         e.stopPropagation();
       });
 
+      // Close menu when keyboard focus moves outside of the auth panel.
+      wrap.addEventListener("focusout", (e) => {
+        const nextFocused = e.relatedTarget;
+        if (!nextFocused || !wrap.contains(nextFocused)) {
+          setAuthMenuOpen(false);
+        }
+      });
+
       document.addEventListener("click", () => {
         setAuthMenuOpen(false);
       });
@@ -1694,6 +1702,10 @@ const defaultExpenseItems = [
         if (e.key === "Escape") {
           setAuthMenuOpen(false);
         }
+      });
+
+      window.addEventListener("blur", () => {
+        setAuthMenuOpen(false);
       });
     }
 
