@@ -43,7 +43,7 @@ const defaultExpenseItems = [
       it: {
         title: "Calcolatore Mantenimento Figli",
         heroTitle: "Calcolatore Assegno di Mantenimento",
-        heroSubtitle: "Modello di calcolo orientativo adattato al <strong>reddito netto mensile o annuale</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.",
+        heroSubtitle: "Modello di calcolo orientativo adattato a <strong>reddito netto mensile/annuale</strong> oppure a <strong>CU (lordo annuale con stima del netto)</strong>, con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.",
         quickActions: "Azioni rapide",
         btnReset: "Reset valori",
         btnExport: "Esporta JSON cifrato",
@@ -223,7 +223,7 @@ const defaultExpenseItems = [
         calcGeneral3: "Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.",
         calcGeneral4: "Fabbisogno figli stimato = totale spese inserite x 35%.",
         calcInputMeaningTitle: "Significato delle principali voci richieste in input",
-        calcInput1: "- Reddito netto: entrata disponibile del coniuge (mensile oppure annuale, se selezionata base annuale).",
+        calcInput1: "- Reddito: inserisci reddito netto mensile, netto annuale o lordo annuale CU (con conversione orientativa a netto mensile).",
         calcInput2: "- Assegno percepito: importo ricevuto mensilmente dal coniuge.",
         calcInput3: "- Assegno pagato: importo versato mensilmente dal coniuge.",
         calcInput4: "- Assegni familiari/INPS: componenti assistenziali percepite.",
@@ -237,7 +237,7 @@ const defaultExpenseItems = [
         calcKpi5: "- Importo per figlio: assegno mensile suggerito diviso per numero figli.",
         calcKpi6: "- Assegno pagato esterno: quota pagata non compensata da assegni percepiti dell'altro coniuge (non accreditata all'altro).",
         calcIncomeBaseNote: "Nota base reddito:",
-        calcIncomeBaseNoteText: "i redditi annuali sono convertiti automaticamente in mensili (/12) prima di tutti i calcoli.",
+        calcIncomeBaseNoteText: "base Annuale: i redditi netti annuali sono convertiti in mensili (/12). Base CU: dal lordo annuale viene stimato il netto mensile con IRPEF/INPS/addizionali (stima orientativa).",
         calcNoTransferSuggested: "Nessun trasferimento suggerito",
         kpiActiveMode: "Modalita attiva",
         kpiIncomeBase: "Base reddito",
@@ -248,7 +248,7 @@ const defaultExpenseItems = [
       en: {
         title: "Child Support Calculator",
         heroTitle: "Child Support Estimate Calculator",
-        heroSubtitle: "Indicative calculation model based on <strong>monthly or yearly net income</strong> with separate expense input for <strong>Spouse 1</strong> and <strong>Spouse 2</strong>.",
+        heroSubtitle: "Indicative calculation model based on <strong>monthly/yearly net income</strong> or <strong>CU gross yearly income (estimated monthly net)</strong>, with separate expense input for <strong>Spouse 1</strong> and <strong>Spouse 2</strong>.",
         quickActions: "Quick actions",
         btnReset: "Reset values",
         btnExport: "Export encrypted JSON",
@@ -428,7 +428,7 @@ const defaultExpenseItems = [
         calcGeneral3: "Contribution weight = spouse positive availability / sum of positive availabilities.",
         calcGeneral4: "Estimated children needs = total entered expenses x 35%.",
         calcInputMeaningTitle: "Meaning of the main required input fields",
-        calcInput1: "- Net income: spouse available income (monthly or yearly if yearly base is selected).",
+        calcInput1: "- Income: enter monthly net, yearly net, or CU gross yearly income (with indicative conversion to monthly net).",
         calcInput2: "- Support received: monthly amount received by the spouse.",
         calcInput3: "- Support paid: monthly amount paid by the spouse.",
         calcInput4: "- Family benefits/INPS: received support components.",
@@ -442,7 +442,7 @@ const defaultExpenseItems = [
         calcKpi5: "- Amount per child: suggested monthly support divided by number of children.",
         calcKpi6: "- External support paid: paid quota not offset by support received from the other spouse (not credited to the other).",
         calcIncomeBaseNote: "Income base note:",
-        calcIncomeBaseNoteText: "yearly incomes are automatically converted to monthly (/12) before all calculations.",
+        calcIncomeBaseNoteText: "Annual base: yearly net incomes are converted to monthly (/12). CU base: monthly net is estimated from gross yearly income using IRPEF/INPS/local taxes (indicative estimate).",
         calcNoTransferSuggested: "No suggested transfer",
         kpiActiveMode: "Active mode",
         kpiIncomeBase: "Income base",
@@ -670,12 +670,15 @@ const defaultExpenseItems = [
       if (incomeMode) {
         const monthly = incomeMode.querySelector("option[value='monthly']");
         const annual = incomeMode.querySelector("option[value='annual']");
+        const cu = incomeMode.querySelector("option[value='cu']");
         if (currentLang === "en") {
           if (monthly) monthly.textContent = "Monthly income";
           if (annual) annual.textContent = "Yearly income (conversion /12)";
+          if (cu) cu.textContent = "CU tax certificate (gross yearly -> estimated net)";
         } else {
           if (monthly) monthly.textContent = "Reddito mensile";
           if (annual) annual.textContent = "Reddito annuale (conversione /12)";
+          if (cu) cu.textContent = "Certificazione Unica (lordo annuale -> netto stimato)";
         }
       }
       if (cardTitles[0]) cardTitles[0].textContent = tr("inputsTitle");
@@ -2106,8 +2109,8 @@ const defaultExpenseItems = [
       const canvasEl = document.getElementById("liveDiffCanvas");
       if (!canvasEl) return;
 
-      const w = Math.max(280, Math.round(canvasEl.parentElement.clientWidth - 16));
-      const h = 156;
+      const w = Math.max(280, Math.round(canvasEl.parentElement.clientWidth - 2));
+      const h = 172;
       canvasEl.width = w;
       canvasEl.height = h;
 
@@ -2120,7 +2123,7 @@ const defaultExpenseItems = [
       netDiffFabricCanvas = fc;
 
       const centerX = w / 2;
-      const centerY = 104;
+      const centerY = 118;
       const radius = Math.min(50, Math.max(38, (w * 0.16)));
       const totalAbs = Math.max(1, Math.abs(m.disp1) + Math.abs(m.disp2));
       const shift = (diffDisp / totalAbs) * (radius * 1.5);
@@ -2132,18 +2135,6 @@ const defaultExpenseItems = [
         coords: { x1, y1, x2, y2 },
         colorStops: stops
       });
-
-      fc.add(new window.fabric.Rect({
-        left: 8,
-        top: 8,
-        width: w - 16,
-        height: h - 16,
-        rx: 16,
-        ry: 16,
-        fill: "#f7fcfb",
-        stroke: "#b8d2cd",
-        strokeWidth: 1
-      }));
 
       const days1Badge = Math.round((m.perm1 / 100) * 30 * 10) / 10;
       const days2Badge = Math.round((m.perm2 / 100) * 30 * 10) / 10;
@@ -2305,8 +2296,8 @@ const defaultExpenseItems = [
         fontWeight: "700"
       }));
 
-      const trackLeft = 26;
-      const trackWidth = w - 52;
+      const trackLeft = 16;
+      const trackWidth = w - 32;
 
       fc.add(new window.fabric.Rect({
         left: trackLeft,
