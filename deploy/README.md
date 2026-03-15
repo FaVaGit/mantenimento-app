@@ -7,6 +7,7 @@ Questa cartella contiene esempi ripetibili per pubblicare l'app Node dietro Ngin
 File principali:
 - `../Dockerfile`
 - `docker-compose.yml`
+- `docker-compose.override.yml`
 - `nginx/mantenimento-app-docker.conf`
 - `.env.production.example`
 
@@ -21,6 +22,21 @@ Effetto:
 - `app` espone Node sulla rete interna Docker
 - `nginx` pubblica la porta `80` e inoltra le richieste all'app
 - rate limit e filtri metodo restano applicati su `/api/`
+- healthcheck su `app` e `nginx` disponibili nel profilo Compose
+
+Per staging/production:
+
+```bash
+cd deploy
+cp .env.production.example .env.production
+docker compose --env-file .env.production up -d --build
+```
+
+L'override incluso aggiunge:
+- porte configurabili tramite `HTTP_PORT`
+- healthcheck di `app` e `nginx`
+- rotazione base dei log container `json-file`
+- parametri runtime sovrascrivibili da `.env.production`
 
 Nota:
 - questa variante e adatta a un reverse proxy o load balancer TLS esterno
@@ -58,6 +74,7 @@ Nota:
 ## Variabili runtime utili
 
 - `PORT`
+- `HTTP_PORT`
 - `ACCESS_LOG_ENABLED`
 - `ACCESS_LOG_SALT`
 - `CALCULATE_RATE_WINDOW_MS`

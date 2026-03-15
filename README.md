@@ -102,6 +102,7 @@ Per deploy su VPS e disponibile un esempio Nginx in `deploy/nginx/mantenimento-a
 Sono inclusi anche asset ops ripetibili:
 - `Dockerfile` per containerizzare l'app Node con bundle frontend gia generato
 - `deploy/docker-compose.yml` per eseguire Node dietro Nginx con rete interna dedicata
+- `deploy/docker-compose.override.yml` per staging/production con healthcheck e logging container
 - `deploy/nginx/mantenimento-app-docker.conf` per il reverse proxy Compose
 - `deploy/systemd/mantenimento-app.service` per installazione host-based con systemd
 - `deploy/.env.production.example` come base per le variabili runtime di produzione
