@@ -59,7 +59,7 @@ const defaultExpenseItems = [
         resultsTitle: "Risultati",
         howCalc: "Come viene calcolato",
         orientative: "Questo strumento e solo orientativo e non sostituisce una valutazione legale/professionale del caso concreto.",
-        authLogin: "KeyLock Login",
+        authLogin: "Login",
         modeGuidelinePrefix: "Riferimento modalita selezionata:",
         modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
         redditoAnnuale: "Reddito annuale netto",
