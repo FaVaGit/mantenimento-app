@@ -1752,9 +1752,14 @@ const defaultExpenseItems = [
       const g = Math.max(0, grossAnnual);
       if (g === 0) return 0;
 
-      // INPS dipendente: 9,19% (tetto previdenziale 2025 ~109.954€, sopra: 10,19%)
-      const inpsRate = g <= 109954 ? 0.0919 : 0.1019;
-      const inps = g * inpsRate;
+      // INPS dipendente: quota base 9,19% fino al massimale, quota eccedente 10,19%.
+      // Uso a scaglioni per evitare salti artificiali sui redditi alti.
+      const INPS_BASE_LIMIT = 109954;
+      const INPS_BASE_RATE = 0.0919;
+      const INPS_EXTRA_RATE = 0.1019;
+      const inpsBase = Math.min(g, INPS_BASE_LIMIT) * INPS_BASE_RATE;
+      const inpsExtra = Math.max(0, g - INPS_BASE_LIMIT) * INPS_EXTRA_RATE;
+      const inps = inpsBase + inpsExtra;
       const taxable = g - inps;
 
       // IRPEF lorda 2025 (aliquote DL 216/2023 confermate dalla Legge Bilancio 2025)
@@ -1771,8 +1776,7 @@ const defaultExpenseItems = [
       // Detrazione da lavoro dipendente 2025
       let detr = 0;
       if (taxable > 0 && taxable <= 15000) {
-        detr = Math.max(690, 1955 * ((15000 - taxable) / 15000) + 1265);
-        // semplificazione: flat 1955 per redditi ≤15.000
+        // Semplificazione: fascia bassa trattata con detrazione piena.
         detr = 1955;
       } else if (taxable <= 28000) {
         detr = 1910 + 1190 * ((28000 - taxable) / 13000);
@@ -1785,7 +1789,7 @@ const defaultExpenseItems = [
       // Bonus Irpef (ex "80€" / trattamento integrativo): ≤15.000 → 1.200, 15.001–28.000 → scala
       let bonus = 0;
       if (taxable <= 15000) {
-        bonus = Math.min(1200, Math.max(0, irpefGross - detr) > 0 ? 1200 : 0);
+        bonus = Math.max(0, irpefGross - detr) > 0 ? 1200 : 0;
       } else if (taxable <= 28000) {
         bonus = 1200 * ((28000 - taxable) / 13000);
       }
