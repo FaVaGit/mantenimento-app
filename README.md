@@ -103,7 +103,9 @@ Sono inclusi anche asset ops ripetibili:
 - `Dockerfile` per containerizzare l'app Node con bundle frontend gia generato
 - `deploy/docker-compose.yml` per eseguire Node dietro Nginx con rete interna dedicata
 - `deploy/docker-compose.override.yml` per staging/production con healthcheck e logging container
+- `deploy/docker-compose.tls.yml` per TLS locale o staging con certificati montati nel container Nginx
 - `deploy/nginx/mantenimento-app-docker.conf` per il reverse proxy Compose
+- `deploy/nginx/mantenimento-app-docker-tls.conf` per la terminazione TLS nel profilo Compose dedicato
 - `deploy/systemd/mantenimento-app.service` per installazione host-based con systemd
 - `deploy/.env.production.example` come base per le variabili runtime di produzione
 - `deploy/vps-checklist.md` per il bootstrap host-based

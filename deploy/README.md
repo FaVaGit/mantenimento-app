@@ -8,7 +8,9 @@ File principali:
 - `../Dockerfile`
 - `docker-compose.yml`
 - `docker-compose.override.yml`
+- `docker-compose.tls.yml`
 - `nginx/mantenimento-app-docker.conf`
+- `nginx/mantenimento-app-docker-tls.conf`
 - `.env.production.example`
 
 Avvio:
@@ -37,6 +39,24 @@ L'override incluso aggiunge:
 - healthcheck di `app` e `nginx`
 - rotazione base dei log container `json-file`
 - parametri runtime sovrascrivibili da `.env.production`
+
+Per TLS locale o staging con certificati montati:
+
+```bash
+cd deploy
+cp .env.production.example .env.production
+docker compose \
+	--env-file .env.production \
+	-f docker-compose.yml \
+	-f docker-compose.override.yml \
+	-f docker-compose.tls.yml \
+	up -d --build
+```
+
+Prerequisiti TLS:
+- monta i certificati tramite `TLS_CERTS_DIR`
+- nella directory certificati devono essere presenti `fullchain.pem` e `privkey.pem`
+- la porta HTTPS e controllata da `HTTPS_PORT`
 
 Nota:
 - questa variante e adatta a un reverse proxy o load balancer TLS esterno
@@ -75,6 +95,8 @@ Nota:
 
 - `PORT`
 - `HTTP_PORT`
+- `HTTPS_PORT`
+- `TLS_CERTS_DIR`
 - `ACCESS_LOG_ENABLED`
 - `ACCESS_LOG_SALT`
 - `CALCULATE_RATE_WINDOW_MS`
