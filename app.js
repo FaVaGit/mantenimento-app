@@ -76,6 +76,11 @@ const defaultExpenseItems = [
         authLoginBtn: "Login",
         authSignupBtn: "Registrati",
         authVerifyCodeBtn: "Verifica codice",
+        normProfileLabel: "Profilo normativo/territoriale",
+        normProfileHint: "Profilo versione regole: traccia il riferimento normativo/territoriale usato in simulazione e report.",
+        normProfileNational: "Italia nazionale (v2026.1)",
+        normProfileGenova: "Italia - Genova guideline (v2026.1)",
+        normProfileCustom: "Bozza personalizzata (v2026.1)",
         modeGuidelinePrefix: "Riferimento modalita selezionata:",
         modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
         redditoAnnuale: "Reddito annuale netto",
@@ -149,6 +154,7 @@ const defaultExpenseItems = [
         pdfInputSection: "Parametri di Input",
         pdfGeneralSettings: "Impostazioni Generali",
         pdfCalcMode: "Modalità di calcolo",
+        pdfNormProfile: "Profilo normativo",
         pdfIncomeBase: "Base reddito",
         pdfIncomeAnnualBase: "Annuale (÷12 per mensile)",
         pdfIncomeMonthlyBase: "Mensile",
@@ -177,6 +183,15 @@ const defaultExpenseItems = [
         pdfTheoreticalShare: "Quota teorica",
         pdfDirectShareC1C2: "Quota diretta C1 / C2",
         pdfScenarioSection: "Scenario Lab",
+        pdfNegotiationSection: "Report negoziale avanzato",
+        pdfNegotiationOption: "Opzione",
+        pdfNegotiationAmount: "Assegno",
+        pdfNegotiationPayerPost: "Post-assegno pagante ({spouse})",
+        pdfNegotiationReceiverPost: "Post-assegno beneficiario ({spouse})",
+        pdfNegotiationLow: "Conservativa (-10%)",
+        pdfNegotiationTarget: "Target modello",
+        pdfNegotiationHigh: "Espansiva (+10%)",
+        pdfNegotiationNoTransfer: "Nessun assegno: scenario neutro",
         pdfScenarioName: "Scenario",
         pdfScenarioBaseline: "Base",
         pdfScenarioDelta: "Delta vs base",
@@ -215,6 +230,22 @@ const defaultExpenseItems = [
         liveNetPostSupportPerson: "Netto post-assegno {spouse}",
         liveDaysWithSpouse: "{days} gg con {spouse}",
         langDaysSuffix: "gg",
+        permCalendarTitle: "Calendario permanenza reale",
+        permCalendarNote: "Assegna ogni giorno al coniuge con cui il minore pernotta: la percentuale si aggiorna automaticamente.",
+        permCalendarMonthLabel: "Mese",
+        permCalendarResetBtn: "Reset mese",
+        permCalendarLegendC1: "Coniuge 1",
+        permCalendarLegendC2: "Coniuge 2",
+        permCalendarSummary: "{month}: {d1} {daysSuffix} con {spouse1} ({p1}%) · {d2} {daysSuffix} con {spouse2} ({p2}%)",
+        permCalendarUnknownMonth: "mese selezionato",
+        extraBoxTitle: "Spese straordinarie (base)",
+        extraBoxNote: "Inserisci i costi straordinari annuali stimati: il sistema li converte in quota mensile da includere nel modello.",
+        extraAnnLabel1: "Straordinarie annue {spouse} ({currency}/anno)",
+        extraAnnLabel2: "Straordinarie annue {spouse} ({currency}/anno)",
+        extraAnnHint1: "Quota annuale straordinaria stimata a carico di {spouse} (es. sanitarie non ricorrenti, scolastiche extra, attività non ordinarie).",
+        extraAnnHint2: "Quota annuale straordinaria stimata a carico di {spouse} (es. sanitarie non ricorrenti, scolastiche extra, attività non ordinarie).",
+        extraMonthlyEstimate: "Quota mensile stimata: {amount}",
+        pdfExtraordinaryRow: "Spese straordinarie (quota mensile da annuo)",
         liveTotalIncome: "Entrate totali (reddito + assegni + INPS)",
         livePaidToOther: "Assegno mantenimento pagato all'altro coniuge",
         livePaidExternal: "Assegno mantenimento pagato esterno",
@@ -322,6 +353,11 @@ const defaultExpenseItems = [
         authLoginBtn: "Login",
         authSignupBtn: "Sign up",
         authVerifyCodeBtn: "Verify code",
+        normProfileLabel: "Normative/territorial profile",
+        normProfileHint: "Versioned rule profile: tracks the normative/territorial reference used in simulation and report.",
+        normProfileNational: "Italy national (v2026.1)",
+        normProfileGenova: "Italy - Genoa guideline (v2026.1)",
+        normProfileCustom: "Custom draft (v2026.1)",
         modeGuidelinePrefix: "Selected mode reference:",
         modeGuidelineLink: "Genoa Court guidelines (PDF)",
         redditoAnnuale: "Annual net income",
@@ -395,6 +431,7 @@ const defaultExpenseItems = [
         pdfInputSection: "Input Parameters",
         pdfGeneralSettings: "General Settings",
         pdfCalcMode: "Calculation mode",
+        pdfNormProfile: "Normative profile",
         pdfIncomeBase: "Income base",
         pdfIncomeAnnualBase: "Yearly (÷12 to monthly)",
         pdfIncomeMonthlyBase: "Monthly",
@@ -423,6 +460,15 @@ const defaultExpenseItems = [
         pdfTheoreticalShare: "Theoretical share",
         pdfDirectShareC1C2: "Direct share C1 / C2",
         pdfScenarioSection: "Scenario Lab",
+        pdfNegotiationSection: "Advanced negotiation report",
+        pdfNegotiationOption: "Option",
+        pdfNegotiationAmount: "Support",
+        pdfNegotiationPayerPost: "Payer post-support ({spouse})",
+        pdfNegotiationReceiverPost: "Receiver post-support ({spouse})",
+        pdfNegotiationLow: "Conservative (-10%)",
+        pdfNegotiationTarget: "Model target",
+        pdfNegotiationHigh: "Expansion (+10%)",
+        pdfNegotiationNoTransfer: "No support: neutral scenario",
         pdfScenarioName: "Scenario",
         pdfScenarioBaseline: "Baseline",
         pdfScenarioDelta: "Delta vs baseline",
@@ -461,6 +507,22 @@ const defaultExpenseItems = [
         liveNetPostSupportPerson: "Post-support net {spouse}",
         liveDaysWithSpouse: "{days} days with {spouse}",
         langDaysSuffix: "d",
+        permCalendarTitle: "Real permanence calendar",
+        permCalendarNote: "Assign each day to the spouse where the child stays overnight: percentages update automatically.",
+        permCalendarMonthLabel: "Month",
+        permCalendarResetBtn: "Reset month",
+        permCalendarLegendC1: "Spouse 1",
+        permCalendarLegendC2: "Spouse 2",
+        permCalendarSummary: "{month}: {d1} {daysSuffix} with {spouse1} ({p1}%) · {d2} {daysSuffix} with {spouse2} ({p2}%)",
+        permCalendarUnknownMonth: "selected month",
+        extraBoxTitle: "Extraordinary expenses (base)",
+        extraBoxNote: "Enter estimated yearly extraordinary costs: the system converts them to a monthly share included in the model.",
+        extraAnnLabel1: "Yearly extraordinary {spouse} ({currency}/year)",
+        extraAnnLabel2: "Yearly extraordinary {spouse} ({currency}/year)",
+        extraAnnHint1: "Estimated yearly extraordinary share for {spouse} (e.g., non-recurring medical, extra school, non-ordinary activities).",
+        extraAnnHint2: "Estimated yearly extraordinary share for {spouse} (e.g., non-recurring medical, extra school, non-ordinary activities).",
+        extraMonthlyEstimate: "Estimated monthly share: {amount}",
+        pdfExtraordinaryRow: "Extraordinary expenses (monthly share from yearly)",
         liveTotalIncome: "Total income (income + support + INPS)",
         livePaidToOther: "Support paid to the other spouse",
         livePaidExternal: "External support paid",
@@ -583,6 +645,10 @@ const defaultExpenseItems = [
       monthly: null,
       annual: null,
       cu: null
+    };
+    const permanenceCalendarState = {
+      month: "",
+      byMonth: {}
     };
     let currentLang = "it";
     let currentCurrency = "EUR";
@@ -879,11 +945,26 @@ const defaultExpenseItems = [
       const lblKeylockEmail = document.getElementById("lblKeylockEmail");
       const lblKeylockEmailOtp = document.getElementById("lblKeylockEmailOtp");
       const btnVerifyEmailCode = document.getElementById("btnVerifyEmailCode");
+      const permCalendarTitle = document.getElementById("permCalendarTitle");
+      const permCalendarNote = document.getElementById("permCalendarNote");
+      const permCalendarMonthLabel = document.getElementById("permCalendarMonthLabel");
+      const btnPermCalendarReset = document.getElementById("btnPermCalendarReset");
+      const permLegendC1 = document.getElementById("permLegendC1");
+      const permLegendC2 = document.getElementById("permLegendC2");
+      const extraBoxTitle = document.getElementById("extraBoxTitle");
+      const extraBoxNote = document.getElementById("extraBoxNote");
+      const lblStraordAnn1 = document.getElementById("lblStraordAnn1");
+      const lblStraordAnn2 = document.getElementById("lblStraordAnn2");
+      const hintStraordAnn1 = document.getElementById("hintStraordAnn1");
+      const hintStraordAnn2 = document.getElementById("hintStraordAnn2");
       const btnLoginKeyLock = document.getElementById("btnLoginKeyLock");
       const btnRegisterKeyLock = document.getElementById("btnRegisterKeyLock");
       const coffeeHero = document.querySelector(".btn-coffee-hero");
       const calcMode = document.getElementById("calcMode");
       const incomeMode = document.getElementById("incomeMode");
+      const normProfile = document.getElementById("normProfile");
+      const lblNormProfile = document.getElementById("lblNormProfile");
+      const hintNormProfile = document.getElementById("hintNormProfile");
       const cardTitles = document.querySelectorAll(".card h2");
       const calcSummary = document.querySelector("details summary");
       const orientativeNote = document.querySelectorAll(".card .content > p.note")[0];
@@ -904,6 +985,18 @@ const defaultExpenseItems = [
       if (lblKeylockEmail) lblKeylockEmail.childNodes[0].textContent = tr("authEmailLabelSignup");
       if (lblKeylockEmailOtp) lblKeylockEmailOtp.childNodes[0].textContent = tr("authVerifyCodeLabel");
       if (btnVerifyEmailCode) btnVerifyEmailCode.textContent = tr("authVerifyCodeBtn");
+      if (permCalendarTitle) permCalendarTitle.textContent = tr("permCalendarTitle");
+      if (permCalendarNote) permCalendarNote.textContent = tr("permCalendarNote");
+      if (permCalendarMonthLabel) permCalendarMonthLabel.textContent = tr("permCalendarMonthLabel");
+      if (btnPermCalendarReset) btnPermCalendarReset.textContent = tr("permCalendarResetBtn");
+      if (permLegendC1) permLegendC1.textContent = c1n();
+      if (permLegendC2) permLegendC2.textContent = c2n();
+      if (extraBoxTitle) extraBoxTitle.textContent = tr("extraBoxTitle");
+      if (extraBoxNote) extraBoxNote.textContent = tr("extraBoxNote");
+      if (lblStraordAnn1) lblStraordAnn1.textContent = msg("extraAnnLabel1", { spouse: c1n(), currency: currentCurrency });
+      if (lblStraordAnn2) lblStraordAnn2.textContent = msg("extraAnnLabel2", { spouse: c2n(), currency: currentCurrency });
+      if (hintStraordAnn1) hintStraordAnn1.title = msg("extraAnnHint1", { spouse: c1n() });
+      if (hintStraordAnn2) hintStraordAnn2.title = msg("extraAnnHint2", { spouse: c2n() });
       if (btnLoginKeyLock) btnLoginKeyLock.textContent = tr("authLoginBtn");
       if (btnRegisterKeyLock) btnRegisterKeyLock.textContent = tr("authSignupBtn");
       if (coffeeHero) {
@@ -938,6 +1031,16 @@ const defaultExpenseItems = [
           if (cu) cu.textContent = "Certificazione Unica (lordo annuale -> netto stimato)";
         }
       }
+      if (lblNormProfile) lblNormProfile.childNodes[0].textContent = tr("normProfileLabel");
+      if (hintNormProfile) hintNormProfile.title = tr("normProfileHint");
+      if (normProfile) {
+        const n1 = normProfile.querySelector("option[value='it-national-2026.1']");
+        const n2 = normProfile.querySelector("option[value='it-genova-2026.1']");
+        const n3 = normProfile.querySelector("option[value='custom-draft-2026.1']");
+        if (n1) n1.textContent = tr("normProfileNational");
+        if (n2) n2.textContent = tr("normProfileGenova");
+        if (n3) n3.textContent = tr("normProfileCustom");
+      }
       if (cardTitles[0]) cardTitles[0].textContent = tr("inputsTitle");
       if (cardTitles[1]) cardTitles[1].textContent = tr("resultsTitle");
       if (cardTitles[2]) cardTitles[2].textContent = tr("scenarioLabTitle");
@@ -955,6 +1058,8 @@ const defaultExpenseItems = [
       if (visitorTotalLabel) visitorTotalLabel.textContent = tr("footerVisitorsTotal");
       if (visitorActiveLabel) visitorActiveLabel.textContent = tr("footerVisitorsActive");
       if (visitorLoggedLabel) visitorLoggedLabel.textContent = tr("footerLoggedUsers");
+      updateExtraordinaryModuleUi();
+      updatePermanenceCalendarSummary();
       renderVisitorCounters();
     }
 
@@ -2220,6 +2325,8 @@ const defaultExpenseItems = [
         const sliderBar = document.getElementById("permSliderBar");
         const sliderVal = sliderBar ? Number(sliderBar.getAttribute("aria-valuenow")) : p1;
         p1 = Math.min(100, Math.max(0, Number.isFinite(sliderVal) ? sliderVal : p1));
+      } else if (source === "calendar") {
+        p1 = Math.min(100, Math.max(0, p1));
       }
 
       p1 = Math.round(p1);
@@ -2248,6 +2355,15 @@ const defaultExpenseItems = [
         daysRight.style.width = p2 + "%";
         daysLeft.innerHTML = `<span class="perm-days-chip">${leftTxt}</span>`;
         daysRight.innerHTML = `<span class="perm-days-chip">${rightTxt}</span>`;
+      }
+
+      const monthInput = document.getElementById("permCalendarMonth");
+      const monthValue = monthInput && parseMonthValue(monthInput.value) ? monthInput.value : (permanenceCalendarState.month || getCurrentMonthValue());
+      if (source !== "calendar") {
+        alignCalendarToCurrentPercent(monthValue);
+        renderPermanenceCalendar(monthValue);
+      } else {
+        updatePermanenceCalendarSummary();
       }
     }
 
@@ -2310,8 +2426,208 @@ const defaultExpenseItems = [
       });
     }
 
+    function getCurrentMonthValue() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function parseMonthValue(value) {
+      const m = String(value || "").match(/^(\d{4})-(\d{2})$/);
+      if (!m) return null;
+      const year = Number(m[1]);
+      const month = Number(m[2]);
+      if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return null;
+      return { year, month };
+    }
+
+    function getCalendarDaysInMonth(monthValue) {
+      const parsed = parseMonthValue(monthValue);
+      if (!parsed) return 30;
+      return new Date(parsed.year, parsed.month, 0).getDate();
+    }
+
+    function getMonthLabel(monthValue) {
+      const parsed = parseMonthValue(monthValue);
+      if (!parsed) return tr("permCalendarUnknownMonth");
+      const dt = new Date(parsed.year, parsed.month - 1, 1);
+      return dt.toLocaleDateString(getCurrentLocale(), { month: "long", year: "numeric" });
+    }
+
+    function getWeekdayShortLabels() {
+      const baseMonday = new Date(2024, 0, 1); // Monday
+      const labels = [];
+      for (let i = 0; i < 7; i += 1) {
+        const dt = new Date(baseMonday.getTime() + i * 86400000);
+        labels.push(dt.toLocaleDateString(getCurrentLocale(), { weekday: "short" }));
+      }
+      return labels;
+    }
+
+    function getMonthAssignments(monthValue) {
+      if (!permanenceCalendarState.byMonth[monthValue]) {
+        const days = getCalendarDaysInMonth(monthValue);
+        const p1 = Math.min(100, Math.max(0, Number(document.getElementById("perm1")?.value || 0)));
+        const daysForC1 = Math.round((days * p1) / 100);
+        const assignments = [];
+        for (let d = 1; d <= days; d += 1) {
+          assignments.push(d <= daysForC1 ? 1 : 2);
+        }
+        permanenceCalendarState.byMonth[monthValue] = assignments;
+      }
+      return permanenceCalendarState.byMonth[monthValue];
+    }
+
+    function alignCalendarToCurrentPercent(monthValue) {
+      const assignments = getMonthAssignments(monthValue);
+      const days = assignments.length || 30;
+      const p1 = Math.min(100, Math.max(0, Number(document.getElementById("perm1")?.value || 0)));
+      const daysForC1 = Math.round((days * p1) / 100);
+      for (let i = 0; i < days; i += 1) {
+        assignments[i] = i < daysForC1 ? 1 : 2;
+      }
+    }
+
+    function applyPermanenceFromCalendar(monthValue, options = {}) {
+      const assignments = getMonthAssignments(monthValue);
+      const days = assignments.length || 30;
+      const c1Days = assignments.reduce((acc, owner) => acc + (owner === 1 ? 1 : 0), 0);
+      const p1 = Math.round((c1Days / days) * 100);
+      document.getElementById("perm1").value = p1;
+      syncPermanenza("calendar");
+      updatePermanenceCalendarSummary();
+      if (!options.silentRender) renderAll();
+    }
+
+    function updatePermanenceCalendarSummary() {
+      const summary = document.getElementById("permCalendarSummary");
+      if (!summary) return;
+
+      const monthValue = permanenceCalendarState.month || document.getElementById("permCalendarMonth")?.value || getCurrentMonthValue();
+      const assignments = getMonthAssignments(monthValue);
+      const days = assignments.length || 30;
+      const d1 = assignments.reduce((acc, owner) => acc + (owner === 1 ? 1 : 0), 0);
+      const d2 = days - d1;
+      const p1 = Math.round((d1 / days) * 100);
+      const p2 = 100 - p1;
+
+      summary.textContent = msg("permCalendarSummary", {
+        month: getMonthLabel(monthValue),
+        d1: String(d1),
+        d2: String(d2),
+        daysSuffix: tr("langDaysSuffix"),
+        spouse1: c1n(),
+        spouse2: c2n(),
+        p1: String(p1),
+        p2: String(p2)
+      });
+
+      const legend1 = document.getElementById("permLegendC1");
+      const legend2 = document.getElementById("permLegendC2");
+      if (legend1) legend1.textContent = c1n();
+      if (legend2) legend2.textContent = c2n();
+    }
+
+    function renderPermanenceCalendar(monthValue) {
+      const grid = document.getElementById("permCalendarGrid");
+      if (!grid) return;
+      const parsed = parseMonthValue(monthValue);
+      if (!parsed) return;
+
+      permanenceCalendarState.month = monthValue;
+      const firstDayDate = new Date(parsed.year, parsed.month - 1, 1);
+      const firstWeekdayMonStart = (firstDayDate.getDay() + 6) % 7;
+      const days = getCalendarDaysInMonth(monthValue);
+      const assignments = getMonthAssignments(monthValue);
+
+      const weekdayHtml = getWeekdayShortLabels()
+        .map((label) => `<div class="perm-cal-h">${escapeHtml(label)}</div>`)
+        .join("");
+
+      let cellsHtml = "";
+      for (let i = 0; i < firstWeekdayMonStart; i += 1) {
+        cellsHtml += `<button class="perm-cal-day empty" type="button" tabindex="-1" aria-hidden="true"></button>`;
+      }
+
+      for (let d = 1; d <= days; d += 1) {
+        const owner = assignments[d - 1] === 1 ? 1 : 2;
+        cellsHtml += `<button class="perm-cal-day c${owner}" type="button" data-cal-day="${d}" aria-label="${d}">${d}</button>`;
+      }
+
+      grid.innerHTML = weekdayHtml + cellsHtml;
+      updatePermanenceCalendarSummary();
+    }
+
+    function initPermanenceCalendar() {
+      const monthInput = document.getElementById("permCalendarMonth");
+      const resetBtn = document.getElementById("btnPermCalendarReset");
+      const grid = document.getElementById("permCalendarGrid");
+      if (!monthInput || !resetBtn || !grid) return;
+
+      monthInput.value = getCurrentMonthValue();
+      permanenceCalendarState.month = monthInput.value;
+      renderPermanenceCalendar(monthInput.value);
+      applyPermanenceFromCalendar(monthInput.value, { silentRender: true });
+
+      monthInput.addEventListener("change", () => {
+        const nextMonth = parseMonthValue(monthInput.value) ? monthInput.value : getCurrentMonthValue();
+        monthInput.value = nextMonth;
+        renderPermanenceCalendar(nextMonth);
+        applyPermanenceFromCalendar(nextMonth);
+      });
+
+      resetBtn.addEventListener("click", () => {
+        const currentMonth = parseMonthValue(monthInput.value) ? monthInput.value : getCurrentMonthValue();
+        delete permanenceCalendarState.byMonth[currentMonth];
+        renderPermanenceCalendar(currentMonth);
+        applyPermanenceFromCalendar(currentMonth);
+      });
+
+      grid.addEventListener("click", (e) => {
+        const btn = e.target && e.target.closest("button[data-cal-day]");
+        if (!btn) return;
+        const day = Number(btn.getAttribute("data-cal-day"));
+        if (!Number.isInteger(day) || day < 1) return;
+
+        const month = permanenceCalendarState.month || monthInput.value || getCurrentMonthValue();
+        const assignments = getMonthAssignments(month);
+        if (day > assignments.length) return;
+        assignments[day - 1] = assignments[day - 1] === 1 ? 2 : 1;
+        renderPermanenceCalendar(month);
+        applyPermanenceFromCalendar(month);
+      });
+    }
+
+    function exportPermanenceCalendarState() {
+      return {
+        month: permanenceCalendarState.month,
+        byMonth: safeJsonClone(permanenceCalendarState.byMonth)
+      };
+    }
+
+    function importPermanenceCalendarState(raw) {
+      permanenceCalendarState.month = "";
+      permanenceCalendarState.byMonth = {};
+      if (!raw || typeof raw !== "object") return;
+      const byMonth = raw.byMonth && typeof raw.byMonth === "object" ? raw.byMonth : {};
+      Object.entries(byMonth).forEach(([month, values]) => {
+        if (!parseMonthValue(month) || !Array.isArray(values)) return;
+        const days = getCalendarDaysInMonth(month);
+        const normalized = values.slice(0, days).map((v) => (Number(v) === 1 ? 1 : 2));
+        while (normalized.length < days) normalized.push(2);
+        permanenceCalendarState.byMonth[month] = normalized;
+      });
+      const fallbackMonth = getCurrentMonthValue();
+      permanenceCalendarState.month = parseMonthValue(raw.month) ? raw.month : fallbackMonth;
+      const monthInput = document.getElementById("permCalendarMonth");
+      if (monthInput) monthInput.value = permanenceCalendarState.month;
+      renderPermanenceCalendar(permanenceCalendarState.month);
+      applyPermanenceFromCalendar(permanenceCalendarState.month, { silentRender: true });
+    }
+
     function sumSpese(prefix) {
-      return expenseItems.reduce((acc, _, idx) => acc + num(`${prefix}_${idx}`), 0);
+      const base = expenseItems.reduce((acc, _, idx) => acc + num(`${prefix}_${idx}`), 0);
+      const extra = prefix === "c1" ? getExtraordinaryMonthly(1) : getExtraordinaryMonthly(2);
+      return base + extra;
     }
 
     /**
@@ -2499,8 +2815,16 @@ const defaultExpenseItems = [
     }
 
     function collectCalculationPayload() {
+      const c1Spese = expenseItems.map((_, idx) => num(`c1_${idx}`));
+      const c2Spese = expenseItems.map((_, idx) => num(`c2_${idx}`));
+      const extra1 = getExtraordinaryMonthly(1);
+      const extra2 = getExtraordinaryMonthly(2);
+      if (extra1 > 0) c1Spese.push(extra1);
+      if (extra2 > 0) c2Spese.push(extra2);
+
       return {
         incomeMode: document.getElementById("incomeMode").value || "monthly",
+        normProfile: document.getElementById("normProfile")?.value || "it-national-2026.1",
         r1Raw: num("reddito1"),
         r2Raw: num("reddito2"),
         figli: Math.max(1, Math.round(num("numFigli"))),
@@ -2513,8 +2837,8 @@ const defaultExpenseItems = [
         aPag2: num("assegnoPagato2"),
         aFam1: num("assegnoFam1"),
         aFam2: num("assegnoFam2"),
-        c1Spese: expenseItems.map((_, idx) => num(`c1_${idx}`)),
-        c2Spese: expenseItems.map((_, idx) => num(`c2_${idx}`))
+        c1Spese,
+        c2Spese
       };
     }
 
@@ -2635,6 +2959,13 @@ const defaultExpenseItems = [
     function c1n() { return (document.getElementById("nome1").value || "").trim() || tr("spouse1Default"); }
     function c2n() { return (document.getElementById("nome2").value || "").trim() || tr("spouse2Default"); }
 
+    function getSelectedNormProfileLabel() {
+      const select = document.getElementById("normProfile");
+      if (!select) return tr("normProfileNational");
+      const option = select.options[select.selectedIndex];
+      return option ? option.textContent : tr("normProfileNational");
+    }
+
     function updateSpouseLabels() {
       const th1 = document.getElementById("thSpese1");
       const th2 = document.getElementById("thSpese2");
@@ -2644,6 +2975,28 @@ const defaultExpenseItems = [
       if (th2) th2.textContent = `${c2n()} (${currentCurrency})`;
       if (lp1) lp1.textContent = c1n();
       if (lp2) lp2.textContent = c2n();
+      const lblStraordAnn1 = document.getElementById("lblStraordAnn1");
+      const lblStraordAnn2 = document.getElementById("lblStraordAnn2");
+      const hintStraordAnn1 = document.getElementById("hintStraordAnn1");
+      const hintStraordAnn2 = document.getElementById("hintStraordAnn2");
+      if (lblStraordAnn1) lblStraordAnn1.textContent = msg("extraAnnLabel1", { spouse: c1n(), currency: currentCurrency });
+      if (lblStraordAnn2) lblStraordAnn2.textContent = msg("extraAnnLabel2", { spouse: c2n(), currency: currentCurrency });
+      if (hintStraordAnn1) hintStraordAnn1.title = msg("extraAnnHint1", { spouse: c1n() });
+      if (hintStraordAnn2) hintStraordAnn2.title = msg("extraAnnHint2", { spouse: c2n() });
+      updateExtraordinaryModuleUi();
+      updatePermanenceCalendarSummary();
+    }
+
+    function getExtraordinaryMonthly(spouseIndex) {
+      const annual = num(`straordAnn${spouseIndex}`);
+      return annual > 0 ? annual / 12 : 0;
+    }
+
+    function updateExtraordinaryModuleUi() {
+      const month1 = document.getElementById("straordMonth1");
+      const month2 = document.getElementById("straordMonth2");
+      if (month1) month1.textContent = msg("extraMonthlyEstimate", { amount: eur(getExtraordinaryMonthly(1)) });
+      if (month2) month2.textContent = msg("extraMonthlyEstimate", { amount: eur(getExtraordinaryMonthly(2)) });
     }
 
     function renderLivePanel(m) {
@@ -3223,6 +3576,9 @@ const defaultExpenseItems = [
       if (!formulaNote || !resultMain || !kpi) return;
 
       const modeName = getModeName(m.mode, m.simplePerc);
+      const normProfileName = escapeHtml(getSelectedNormProfileLabel());
+      const negotiationPayerName = m.assegnoDa1a2 > 0.005 ? c1n() : (m.assegnoDa2a1 > 0.005 ? c2n() : c1n());
+      const negotiationReceiverName = m.assegnoDa1a2 > 0.005 ? c2n() : (m.assegnoDa2a1 > 0.005 ? c1n() : c2n());
 
       let modeSpecific = "";
       if (m.mode === "simple") {
@@ -3325,6 +3681,7 @@ const defaultExpenseItems = [
 
     function renderAll() {
       const m = computeModel();
+      updateExtraordinaryModuleUi();
       updateExpensePartials();
       renderLivePanel(m);
       calculate(m);
@@ -3387,7 +3744,9 @@ const defaultExpenseItems = [
         `;
       }
 
-      const speseRows = expenseItems.map((item, i) => {
+      const extraSpese1Monthly = getExtraordinaryMonthly(1);
+      const extraSpese2Monthly = getExtraordinaryMonthly(2);
+      const speseRowsBase = expenseItems.map((item, i) => {
         const c1 = num(`c1_${i}`);
         const c2 = num(`c2_${i}`);
         return `<tr>
@@ -3397,6 +3756,15 @@ const defaultExpenseItems = [
           <td class="num bold">${(c1 + c2) > 0 ? eur(c1 + c2) : "–"}</td>
         </tr>`;
       }).join("");
+      const extraSpeseRow = (extraSpese1Monthly > 0 || extraSpese2Monthly > 0)
+        ? `<tr>
+          <td>${tr("pdfExtraordinaryRow")}</td>
+          <td class="num">${extraSpese1Monthly > 0 ? eur(extraSpese1Monthly) : "–"}</td>
+          <td class="num">${extraSpese2Monthly > 0 ? eur(extraSpese2Monthly) : "–"}</td>
+          <td class="num bold">${eur(extraSpese1Monthly + extraSpese2Monthly)}</td>
+        </tr>`
+        : "";
+      const speseRows = speseRowsBase + extraSpeseRow;
 
       const scenarioMetrics = [
         { label: tr("scenarioColMode"), val: (sm) => getModeName(sm.mode, sm.simplePerc), fmt: (v) => escapeHtml(v), numeric: false },
@@ -3458,6 +3826,39 @@ const defaultExpenseItems = [
             </table>
           </div>
         `;
+      })();
+      const negotiationRowsHtml = (() => {
+        const baseAmount = Math.max(m.assegnoDa1a2, m.assegnoDa2a1);
+        const payerIs1 = m.assegnoDa1a2 > 0.005;
+        const payerName = payerIs1 ? c1NameEsc : c2NameEsc;
+        const receiverName = payerIs1 ? c2NameEsc : c1NameEsc;
+
+        if (baseAmount <= 0.005) {
+          return `<tr>
+            <td>${tr("pdfNegotiationNoTransfer")}</td>
+            <td class="num">${eur(0)}</td>
+            <td class="num">${eur(m.disp1)}</td>
+            <td class="num">${eur(m.disp2)}</td>
+          </tr>`;
+        }
+
+        const options = [
+          { label: tr("pdfNegotiationLow"), factor: 0.9 },
+          { label: tr("pdfNegotiationTarget"), factor: 1 },
+          { label: tr("pdfNegotiationHigh"), factor: 1.1 }
+        ];
+
+        return options.map((opt) => {
+          const amount = Math.round(baseAmount * opt.factor * 100) / 100;
+          const payerPost = payerIs1 ? (m.disp1 - amount) : (m.disp2 - amount);
+          const receiverPost = payerIs1 ? (m.disp2 + amount) : (m.disp1 + amount);
+          return `<tr>
+            <td>${escapeHtml(opt.label)}</td>
+            <td class="num">${eur(amount)}</td>
+            <td class="num">${eur(payerPost)}</td>
+            <td class="num">${eur(receiverPost)}</td>
+          </tr>`;
+        }).join("");
       })();
       const scenarioSectionClass = scenarioLab.length >= 3
         ? "section scenario-section compact-3"
@@ -3762,6 +4163,7 @@ const defaultExpenseItems = [
       <thead><tr><th colspan="2">${tr("pdfGeneralSettings")}</th></tr></thead>
       <tbody>
         <tr><td>${tr("pdfCalcMode")}</td><td>${modeName}</td></tr>
+        <tr><td>${tr("pdfNormProfile")}</td><td>${normProfileName}</td></tr>
         <tr><td>${tr("pdfIncomeBase")}</td><td>${m.incomeMode === "annual" ? tr("pdfIncomeAnnualBase") : m.incomeMode === "cu" ? tr("pdfIncomeCuBase") : tr("pdfIncomeMonthlyBase")}</td></tr>
         <tr><td>${tr("pdfChildrenCount")}</td><td>${m.figli}</td></tr>
         <tr><td>${tr("pdfPermanence")} ${c1n()}</td><td>${m.perm1.toFixed(0)}%</td></tr>
@@ -3897,6 +4299,23 @@ ${scenarioLab.length ? `
 </div>
 ` : ""}
 
+<div class="section">
+  <div class="section-title">${tr("pdfNegotiationSection")}</div>
+  <table>
+    <thead>
+      <tr>
+        <th>${tr("pdfNegotiationOption")}</th>
+        <th class="num">${tr("pdfNegotiationAmount")}</th>
+        <th class="num">${msg("pdfNegotiationPayerPost", { spouse: negotiationPayerName })}</th>
+        <th class="num">${msg("pdfNegotiationReceiverPost", { spouse: negotiationReceiverName })}</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${negotiationRowsHtml}
+    </tbody>
+  </table>
+</div>
+
 <!-- NOTE METODOLOGICHE -->
 <div class="note-box">
   <strong>${tr("pdfMethodology")}</strong> — ${tr("pdfMethodologyText")}
@@ -3989,6 +4408,7 @@ ${scenarioLab.length ? `
         reddito1: num("reddito1"),
         reddito2: num("reddito2"),
         incomeMode: document.getElementById("incomeMode").value,
+        normProfile: document.getElementById("normProfile").value,
         numFigli: num("numFigli"),
         perm1: num("perm1"),
         calcMode: document.getElementById("calcMode").value,
@@ -3998,7 +4418,9 @@ ${scenarioLab.length ? `
         assegnoFam1: num("assegnoFam1"),
         assegnoPercepito2: num("assegnoPercepito2"),
         assegnoPagato2: num("assegnoPagato2"),
-        assegnoFam2: num("assegnoFam2")
+        assegnoFam2: num("assegnoFam2"),
+        straordAnn1: num("straordAnn1"),
+        straordAnn2: num("straordAnn2")
       };
       const spese = expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
       const expenseItemsState = expenseItems.map((item) => ({ label: item.label, help: item.help }));
@@ -4008,6 +4430,7 @@ ${scenarioLab.length ? `
       }));
       return { base, spese, expenseItems: expenseItemsState,
         scenarioLab: scenariosState,
+        permanenceCalendar: exportPermanenceCalendarState(),
         nome1: document.getElementById("nome1").value,
         nome2: document.getElementById("nome2").value };
     }
@@ -4029,6 +4452,7 @@ ${scenarioLab.length ? `
       scenarioLab = normalizeScenarioLabState(state.scenarioLab);
       if (state.nome1 !== undefined) document.getElementById("nome1").value = state.nome1;
       if (state.nome2 !== undefined) document.getElementById("nome2").value = state.nome2;
+      importPermanenceCalendarState(state.permanenceCalendar);
       updateSpouseLabels();
       buildExpenseRows();
       syncPermanenza();
@@ -4046,6 +4470,13 @@ ${scenarioLab.length ? `
           el.value = el.defaultValue || 0;
         }
       });
+      permanenceCalendarState.byMonth = {};
+      const monthInput = document.getElementById("permCalendarMonth");
+      const monthValue = monthInput && parseMonthValue(monthInput.value) ? monthInput.value : getCurrentMonthValue();
+      permanenceCalendarState.month = monthValue;
+      if (monthInput) monthInput.value = monthValue;
+      renderPermanenceCalendar(monthValue);
+      applyPermanenceFromCalendar(monthValue, { silentRender: true });
       syncPermanenza();
       renderAll();
     }
@@ -4238,7 +4669,7 @@ ${scenarioLab.length ? `
     });
 
     document.addEventListener("change", (e) => {
-      if (e.target && (e.target.id === "calcMode" || e.target.id === "incomeMode")) {
+      if (e.target && (e.target.id === "calcMode" || e.target.id === "incomeMode" || e.target.id === "normProfile")) {
         if (e.target.id === "incomeMode") {
           const nextMode = document.getElementById("incomeMode").value || "monthly";
           convertIncomeValuesForModeChange(incomeModeLast, nextMode);
@@ -4280,6 +4711,7 @@ ${scenarioLab.length ? `
     initUiZoom();
     initTopActionsMenu();
     initPermSliderBar();
+    initPermanenceCalendar();
     initAuthMenu();
     initCoffeeFloatVisibility();
     initCoffeeDonationPicker();
