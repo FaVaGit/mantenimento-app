@@ -39,6 +39,11 @@ const defaultExpenseItems = [
     const SUPPORTED_LANGS = ["it", "en"];
     const SUPPORTED_CURRENCIES = ["EUR", "USD", "GBP", "CHF"];
     const CURRENCY_RATES = { EUR: 1, USD: 1.09, GBP: 0.86, CHF: 0.96 };
+    const VISITOR_COUNTER_NS = "mantenimento-app-favagit";
+    const VISITOR_COUNTER_KEY = "visits-total";
+    const VISITOR_SESSION_FLAG = "keylock_visitor_counted";
+    const VISITOR_PRESENCE_CHANNEL = "mantenimento-live-visitors";
+    const VISITOR_ID_KEY = "keylock_visitor_id";
     const I18N = {
       it: {
         title: "Calcolatore Mantenimento Figli",
@@ -244,7 +249,11 @@ const defaultExpenseItems = [
         kpiIncomeBaseAnnual: "Annuale (convertito in mensile)",
         kpiIncomeBaseMonthly: "Mensile",
         kpiIncomeBaseCu: "CU lordo annuale (netto stimato)",
-        kpiCuNetGrossRatioSpouse: "Rapporto netto/lordo CU {spouse}"
+        kpiCuNetGrossRatioSpouse: "Rapporto netto/lordo CU {spouse}",
+        footerVisitorsTotal: "Visitatori totali",
+        footerVisitorsActive: "Visitatori attivi",
+        footerLoggedUsers: "Utenti loggati",
+        footerCounterUnavailable: "n/d"
       },
       en: {
         title: "Child Support Calculator",
@@ -450,7 +459,11 @@ const defaultExpenseItems = [
         kpiIncomeBaseAnnual: "Yearly (converted to monthly)",
         kpiIncomeBaseMonthly: "Monthly",
         kpiIncomeBaseCu: "CU gross yearly (estimated net)",
-        kpiCuNetGrossRatioSpouse: "CU net/gross ratio {spouse}"
+        kpiCuNetGrossRatioSpouse: "CU net/gross ratio {spouse}",
+        footerVisitorsTotal: "Total visitors",
+        footerVisitorsActive: "Active visitors",
+        footerLoggedUsers: "Logged users",
+        footerCounterUnavailable: "n/a"
       }
     };
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
@@ -478,6 +491,14 @@ const defaultExpenseItems = [
     let netDiffFabricCanvas = null;
     let authFlowInProgress = false;
     let authRateLimitedUntilTs = 0;
+    const visitorStatsState = {
+      total: null,
+      active: null,
+      logged: 0,
+      sessionId: `sess-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      visitorId: null,
+      presenceChannel: null
+    };
     let incomeModeLast = "monthly";
     const incomeValuesByMode = {
       monthly: null,
@@ -687,6 +708,14 @@ const defaultExpenseItems = [
       if (cardTitles[1]) cardTitles[1].textContent = tr("resultsTitle");
       if (calcSummary) calcSummary.textContent = tr("howCalc");
       if (orientativeNote) orientativeNote.textContent = tr("orientative");
+
+      const visitorTotalLabel = document.getElementById("visitorTotalLabel");
+      const visitorActiveLabel = document.getElementById("visitorActiveLabel");
+      const visitorLoggedLabel = document.getElementById("visitorLoggedLabel");
+      if (visitorTotalLabel) visitorTotalLabel.textContent = tr("footerVisitorsTotal");
+      if (visitorActiveLabel) visitorActiveLabel.textContent = tr("footerVisitorsActive");
+      if (visitorLoggedLabel) visitorLoggedLabel.textContent = tr("footerLoggedUsers");
+      renderVisitorCounters();
     }
 
     function setTopActionsOpen(open) {
@@ -1121,6 +1150,8 @@ const defaultExpenseItems = [
       } else {
         setAuthStatus(tr("authNotAuthenticated"), false);
       }
+
+      void syncPresenceTrackState();
     }
 
     function setAuthMenuOpen(open) {
@@ -1253,6 +1284,152 @@ const defaultExpenseItems = [
           setCoffeePickerOpen(false);
         }
       });
+    }
+
+    function getOrCreateVisitorId() {
+      const fallback = `visitor-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      try {
+        const existing = String(localStorage.getItem(VISITOR_ID_KEY) || "").trim();
+        if (existing) return existing;
+        localStorage.setItem(VISITOR_ID_KEY, fallback);
+        return fallback;
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    function counterText(value) {
+      if (!Number.isFinite(value)) return tr("footerCounterUnavailable");
+      return new Intl.NumberFormat(getCurrentLocale(), { maximumFractionDigits: 0 }).format(Math.max(0, Math.round(value)));
+    }
+
+    function renderVisitorCounters() {
+      const totalEl = document.getElementById("visitorTotalCount");
+      const activeEl = document.getElementById("visitorActiveCount");
+      const loggedEl = document.getElementById("visitorLoggedCount");
+      if (totalEl) totalEl.textContent = counterText(visitorStatsState.total);
+      if (activeEl) activeEl.textContent = counterText(visitorStatsState.active);
+      if (loggedEl) loggedEl.textContent = counterText(visitorStatsState.logged);
+    }
+
+    async function refreshTotalVisitorsCounter() {
+      const base = "https://api.countapi.xyz";
+      let endpoint = `${base}/get/${VISITOR_COUNTER_NS}/${VISITOR_COUNTER_KEY}`;
+      try {
+        const alreadyCounted = sessionStorage.getItem(VISITOR_SESSION_FLAG) === "1";
+        if (!alreadyCounted) {
+          sessionStorage.setItem(VISITOR_SESSION_FLAG, "1");
+          endpoint = `${base}/hit/${VISITOR_COUNTER_NS}/${VISITOR_COUNTER_KEY}`;
+        }
+      } catch (_) {
+        endpoint = `${base}/hit/${VISITOR_COUNTER_NS}/${VISITOR_COUNTER_KEY}`;
+      }
+
+      try {
+        const res = await fetch(endpoint, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const body = await res.json();
+        visitorStatsState.total = Number(body && body.value);
+      } catch (_) {
+        visitorStatsState.total = null;
+      }
+      renderVisitorCounters();
+    }
+
+    function refreshPresenceCountersFromState() {
+      if (!visitorStatsState.presenceChannel || typeof visitorStatsState.presenceChannel.presenceState !== "function") {
+        visitorStatsState.active = 1;
+        visitorStatsState.logged = authSession.userId ? 1 : 0;
+        renderVisitorCounters();
+        return;
+      }
+
+      const state = visitorStatsState.presenceChannel.presenceState() || {};
+      const activeSessions = new Set();
+      const loggedUsers = new Set();
+
+      Object.values(state).forEach((entries) => {
+        (entries || []).forEach((entry) => {
+          if (entry && entry.sessionId) activeSessions.add(String(entry.sessionId));
+          if (entry && entry.logged && entry.userId) loggedUsers.add(String(entry.userId));
+        });
+      });
+
+      visitorStatsState.active = Math.max(1, activeSessions.size);
+      visitorStatsState.logged = loggedUsers.size;
+      renderVisitorCounters();
+    }
+
+    async function syncPresenceTrackState() {
+      if (!visitorStatsState.presenceChannel) {
+        visitorStatsState.logged = authSession.userId ? 1 : 0;
+        renderVisitorCounters();
+        return;
+      }
+
+      try {
+        await visitorStatsState.presenceChannel.track({
+          sessionId: visitorStatsState.sessionId,
+          visitorId: visitorStatsState.visitorId,
+          logged: !!authSession.userId,
+          userId: authSession.userId || null,
+          ts: Date.now()
+        });
+      } catch (_) {
+        // Ignore realtime sync failures, counters fallback to local values.
+      }
+      refreshPresenceCountersFromState();
+    }
+
+    async function initLiveVisitorPresence() {
+      visitorStatsState.visitorId = getOrCreateVisitorId();
+
+      if (!supabaseClient) {
+        visitorStatsState.active = 1;
+        visitorStatsState.logged = authSession.userId ? 1 : 0;
+        renderVisitorCounters();
+        return;
+      }
+
+      const channel = supabaseClient.channel(VISITOR_PRESENCE_CHANNEL, {
+        config: {
+          presence: {
+            key: visitorStatsState.sessionId
+          }
+        }
+      });
+
+      channel.on("presence", { event: "sync" }, () => {
+        refreshPresenceCountersFromState();
+      });
+      channel.on("presence", { event: "join" }, () => {
+        refreshPresenceCountersFromState();
+      });
+      channel.on("presence", { event: "leave" }, () => {
+        refreshPresenceCountersFromState();
+      });
+
+      visitorStatsState.presenceChannel = channel;
+
+      await new Promise((resolve) => {
+        channel.subscribe(async (status) => {
+          if (status === "SUBSCRIBED") {
+            await syncPresenceTrackState();
+            resolve();
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            visitorStatsState.active = 1;
+            visitorStatsState.logged = authSession.userId ? 1 : 0;
+            renderVisitorCounters();
+            resolve();
+          }
+        });
+      });
+    }
+
+    async function initVisitorCounters() {
+      renderVisitorCounters();
+      await refreshTotalVisitorsCounter();
+      await initLiveVisitorPresence();
     }
 
     async function deriveSessionKeyBits(password, userId) {
@@ -3366,6 +3543,7 @@ const defaultExpenseItems = [
     initAuthMenu();
     initCoffeeFloatVisibility();
     initCoffeeDonationPicker();
+    void initVisitorCounters();
     updateAuthUi();
     renderCloudHistoryPanel();
     syncPermanenza();

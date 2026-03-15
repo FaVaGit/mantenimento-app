@@ -1346,6 +1346,37 @@
       align-items: center;
     }
 
+    .legal-footer-main {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .visitor-stats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .visitor-stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #d7e2d9;
+      background: #fbfdf9;
+      white-space: nowrap;
+    }
+
+    .visitor-stat strong {
+      color: #0f6b64;
+      font-variant-numeric: tabular-nums;
+    }
+
     .legal-footer a {
       color: #0f6b64;
       font-weight: 700;
@@ -1549,6 +1580,9 @@
       .legal-footer {
         flex-direction: column;
         align-items: flex-start;
+      }
+      .visitor-stats {
+        justify-content: flex-start;
       }
       .perm-inline-control {
         grid-template-columns: 78px minmax(0, 1fr) 78px;
