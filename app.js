@@ -550,7 +550,100 @@ const defaultExpenseItems = [
     };
     let currentLang = "it";
     let currentCurrency = "EUR";
-    const CALC_API_BASE = String(window.KEYLOCK_CALC_API_BASE || "").trim().replace(/\/+$/, "");
+    const CALC_API_BASE_STORAGE_KEY = "keylock_calc_api_base";
+    const FRONTEND_VARIANT_ENVS = window.KEYLOCK_FRONTEND_VARIANT_ENVS && typeof window.KEYLOCK_FRONTEND_VARIANT_ENVS === "object"
+      ? window.KEYLOCK_FRONTEND_VARIANT_ENVS
+      : {};
+    const CALC_API_ENVS = window.KEYLOCK_CALC_API_ENVS && typeof window.KEYLOCK_CALC_API_ENVS === "object"
+      ? window.KEYLOCK_CALC_API_ENVS
+      : {};
+
+    function normalizeApiBase(rawValue) {
+      return String(rawValue || "").trim().replace(/\/+$/, "");
+    }
+
+    function normalizeFrontendVariantUrl(rawValue) {
+      return String(rawValue || "").trim();
+    }
+
+    function maybeRedirectFrontendVariant() {
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        const variant = String(params.get("frontend") || "").trim().toLowerCase();
+        if (!variant || variant === "prod" || variant === "default" || variant === "reset") return;
+
+        const targetBase = normalizeFrontendVariantUrl(FRONTEND_VARIANT_ENVS[variant] || "");
+        if (!targetBase) return;
+
+        const target = new URL(targetBase, window.location.href);
+        const current = new URL(window.location.href);
+
+        // Avoid redirect loops when already on the target frontend.
+        if (target.href === current.href) return;
+        if (target.origin === current.origin && target.pathname === current.pathname) return;
+
+        // Keep runtime API selection params when switching frontend variant.
+        ["env", "apiBase"].forEach((k) => {
+          if (params.has(k)) target.searchParams.set(k, String(params.get(k)));
+        });
+
+        window.location.replace(target.toString());
+      } catch (_) {
+        // Ignore malformed URLs and continue with default frontend.
+      }
+    }
+
+    maybeRedirectFrontendVariant();
+
+    function resolveNamedApiBase(envName) {
+      const key = String(envName || "").trim().toLowerCase();
+      if (!key) return "";
+      return normalizeApiBase(CALC_API_ENVS[key] || "");
+    }
+
+    function resolveCalculationApiBase() {
+      const configBase = normalizeApiBase(window.KEYLOCK_CALC_API_BASE || "");
+      let storedBase = "";
+
+      try {
+        storedBase = normalizeApiBase(localStorage.getItem(CALC_API_BASE_STORAGE_KEY) || "");
+      } catch (_) {
+        storedBase = "";
+      }
+
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        if (params.has("env")) {
+          const envName = String(params.get("env") || "").trim().toLowerCase();
+          const disable = envName === "off" || envName === "default" || envName === "reset" || envName === "prod";
+          const envBase = disable ? "" : resolveNamedApiBase(envName);
+          try {
+            if (disable || !envBase) {
+              localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
+            } else {
+              localStorage.setItem(CALC_API_BASE_STORAGE_KEY, envBase);
+            }
+          } catch (_) {}
+          return envBase;
+        }
+
+        if (params.has("apiBase")) {
+          const queryBaseRaw = String(params.get("apiBase") || "").trim();
+          const disable = queryBaseRaw === "off" || queryBaseRaw === "default" || queryBaseRaw === "reset";
+          const queryBase = disable ? "" : normalizeApiBase(queryBaseRaw);
+          try {
+            if (disable || !queryBase) {
+              localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
+            } else {
+              localStorage.setItem(CALC_API_BASE_STORAGE_KEY, queryBase);
+            }
+          } catch (_) {}
+          return queryBase;
+        }
+      } catch (_) {}
+
+      return storedBase || configBase;
+    }
 
     function tr(key) {
       const table = I18N[currentLang] || I18N.it;
@@ -576,7 +669,8 @@ const defaultExpenseItems = [
     }
 
     function resolveCalculationApiUrl() {
-      if (CALC_API_BASE) return `${CALC_API_BASE}/api/calculate`;
+      const calcApiBase = resolveCalculationApiBase();
+      if (calcApiBase) return `${calcApiBase}/api/calculate`;
       return "/api/calculate";
     }
 
