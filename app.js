@@ -2981,13 +2981,15 @@ const defaultExpenseItems = [
       }
 
       const hasMultiple = scenarioLab.length > 1;
+      const currentName1 = escapeHtml(c1n());
+      const currentName2 = escapeHtml(c2n());
       const metrics = [
         { label: () => tr("scenarioColMode"),    fmt: (m) => escapeHtml(getModeName(m.mode, m.simplePerc)), numeric: false },
         { label: () => tr("scenarioColAssegno"), fmt: (m) => eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1)), numeric: true,  val: (m) => Math.max(m.assegnoDa1a2, m.assegnoDa2a1) },
-        { label: () => tr("scenarioColDisp1"),   fmt: (m) => eur(m.disp1),           numeric: true,  val: (m) => m.disp1 },
-        { label: () => tr("scenarioColDisp2"),   fmt: (m) => eur(m.disp2),           numeric: true,  val: (m) => m.disp2 },
-        { label: () => tr("scenarioColPost1"),   fmt: (m) => eur(m.post1),           numeric: true,  val: (m) => m.post1 },
-        { label: () => tr("scenarioColPost2"),   fmt: (m) => eur(m.post2),           numeric: true,  val: (m) => m.post2 },
+        { label: () => `${escapeHtml(tr("scenarioColDisp1")).replace("C1", currentName1)}`, fmt: (m) => eur(m.disp1), numeric: true, val: (m) => m.disp1 },
+        { label: () => `${escapeHtml(tr("scenarioColDisp2")).replace("C2", currentName2)}`, fmt: (m) => eur(m.disp2), numeric: true, val: (m) => m.disp2 },
+        { label: () => `${escapeHtml(tr("scenarioColPost1")).replace("C1", currentName1)}`, fmt: (m) => eur(m.post1), numeric: true, val: (m) => m.post1 },
+        { label: () => `${escapeHtml(tr("scenarioColPost2")).replace("C2", currentName2)}`, fmt: (m) => eur(m.post2), numeric: true, val: (m) => m.post2 },
         { label: () => tr("scenarioColFabb"),    fmt: (m) => eur(m.fabbisognoFigli), numeric: true,  val: (m) => m.fabbisognoFigli }
       ];
 
