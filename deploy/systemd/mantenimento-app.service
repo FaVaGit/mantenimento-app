@@ -1,0 +1,23 @@
+[Unit]
+Description=Mantenimento App Node backend
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/mantenimento-app
+Environment=NODE_ENV=production
+Environment=PORT=3000
+EnvironmentFile=-/opt/mantenimento-app/.env
+ExecStart=/usr/bin/node /opt/mantenimento-app/backend/server.js
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/mantenimento-app
+
+[Install]
+WantedBy=multi-user.target

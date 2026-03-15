@@ -99,6 +99,16 @@ Per deploy su VPS e disponibile un esempio Nginx in `deploy/nginx/mantenimento-a
 - filtro L7 sui metodi per `/api/`
 - access log minimizzato senza query string e senza payload
 
+Sono inclusi anche asset ops ripetibili:
+- `Dockerfile` per containerizzare l'app Node con bundle frontend gia generato
+- `deploy/docker-compose.yml` per eseguire Node dietro Nginx con rete interna dedicata
+- `deploy/nginx/mantenimento-app-docker.conf` per il reverse proxy Compose
+- `deploy/systemd/mantenimento-app.service` per installazione host-based con systemd
+- `deploy/.env.production.example` come base per le variabili runtime di produzione
+- `deploy/vps-checklist.md` per il bootstrap host-based
+- `deploy/logrotate/mantenimento-app` per retention minima dei log Nginx
+- `deploy/README.md` con i passaggi operativi essenziali
+
 ## Note
 - Strumento orientativo: non sostituisce valutazione legale/professionale.
 - Hardening gia applicato: redirect HTTPS in produzione, HSTS su connessioni sicure, `Cache-Control: no-store` sulle risposte di calcolo, rate limit in memoria per IP, body limit JSON a `64kb`, request ID e logging applicativo minimizzato senza payload o query string.
