@@ -642,6 +642,150 @@
       outline-offset: 2px;
     }
 
+    .perm-calendar {
+      margin-top: 10px;
+      border: 1px solid #c8ddd8;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f8fcfb, #edf6f4);
+      padding: 10px;
+    }
+
+    .perm-calendar-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .perm-calendar-title {
+      font-size: 0.87rem;
+      font-weight: 700;
+      color: #134b45;
+    }
+
+    .perm-calendar-note {
+      margin-top: 2px;
+      font-size: 0.78rem;
+      color: #4a6662;
+      max-width: 620px;
+    }
+
+    .perm-calendar-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .perm-calendar-actions label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1e5049;
+    }
+
+    #permCalendarMonth {
+      min-width: 148px;
+    }
+
+    #btnPermCalendarReset {
+      padding: 7px 10px;
+      font-size: 0.78rem;
+    }
+
+    .perm-calendar-legend {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .legend-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .legend-pill-c1 {
+      background: #d9f0eb;
+      color: #0f5a53;
+      border-color: #9ecfc5;
+    }
+
+    .legend-pill-c2 {
+      background: #f8e8cf;
+      color: #77501a;
+      border-color: #dfbe87;
+    }
+
+    .perm-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .perm-cal-h {
+      text-align: center;
+      font-size: 0.74rem;
+      color: #4f6c67;
+      font-weight: 700;
+      padding-bottom: 3px;
+    }
+
+    .perm-cal-day {
+      border-radius: 9px;
+      border: 1px solid #c6d8d4;
+      background: #ffffff;
+      min-height: 34px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #264540;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+
+    .perm-cal-day:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(22, 73, 67, 0.18);
+    }
+
+    .perm-cal-day.c1 {
+      background: linear-gradient(180deg, #d9f0eb, #b8dfd6);
+      border-color: #86c4b7;
+      color: #0f544d;
+    }
+
+    .perm-cal-day.c2 {
+      background: linear-gradient(180deg, #f8e8cf, #f0d3a1);
+      border-color: #d9b57d;
+      color: #6b4717;
+    }
+
+    .perm-cal-day.empty {
+      background: transparent;
+      border: none;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .perm-cal-day:focus-visible {
+      outline: 2px solid #0f766d;
+      outline-offset: 1px;
+    }
+
+    .perm-calendar-summary {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: #22413c;
+      font-weight: 600;
+    }
+
     .mode-guideline {
       margin-top: 6px;
       font-size: 0.78rem;
@@ -654,6 +798,40 @@
       color: #0b625b;
       font-weight: 600;
       text-decoration: underline;
+    }
+
+    .extra-box {
+      margin-top: 12px;
+      border: 1px solid #c8ddd8;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f8fcfb, #edf6f4);
+      padding: 10px;
+    }
+
+    .extra-box-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #154640;
+    }
+
+    .extra-box-note {
+      margin-top: 2px;
+      font-size: 0.78rem;
+      color: #4a6662;
+    }
+
+    .extra-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .extra-monthly {
+      margin-top: 5px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #184a44;
     }
     
     .label-row {
@@ -2021,6 +2199,19 @@
       .perm-inline-control input[type="number"] {
         font-size: 0.84rem;
         padding: 7px 5px;
+      }
+      .perm-calendar-actions {
+        width: 100%;
+      }
+      #permCalendarMonth {
+        flex: 1;
+        min-width: 120px;
+      }
+      .perm-cal-day {
+        min-height: 31px;
+      }
+      .extra-grid {
+        grid-template-columns: 1fr;
       }
       .top-actions {
         display: block;

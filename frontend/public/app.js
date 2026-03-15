@@ -68,6 +68,19 @@ const defaultExpenseItems = [
         howCalc: "Come viene calcolato",
         orientative: "Questo strumento e solo orientativo e non sostituisce una valutazione legale/professionale del caso concreto.",
         authLogin: "Login",
+        authHead: "KeyLock Cloud",
+        authModeLogin: "Login",
+        authModeSignup: "Signup",
+        authEmailLabelSignup: "Email di registrazione",
+        authVerifyCodeLabel: "Codice verifica email",
+        authLoginBtn: "Login",
+        authSignupBtn: "Registrati",
+        authVerifyCodeBtn: "Verifica codice",
+        normProfileLabel: "Profilo normativo/territoriale",
+        normProfileHint: "Profilo versione regole: traccia il riferimento normativo/territoriale usato in simulazione e report.",
+        normProfileNational: "Italia nazionale (v2026.1)",
+        normProfileGenova: "Italia - Genova guideline (v2026.1)",
+        normProfileCustom: "Bozza personalizzata (v2026.1)",
         modeGuidelinePrefix: "Riferimento modalita selezionata:",
         modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
         redditoAnnuale: "Reddito annuale netto",
@@ -102,6 +115,10 @@ const defaultExpenseItems = [
         authRegisterNoAutoLogin: "Registrazione eseguita ma login non completato. In Supabase disattiva la conferma email per usare KeyLock con solo utente/password.",
         authRegisterRateLimitedLoggedIn: "Rate limit registrazione rilevato, ma accesso effettuato: {loginMsg}",
         authRegisteredAndLogged: "Utente {username} registrato e login effettuato.",
+        authNeedSignupVerification: "Completa prima la registrazione in modalita Signup.",
+        authNeedVerificationCode: "Inserisci il codice di verifica ricevuto via email.",
+        authVerifyCodeFailed: "Verifica codice fallita: {message}",
+        authVerifyCodeSuccess: "Email verificata. Account attivato come {username}.",
         authInvalidUsername: "Nome utente non valido.",
         authNeedUserOrEmail: "Inserisci utente oppure email per il login.",
         authLoginRateLimit: "Troppi tentativi ravvicinati. Attendi 1-2 minuti e riprova il Login.",
@@ -137,6 +154,7 @@ const defaultExpenseItems = [
         pdfInputSection: "Parametri di Input",
         pdfGeneralSettings: "Impostazioni Generali",
         pdfCalcMode: "Modalità di calcolo",
+        pdfNormProfile: "Profilo normativo",
         pdfIncomeBase: "Base reddito",
         pdfIncomeAnnualBase: "Annuale (÷12 per mensile)",
         pdfIncomeMonthlyBase: "Mensile",
@@ -164,6 +182,19 @@ const defaultExpenseItems = [
         pdfAmountPerChild: "Importo per figlio",
         pdfTheoreticalShare: "Quota teorica",
         pdfDirectShareC1C2: "Quota diretta C1 / C2",
+        pdfScenarioSection: "Scenario Lab",
+        pdfNegotiationSection: "Report negoziale avanzato",
+        pdfNegotiationOption: "Opzione",
+        pdfNegotiationAmount: "Assegno",
+        pdfNegotiationPayerPost: "Post-assegno pagante ({spouse})",
+        pdfNegotiationReceiverPost: "Post-assegno beneficiario ({spouse})",
+        pdfNegotiationLow: "Conservativa (-10%)",
+        pdfNegotiationTarget: "Target modello",
+        pdfNegotiationHigh: "Espansiva (+10%)",
+        pdfNegotiationNoTransfer: "Nessun assegno: scenario neutro",
+        pdfScenarioName: "Scenario",
+        pdfScenarioBaseline: "Base",
+        pdfScenarioDelta: "Delta vs base",
         pdfFooter: "Calcolatore Mantenimento Figli — Uso privato e riservato — {date}",
         pdfNoTransfer: "Nessun trasferimento",
         pdfMethodology: "Note metodologiche",
@@ -199,6 +230,22 @@ const defaultExpenseItems = [
         liveNetPostSupportPerson: "Netto post-assegno {spouse}",
         liveDaysWithSpouse: "{days} gg con {spouse}",
         langDaysSuffix: "gg",
+        permCalendarTitle: "Calendario permanenza reale",
+        permCalendarNote: "Assegna ogni giorno al coniuge con cui il minore pernotta: la percentuale si aggiorna automaticamente.",
+        permCalendarMonthLabel: "Mese",
+        permCalendarResetBtn: "Reset mese",
+        permCalendarLegendC1: "Coniuge 1",
+        permCalendarLegendC2: "Coniuge 2",
+        permCalendarSummary: "{month}: {d1} {daysSuffix} con {spouse1} ({p1}%) · {d2} {daysSuffix} con {spouse2} ({p2}%)",
+        permCalendarUnknownMonth: "mese selezionato",
+        extraBoxTitle: "Spese straordinarie (base)",
+        extraBoxNote: "Inserisci i costi straordinari annuali stimati: il sistema li converte in quota mensile da includere nel modello.",
+        extraAnnLabel1: "Straordinarie annue {spouse} ({currency}/anno)",
+        extraAnnLabel2: "Straordinarie annue {spouse} ({currency}/anno)",
+        extraAnnHint1: "Quota annuale straordinaria stimata a carico di {spouse} (es. sanitarie non ricorrenti, scolastiche extra, attività non ordinarie).",
+        extraAnnHint2: "Quota annuale straordinaria stimata a carico di {spouse} (es. sanitarie non ricorrenti, scolastiche extra, attività non ordinarie).",
+        extraMonthlyEstimate: "Quota mensile stimata: {amount}",
+        pdfExtraordinaryRow: "Spese straordinarie (quota mensile da annuo)",
         liveTotalIncome: "Entrate totali (reddito + assegni + INPS)",
         livePaidToOther: "Assegno mantenimento pagato all'altro coniuge",
         livePaidExternal: "Assegno mantenimento pagato esterno",
@@ -298,6 +345,19 @@ const defaultExpenseItems = [
         howCalc: "How it is calculated",
         orientative: "This tool is indicative only and does not replace legal/professional assessment of the specific case.",
         authLogin: "KeyLock Login",
+        authHead: "KeyLock Cloud",
+        authModeLogin: "Login",
+        authModeSignup: "Signup",
+        authEmailLabelSignup: "Registration email",
+        authVerifyCodeLabel: "Email verification code",
+        authLoginBtn: "Login",
+        authSignupBtn: "Sign up",
+        authVerifyCodeBtn: "Verify code",
+        normProfileLabel: "Normative/territorial profile",
+        normProfileHint: "Versioned rule profile: tracks the normative/territorial reference used in simulation and report.",
+        normProfileNational: "Italy national (v2026.1)",
+        normProfileGenova: "Italy - Genoa guideline (v2026.1)",
+        normProfileCustom: "Custom draft (v2026.1)",
         modeGuidelinePrefix: "Selected mode reference:",
         modeGuidelineLink: "Genoa Court guidelines (PDF)",
         redditoAnnuale: "Annual net income",
@@ -332,6 +392,10 @@ const defaultExpenseItems = [
         authRegisterNoAutoLogin: "Registration completed but login not completed. Keep email confirmation enabled in Supabase and verify your email.",
         authRegisterRateLimitedLoggedIn: "Registration rate limit detected, but access completed: {loginMsg}",
         authRegisteredAndLogged: "User {username} registered and logged in.",
+        authNeedSignupVerification: "Complete signup mode registration first.",
+        authNeedVerificationCode: "Enter the verification code received by email.",
+        authVerifyCodeFailed: "Code verification failed: {message}",
+        authVerifyCodeSuccess: "Email verified. Account activated as {username}.",
         authInvalidUsername: "Invalid username.",
         authNeedUserOrEmail: "Enter username or email for login.",
         authLoginRateLimit: "Too many attempts. Wait 1-2 minutes and retry Login.",
@@ -367,6 +431,7 @@ const defaultExpenseItems = [
         pdfInputSection: "Input Parameters",
         pdfGeneralSettings: "General Settings",
         pdfCalcMode: "Calculation mode",
+        pdfNormProfile: "Normative profile",
         pdfIncomeBase: "Income base",
         pdfIncomeAnnualBase: "Yearly (÷12 to monthly)",
         pdfIncomeMonthlyBase: "Monthly",
@@ -394,6 +459,19 @@ const defaultExpenseItems = [
         pdfAmountPerChild: "Amount per child",
         pdfTheoreticalShare: "Theoretical share",
         pdfDirectShareC1C2: "Direct share C1 / C2",
+        pdfScenarioSection: "Scenario Lab",
+        pdfNegotiationSection: "Advanced negotiation report",
+        pdfNegotiationOption: "Option",
+        pdfNegotiationAmount: "Support",
+        pdfNegotiationPayerPost: "Payer post-support ({spouse})",
+        pdfNegotiationReceiverPost: "Receiver post-support ({spouse})",
+        pdfNegotiationLow: "Conservative (-10%)",
+        pdfNegotiationTarget: "Model target",
+        pdfNegotiationHigh: "Expansion (+10%)",
+        pdfNegotiationNoTransfer: "No support: neutral scenario",
+        pdfScenarioName: "Scenario",
+        pdfScenarioBaseline: "Baseline",
+        pdfScenarioDelta: "Delta vs baseline",
         pdfFooter: "Child Support Calculator — Private and reserved use — {date}",
         pdfNoTransfer: "No transfer",
         pdfMethodology: "Methodological notes",
@@ -429,6 +507,22 @@ const defaultExpenseItems = [
         liveNetPostSupportPerson: "Post-support net {spouse}",
         liveDaysWithSpouse: "{days} days with {spouse}",
         langDaysSuffix: "d",
+        permCalendarTitle: "Real permanence calendar",
+        permCalendarNote: "Assign each day to the spouse where the child stays overnight: percentages update automatically.",
+        permCalendarMonthLabel: "Month",
+        permCalendarResetBtn: "Reset month",
+        permCalendarLegendC1: "Spouse 1",
+        permCalendarLegendC2: "Spouse 2",
+        permCalendarSummary: "{month}: {d1} {daysSuffix} with {spouse1} ({p1}%) · {d2} {daysSuffix} with {spouse2} ({p2}%)",
+        permCalendarUnknownMonth: "selected month",
+        extraBoxTitle: "Extraordinary expenses (base)",
+        extraBoxNote: "Enter estimated yearly extraordinary costs: the system converts them to a monthly share included in the model.",
+        extraAnnLabel1: "Yearly extraordinary {spouse} ({currency}/year)",
+        extraAnnLabel2: "Yearly extraordinary {spouse} ({currency}/year)",
+        extraAnnHint1: "Estimated yearly extraordinary share for {spouse} (e.g., non-recurring medical, extra school, non-ordinary activities).",
+        extraAnnHint2: "Estimated yearly extraordinary share for {spouse} (e.g., non-recurring medical, extra school, non-ordinary activities).",
+        extraMonthlyEstimate: "Estimated monthly share: {amount}",
+        pdfExtraordinaryRow: "Extraordinary expenses (monthly share from yearly)",
         liveTotalIncome: "Total income (income + support + INPS)",
         livePaidToOther: "Support paid to the other spouse",
         livePaidExternal: "External support paid",
@@ -527,6 +621,10 @@ const defaultExpenseItems = [
       userId: null,
       keyBits: null
     };
+    const authUiState = {
+      mode: "login",
+      pendingVerification: null
+    };
     const cloudProfileSession = {
       loaded: null,
       history: []
@@ -548,9 +646,153 @@ const defaultExpenseItems = [
       annual: null,
       cu: null
     };
+    const permanenceCalendarState = {
+      month: "",
+      byMonth: {}
+    };
     let currentLang = "it";
     let currentCurrency = "EUR";
-    const CALC_API_BASE = String(window.KEYLOCK_CALC_API_BASE || "").trim().replace(/\/+$/, "");
+    const CALC_API_BASE_STORAGE_KEY = "keylock_calc_api_base";
+    const FRONTEND_VARIANT_ENVS = window.KEYLOCK_FRONTEND_VARIANT_ENVS && typeof window.KEYLOCK_FRONTEND_VARIANT_ENVS === "object"
+      ? window.KEYLOCK_FRONTEND_VARIANT_ENVS
+      : {};
+    const CALC_API_ENVS = window.KEYLOCK_CALC_API_ENVS && typeof window.KEYLOCK_CALC_API_ENVS === "object"
+      ? window.KEYLOCK_CALC_API_ENVS
+      : {};
+
+    function normalizeApiBase(rawValue) {
+      return String(rawValue || "").trim().replace(/\/+$/, "");
+    }
+
+    function normalizeFrontendVariantUrl(rawValue) {
+      return String(rawValue || "").trim();
+    }
+
+    function maybeRedirectFrontendVariant() {
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        const variant = String(params.get("frontend") || "").trim().toLowerCase();
+        if (!variant || variant === "prod" || variant === "default" || variant === "reset") return;
+
+        const targetBase = normalizeFrontendVariantUrl(FRONTEND_VARIANT_ENVS[variant] || "");
+        if (!targetBase) return;
+
+        const target = new URL(targetBase, window.location.href);
+        const current = new URL(window.location.href);
+
+        // Avoid redirect loops when already on the target frontend.
+        if (target.href === current.href) return;
+        if (target.origin === current.origin && target.pathname === current.pathname) return;
+
+        // Keep runtime API selection params when switching frontend variant.
+        ["env", "apiBase"].forEach((k) => {
+          if (params.has(k)) target.searchParams.set(k, String(params.get(k)));
+        });
+
+        window.location.replace(target.toString());
+      } catch (_) {
+        // Ignore malformed URLs and continue with default frontend.
+      }
+    }
+
+    maybeRedirectFrontendVariant();
+
+    function resolveNamedApiBase(envName) {
+      const key = String(envName || "").trim().toLowerCase();
+      if (!key) return "";
+      return normalizeApiBase(CALC_API_ENVS[key] || "");
+    }
+
+    function resolveCalculationApiBase() {
+      const configBase = normalizeApiBase(window.KEYLOCK_CALC_API_BASE || "");
+      let storedBase = "";
+
+      try {
+        storedBase = normalizeApiBase(localStorage.getItem(CALC_API_BASE_STORAGE_KEY) || "");
+      } catch (_) {
+        storedBase = "";
+      }
+
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        if (params.has("env")) {
+          const envName = String(params.get("env") || "").trim().toLowerCase();
+          const disable = envName === "off" || envName === "default" || envName === "reset" || envName === "prod";
+          const envBase = disable ? "" : resolveNamedApiBase(envName);
+          try {
+            if (disable || !envBase) {
+              localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
+            } else {
+              localStorage.setItem(CALC_API_BASE_STORAGE_KEY, envBase);
+            }
+          } catch (_) {}
+          return envBase;
+        }
+
+        if (params.has("apiBase")) {
+          const queryBaseRaw = String(params.get("apiBase") || "").trim();
+          const disable = queryBaseRaw === "off" || queryBaseRaw === "default" || queryBaseRaw === "reset";
+          const queryBase = disable ? "" : normalizeApiBase(queryBaseRaw);
+          try {
+            if (disable || !queryBase) {
+              localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
+            } else {
+              localStorage.setItem(CALC_API_BASE_STORAGE_KEY, queryBase);
+            }
+          } catch (_) {}
+          return queryBase;
+        }
+      } catch (_) {}
+
+      return storedBase || configBase;
+    }
+
+    function getRuntimeVariantLabels() {
+      const labels = [];
+
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        const frontendVariant = String(params.get("frontend") || "").trim().toLowerCase();
+        const envVariant = String(params.get("env") || "").trim().toLowerCase();
+        const apiBaseVariant = String(params.get("apiBase") || "").trim();
+
+        if (frontendVariant === "dev" || window.location.host.includes("githack.com")) {
+          labels.push("dev-frontend");
+        }
+        if (envVariant === "dev" || !!apiBaseVariant) {
+          labels.push("dev-api");
+        }
+      } catch (_) {}
+
+      return labels;
+    }
+
+    function renderRuntimeBadge() {
+      const heroTools = document.querySelector(".hero-tools");
+      if (!heroTools) return;
+
+      const labels = getRuntimeVariantLabels();
+      let badge = document.getElementById("runtimeEnvBadge");
+
+      if (!labels.length) {
+        if (badge) badge.remove();
+        return;
+      }
+
+      if (!badge) {
+        badge = document.createElement("div");
+        badge.id = "runtimeEnvBadge";
+        badge.className = "runtime-badge";
+        heroTools.prepend(badge);
+      }
+
+      badge.innerHTML = labels.map((label) => {
+        if (label === "dev-frontend") {
+          return '<span class="runtime-badge-chip runtime-badge-chip--frontend">DEV FRONTEND</span>';
+        }
+        return '<span class="runtime-badge-chip runtime-badge-chip--api">DEV API</span>';
+      }).join("");
+    }
 
     function tr(key) {
       const table = I18N[currentLang] || I18N.it;
@@ -576,7 +818,8 @@ const defaultExpenseItems = [
     }
 
     function resolveCalculationApiUrl() {
-      if (CALC_API_BASE) return `${CALC_API_BASE}/api/calculate`;
+      const calcApiBase = resolveCalculationApiBase();
+      if (calcApiBase) return `${calcApiBase}/api/calculate`;
       return "/api/calculate";
     }
 
@@ -696,9 +939,32 @@ const defaultExpenseItems = [
       const btnZoomIn = document.getElementById("btnZoomIn");
       const lblLang = document.getElementById("lblLang");
       const lblCurrency = document.getElementById("lblCurrency");
+      const authHead = document.getElementById("authHead");
+      const btnAuthModeLogin = document.getElementById("btnAuthModeLogin");
+      const btnAuthModeSignup = document.getElementById("btnAuthModeSignup");
+      const lblKeylockEmail = document.getElementById("lblKeylockEmail");
+      const lblKeylockEmailOtp = document.getElementById("lblKeylockEmailOtp");
+      const btnVerifyEmailCode = document.getElementById("btnVerifyEmailCode");
+      const permCalendarTitle = document.getElementById("permCalendarTitle");
+      const permCalendarNote = document.getElementById("permCalendarNote");
+      const permCalendarMonthLabel = document.getElementById("permCalendarMonthLabel");
+      const btnPermCalendarReset = document.getElementById("btnPermCalendarReset");
+      const permLegendC1 = document.getElementById("permLegendC1");
+      const permLegendC2 = document.getElementById("permLegendC2");
+      const extraBoxTitle = document.getElementById("extraBoxTitle");
+      const extraBoxNote = document.getElementById("extraBoxNote");
+      const lblStraordAnn1 = document.getElementById("lblStraordAnn1");
+      const lblStraordAnn2 = document.getElementById("lblStraordAnn2");
+      const hintStraordAnn1 = document.getElementById("hintStraordAnn1");
+      const hintStraordAnn2 = document.getElementById("hintStraordAnn2");
+      const btnLoginKeyLock = document.getElementById("btnLoginKeyLock");
+      const btnRegisterKeyLock = document.getElementById("btnRegisterKeyLock");
       const coffeeHero = document.querySelector(".btn-coffee-hero");
       const calcMode = document.getElementById("calcMode");
       const incomeMode = document.getElementById("incomeMode");
+      const normProfile = document.getElementById("normProfile");
+      const lblNormProfile = document.getElementById("lblNormProfile");
+      const hintNormProfile = document.getElementById("hintNormProfile");
       const cardTitles = document.querySelectorAll(".card h2");
       const calcSummary = document.querySelector("details summary");
       const orientativeNote = document.querySelectorAll(".card .content > p.note")[0];
@@ -713,6 +979,26 @@ const defaultExpenseItems = [
       if (btnZoomReset) btnZoomReset.title = tr("btnZoomResetTitle");
       if (lblLang) lblLang.textContent = tr("lang");
       if (lblCurrency) lblCurrency.textContent = tr("currency");
+      if (authHead) authHead.textContent = tr("authHead");
+      if (btnAuthModeLogin) btnAuthModeLogin.textContent = tr("authModeLogin");
+      if (btnAuthModeSignup) btnAuthModeSignup.textContent = tr("authModeSignup");
+      if (lblKeylockEmail) lblKeylockEmail.childNodes[0].textContent = tr("authEmailLabelSignup");
+      if (lblKeylockEmailOtp) lblKeylockEmailOtp.childNodes[0].textContent = tr("authVerifyCodeLabel");
+      if (btnVerifyEmailCode) btnVerifyEmailCode.textContent = tr("authVerifyCodeBtn");
+      if (permCalendarTitle) permCalendarTitle.textContent = tr("permCalendarTitle");
+      if (permCalendarNote) permCalendarNote.textContent = tr("permCalendarNote");
+      if (permCalendarMonthLabel) permCalendarMonthLabel.textContent = tr("permCalendarMonthLabel");
+      if (btnPermCalendarReset) btnPermCalendarReset.textContent = tr("permCalendarResetBtn");
+      if (permLegendC1) permLegendC1.textContent = c1n();
+      if (permLegendC2) permLegendC2.textContent = c2n();
+      if (extraBoxTitle) extraBoxTitle.textContent = tr("extraBoxTitle");
+      if (extraBoxNote) extraBoxNote.textContent = tr("extraBoxNote");
+      if (lblStraordAnn1) lblStraordAnn1.textContent = msg("extraAnnLabel1", { spouse: c1n(), currency: currentCurrency });
+      if (lblStraordAnn2) lblStraordAnn2.textContent = msg("extraAnnLabel2", { spouse: c2n(), currency: currentCurrency });
+      if (hintStraordAnn1) hintStraordAnn1.title = msg("extraAnnHint1", { spouse: c1n() });
+      if (hintStraordAnn2) hintStraordAnn2.title = msg("extraAnnHint2", { spouse: c2n() });
+      if (btnLoginKeyLock) btnLoginKeyLock.textContent = tr("authLoginBtn");
+      if (btnRegisterKeyLock) btnRegisterKeyLock.textContent = tr("authSignupBtn");
       if (coffeeHero) {
         coffeeHero.title = tr("coffeeHero");
         coffeeHero.innerHTML = "&#9749; " + tr("coffeeHero");
@@ -745,9 +1031,20 @@ const defaultExpenseItems = [
           if (cu) cu.textContent = "Certificazione Unica (lordo annuale -> netto stimato)";
         }
       }
+      if (lblNormProfile) lblNormProfile.childNodes[0].textContent = tr("normProfileLabel");
+      if (hintNormProfile) hintNormProfile.title = tr("normProfileHint");
+      if (normProfile) {
+        const n1 = normProfile.querySelector("option[value='it-national-2026.1']");
+        const n2 = normProfile.querySelector("option[value='it-genova-2026.1']");
+        const n3 = normProfile.querySelector("option[value='custom-draft-2026.1']");
+        if (n1) n1.textContent = tr("normProfileNational");
+        if (n2) n2.textContent = tr("normProfileGenova");
+        if (n3) n3.textContent = tr("normProfileCustom");
+      }
       if (cardTitles[0]) cardTitles[0].textContent = tr("inputsTitle");
       if (cardTitles[1]) cardTitles[1].textContent = tr("resultsTitle");
       if (cardTitles[2]) cardTitles[2].textContent = tr("scenarioLabTitle");
+      renderRuntimeBadge();
       const btnSaveScenarioTr = document.getElementById("btnSaveScenario");
       const btnClearScenariosTr = document.getElementById("btnClearScenarios");
       if (btnSaveScenarioTr) btnSaveScenarioTr.textContent = tr("scenarioLabSaveBtn");
@@ -761,6 +1058,8 @@ const defaultExpenseItems = [
       if (visitorTotalLabel) visitorTotalLabel.textContent = tr("footerVisitorsTotal");
       if (visitorActiveLabel) visitorActiveLabel.textContent = tr("footerVisitorsActive");
       if (visitorLoggedLabel) visitorLoggedLabel.textContent = tr("footerLoggedUsers");
+      updateExtraordinaryModuleUi();
+      updatePermanenceCalendarSummary();
       renderVisitorCounters();
     }
 
@@ -923,6 +1222,25 @@ const defaultExpenseItems = [
       }
 
       throw new Error("Profilo cloud non valido");
+    }
+
+    function normalizeScenarioLabState(rawScenarios) {
+      if (!Array.isArray(rawScenarios) || !rawScenarios.length) return [];
+
+      const normalized = [];
+      rawScenarios.slice(0, SCENARIO_LAB_MAX).forEach((entry, idx) => {
+        if (!entry || typeof entry !== "object" || !entry.payload || typeof entry.payload !== "object") return;
+        const payload = safeJsonClone(entry.payload);
+        if (!payload) return;
+
+        normalized.push({
+          label: SCENARIO_LABELS[idx],
+          payload,
+          model: computeModelLocal(payload)
+        });
+      });
+
+      return normalized;
     }
 
     function renderCloudHistoryPanel() {
@@ -1193,6 +1511,37 @@ const defaultExpenseItems = [
       el.textContent = message;
     }
 
+    function updateAuthModeUi() {
+      const isSignup = authUiState.mode === "signup";
+      const loginModeBtn = document.getElementById("btnAuthModeLogin");
+      const signupModeBtn = document.getElementById("btnAuthModeSignup");
+      const emailWrap = document.getElementById("authEmailFieldWrap");
+      const loginBtn = document.getElementById("btnLoginKeyLock");
+      const registerBtn = document.getElementById("btnRegisterKeyLock");
+      const verifySection = document.getElementById("authVerifySection");
+
+      if (loginModeBtn) {
+        loginModeBtn.classList.toggle("is-active", !isSignup);
+        loginModeBtn.setAttribute("aria-selected", isSignup ? "false" : "true");
+      }
+      if (signupModeBtn) {
+        signupModeBtn.classList.toggle("is-active", isSignup);
+        signupModeBtn.setAttribute("aria-selected", isSignup ? "true" : "false");
+      }
+      if (emailWrap) emailWrap.classList.toggle("is-hidden", !isSignup);
+      if (loginBtn) loginBtn.classList.toggle("is-hidden", isSignup);
+      if (registerBtn) registerBtn.classList.toggle("is-hidden", !isSignup);
+      if (verifySection) {
+        const shouldShowVerify = isSignup && !!authUiState.pendingVerification;
+        verifySection.classList.toggle("is-hidden", !shouldShowVerify);
+      }
+    }
+
+    function setAuthMode(mode) {
+      authUiState.mode = mode === "signup" ? "signup" : "login";
+      updateAuthModeUi();
+    }
+
     function updateAuthUi() {
       const logged = !!authSession.username;
       const loginSection = document.getElementById("authLoginSection");
@@ -1208,8 +1557,17 @@ const defaultExpenseItems = [
         toggleBtn.querySelector("span").textContent = logged ? `${tr("authUserPrefix")}: ${authSession.username}` : tr("authLogin");
       }
 
+      if (logged) {
+        authUiState.pendingVerification = null;
+        const otpInput = document.getElementById("keylockEmailOtp");
+        if (otpInput) otpInput.value = "";
+      }
+      updateAuthModeUi();
+
       document.getElementById("btnRegisterKeyLock").disabled = logged;
       document.getElementById("btnLoginKeyLock").disabled = logged;
+      const verifyBtn = document.getElementById("btnVerifyEmailCode");
+      if (verifyBtn) verifyBtn.disabled = logged;
       document.getElementById("btnLogoutKeyLock").disabled = !logged;
       document.getElementById("btnSaveMyScenario").disabled = !logged;
       document.getElementById("btnLoadMyScenario").disabled = !logged;
@@ -1259,18 +1617,23 @@ const defaultExpenseItems = [
 
     function initCoffeeFloatVisibility() {
       const footer = document.querySelector(".legal-footer");
+      const donateBanner = document.querySelector(".donate-banner");
       const coffeeFloat = document.querySelector(".coffee-float");
-      if (!footer || !coffeeFloat || !("IntersectionObserver" in window)) return;
+      if (!coffeeFloat || !("IntersectionObserver" in window)) return;
+
+      const targets = [donateBanner, footer].filter(Boolean);
+      if (!targets.length) return;
 
       const observer = new IntersectionObserver((entries) => {
-        const isFooterVisible = entries.some((entry) => entry.isIntersecting);
-        document.body.classList.toggle("footer-visible", isFooterVisible);
+        // Hide the floating cup as soon as any pixel of donate/footer section becomes visible.
+        const isBottomSectionVisible = entries.some((entry) => entry.isIntersecting);
+        document.body.classList.toggle("footer-visible", isBottomSectionVisible);
       }, {
         root: null,
-        threshold: 0.08
+        threshold: 0
       });
 
-      observer.observe(footer);
+      targets.forEach((target) => observer.observe(target));
     }
 
     function setCoffeePickerOpen(open) {
@@ -1595,15 +1958,13 @@ const defaultExpenseItems = [
         }
       });
 
-      let signUpRateLimited = false;
-
       if (signUpRes.error) {
         const signUpMsg = String(signUpRes.error.message || "");
         if (/already|registered/i.test(signUpMsg)) {
-          // User may already exist: continue with login flow.
+          setAuthStatus(msg("authRegisterFailed", { message: signUpRes.error.message }), true);
+          return;
         } else if (isRateLimitAuthMessage(signUpMsg)) {
           const waitSec = setLocalAuthCooldown(parseRetryAfterSeconds(signUpMsg));
-          signUpRateLimited = true;
           setAuthStatus(msg("authRegisterRateLimit", { seconds: waitSec }), true);
           return;
         } else {
@@ -1612,35 +1973,73 @@ const defaultExpenseItems = [
         }
       }
 
-      const hasSession = !!(signUpRes.data && signUpRes.data.session);
-      if (!hasSession) {
-        setAuthStatus(msg("authRegisterVerifyEmail", { email }), false);
+      if (signUpRes.data && signUpRes.data.session) {
+        await supabaseClient.auth.signOut();
+      }
+
+      authUiState.pendingVerification = { username, email, password };
+      const otpInput = document.getElementById("keylockEmailOtp");
+      if (otpInput) otpInput.value = "";
+      updateAuthModeUi();
+      setAuthStatus(msg("authRegisterVerifyEmail", { email }), false);
+      } finally {
+        authFlowInProgress = false;
+      }
+    }
+
+    async function verifySignupEmailCode() {
+      if (!await ensureSupabaseReady("verificare la email")) return;
+      if (authFlowInProgress) {
+        setAuthStatus(tr("authOperationInProgress"), true);
+        return;
+      }
+      if (!ensureAuthNotCoolingDown()) return;
+
+      const pending = authUiState.pendingVerification;
+      if (!pending) {
+        setAuthStatus(tr("authNeedSignupVerification"), true);
         return;
       }
 
-      const postLogin = await signInWithEmailCandidates(username, password, email);
-      if (!postLogin.ok) {
-        if (signUpRateLimited || isRateLimitAuthMessage(postLogin.lastErrorMessage)) {
-          setAuthStatus(tr("authRegisterLoginRateLimit"), true);
-          return;
-        }
-
-        if (isInvalidCredentialAuthMessage(postLogin.lastErrorMessage)) {
-          setAuthStatus(tr("authRegisterIncomplete"), true);
-          return;
-        }
-
-        setAuthStatus(tr("authRegisterNoAutoLogin"), true);
+      const token = String(text("keylockEmailOtp") || "").replace(/\s+/g, "");
+      if (token.length < 4) {
+        setAuthStatus(tr("authNeedVerificationCode"), true);
         return;
       }
 
-      const loginMsg = await completeAuthSession(username, password, postLogin.result.data.user);
-      if (signUpRateLimited) {
-        setAuthStatus(msg("authRegisterRateLimitedLoggedIn", { loginMsg }));
-      } else {
-        setAuthStatus(msg("authRegisteredAndLogged", { username }));
-      }
-      await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
+      authFlowInProgress = true;
+      try {
+        const verifyRes = await supabaseClient.auth.verifyOtp({
+          email: pending.email,
+          token,
+          type: "signup"
+        });
+
+        if (verifyRes.error) {
+          setAuthStatus(msg("authVerifyCodeFailed", { message: verifyRes.error.message }), true);
+          return;
+        }
+
+        let verifiedUser = verifyRes.data && verifyRes.data.user ? verifyRes.data.user : null;
+        if (!verifiedUser) {
+          const signIn = await signInWithEmailCandidates(pending.username, pending.password, pending.email);
+          if (!signIn.ok) {
+            const loginMsg = String(signIn.lastErrorMessage || "");
+            if (isRateLimitAuthMessage(loginMsg)) {
+              setAuthStatus(tr("authLoginRateLimit"), true);
+              return;
+            }
+            setAuthStatus(msg("authLoginFailed", { message: loginMsg || tr("authUserFallback") }), true);
+            return;
+          }
+          verifiedUser = signIn.result.data.user;
+        }
+
+        await completeAuthSession(pending.username, pending.password, verifiedUser);
+        authUiState.pendingVerification = null;
+        setAuthMode("login");
+        setAuthStatus(msg("authVerifyCodeSuccess", { username: pending.username }));
+        await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
       } finally {
         authFlowInProgress = false;
       }
@@ -1926,6 +2325,8 @@ const defaultExpenseItems = [
         const sliderBar = document.getElementById("permSliderBar");
         const sliderVal = sliderBar ? Number(sliderBar.getAttribute("aria-valuenow")) : p1;
         p1 = Math.min(100, Math.max(0, Number.isFinite(sliderVal) ? sliderVal : p1));
+      } else if (source === "calendar") {
+        p1 = Math.min(100, Math.max(0, p1));
       }
 
       p1 = Math.round(p1);
@@ -1954,6 +2355,15 @@ const defaultExpenseItems = [
         daysRight.style.width = p2 + "%";
         daysLeft.innerHTML = `<span class="perm-days-chip">${leftTxt}</span>`;
         daysRight.innerHTML = `<span class="perm-days-chip">${rightTxt}</span>`;
+      }
+
+      const monthInput = document.getElementById("permCalendarMonth");
+      const monthValue = monthInput && parseMonthValue(monthInput.value) ? monthInput.value : (permanenceCalendarState.month || getCurrentMonthValue());
+      if (source !== "calendar") {
+        alignCalendarToCurrentPercent(monthValue);
+        renderPermanenceCalendar(monthValue);
+      } else {
+        updatePermanenceCalendarSummary();
       }
     }
 
@@ -2016,8 +2426,208 @@ const defaultExpenseItems = [
       });
     }
 
+    function getCurrentMonthValue() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function parseMonthValue(value) {
+      const m = String(value || "").match(/^(\d{4})-(\d{2})$/);
+      if (!m) return null;
+      const year = Number(m[1]);
+      const month = Number(m[2]);
+      if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return null;
+      return { year, month };
+    }
+
+    function getCalendarDaysInMonth(monthValue) {
+      const parsed = parseMonthValue(monthValue);
+      if (!parsed) return 30;
+      return new Date(parsed.year, parsed.month, 0).getDate();
+    }
+
+    function getMonthLabel(monthValue) {
+      const parsed = parseMonthValue(monthValue);
+      if (!parsed) return tr("permCalendarUnknownMonth");
+      const dt = new Date(parsed.year, parsed.month - 1, 1);
+      return dt.toLocaleDateString(getCurrentLocale(), { month: "long", year: "numeric" });
+    }
+
+    function getWeekdayShortLabels() {
+      const baseMonday = new Date(2024, 0, 1); // Monday
+      const labels = [];
+      for (let i = 0; i < 7; i += 1) {
+        const dt = new Date(baseMonday.getTime() + i * 86400000);
+        labels.push(dt.toLocaleDateString(getCurrentLocale(), { weekday: "short" }));
+      }
+      return labels;
+    }
+
+    function getMonthAssignments(monthValue) {
+      if (!permanenceCalendarState.byMonth[monthValue]) {
+        const days = getCalendarDaysInMonth(monthValue);
+        const p1 = Math.min(100, Math.max(0, Number(document.getElementById("perm1")?.value || 0)));
+        const daysForC1 = Math.round((days * p1) / 100);
+        const assignments = [];
+        for (let d = 1; d <= days; d += 1) {
+          assignments.push(d <= daysForC1 ? 1 : 2);
+        }
+        permanenceCalendarState.byMonth[monthValue] = assignments;
+      }
+      return permanenceCalendarState.byMonth[monthValue];
+    }
+
+    function alignCalendarToCurrentPercent(monthValue) {
+      const assignments = getMonthAssignments(monthValue);
+      const days = assignments.length || 30;
+      const p1 = Math.min(100, Math.max(0, Number(document.getElementById("perm1")?.value || 0)));
+      const daysForC1 = Math.round((days * p1) / 100);
+      for (let i = 0; i < days; i += 1) {
+        assignments[i] = i < daysForC1 ? 1 : 2;
+      }
+    }
+
+    function applyPermanenceFromCalendar(monthValue, options = {}) {
+      const assignments = getMonthAssignments(monthValue);
+      const days = assignments.length || 30;
+      const c1Days = assignments.reduce((acc, owner) => acc + (owner === 1 ? 1 : 0), 0);
+      const p1 = Math.round((c1Days / days) * 100);
+      document.getElementById("perm1").value = p1;
+      syncPermanenza("calendar");
+      updatePermanenceCalendarSummary();
+      if (!options.silentRender) renderAll();
+    }
+
+    function updatePermanenceCalendarSummary() {
+      const summary = document.getElementById("permCalendarSummary");
+      if (!summary) return;
+
+      const monthValue = permanenceCalendarState.month || document.getElementById("permCalendarMonth")?.value || getCurrentMonthValue();
+      const assignments = getMonthAssignments(monthValue);
+      const days = assignments.length || 30;
+      const d1 = assignments.reduce((acc, owner) => acc + (owner === 1 ? 1 : 0), 0);
+      const d2 = days - d1;
+      const p1 = Math.round((d1 / days) * 100);
+      const p2 = 100 - p1;
+
+      summary.textContent = msg("permCalendarSummary", {
+        month: getMonthLabel(monthValue),
+        d1: String(d1),
+        d2: String(d2),
+        daysSuffix: tr("langDaysSuffix"),
+        spouse1: c1n(),
+        spouse2: c2n(),
+        p1: String(p1),
+        p2: String(p2)
+      });
+
+      const legend1 = document.getElementById("permLegendC1");
+      const legend2 = document.getElementById("permLegendC2");
+      if (legend1) legend1.textContent = c1n();
+      if (legend2) legend2.textContent = c2n();
+    }
+
+    function renderPermanenceCalendar(monthValue) {
+      const grid = document.getElementById("permCalendarGrid");
+      if (!grid) return;
+      const parsed = parseMonthValue(monthValue);
+      if (!parsed) return;
+
+      permanenceCalendarState.month = monthValue;
+      const firstDayDate = new Date(parsed.year, parsed.month - 1, 1);
+      const firstWeekdayMonStart = (firstDayDate.getDay() + 6) % 7;
+      const days = getCalendarDaysInMonth(monthValue);
+      const assignments = getMonthAssignments(monthValue);
+
+      const weekdayHtml = getWeekdayShortLabels()
+        .map((label) => `<div class="perm-cal-h">${escapeHtml(label)}</div>`)
+        .join("");
+
+      let cellsHtml = "";
+      for (let i = 0; i < firstWeekdayMonStart; i += 1) {
+        cellsHtml += `<button class="perm-cal-day empty" type="button" tabindex="-1" aria-hidden="true"></button>`;
+      }
+
+      for (let d = 1; d <= days; d += 1) {
+        const owner = assignments[d - 1] === 1 ? 1 : 2;
+        cellsHtml += `<button class="perm-cal-day c${owner}" type="button" data-cal-day="${d}" aria-label="${d}">${d}</button>`;
+      }
+
+      grid.innerHTML = weekdayHtml + cellsHtml;
+      updatePermanenceCalendarSummary();
+    }
+
+    function initPermanenceCalendar() {
+      const monthInput = document.getElementById("permCalendarMonth");
+      const resetBtn = document.getElementById("btnPermCalendarReset");
+      const grid = document.getElementById("permCalendarGrid");
+      if (!monthInput || !resetBtn || !grid) return;
+
+      monthInput.value = getCurrentMonthValue();
+      permanenceCalendarState.month = monthInput.value;
+      renderPermanenceCalendar(monthInput.value);
+      applyPermanenceFromCalendar(monthInput.value, { silentRender: true });
+
+      monthInput.addEventListener("change", () => {
+        const nextMonth = parseMonthValue(monthInput.value) ? monthInput.value : getCurrentMonthValue();
+        monthInput.value = nextMonth;
+        renderPermanenceCalendar(nextMonth);
+        applyPermanenceFromCalendar(nextMonth);
+      });
+
+      resetBtn.addEventListener("click", () => {
+        const currentMonth = parseMonthValue(monthInput.value) ? monthInput.value : getCurrentMonthValue();
+        delete permanenceCalendarState.byMonth[currentMonth];
+        renderPermanenceCalendar(currentMonth);
+        applyPermanenceFromCalendar(currentMonth);
+      });
+
+      grid.addEventListener("click", (e) => {
+        const btn = e.target && e.target.closest("button[data-cal-day]");
+        if (!btn) return;
+        const day = Number(btn.getAttribute("data-cal-day"));
+        if (!Number.isInteger(day) || day < 1) return;
+
+        const month = permanenceCalendarState.month || monthInput.value || getCurrentMonthValue();
+        const assignments = getMonthAssignments(month);
+        if (day > assignments.length) return;
+        assignments[day - 1] = assignments[day - 1] === 1 ? 2 : 1;
+        renderPermanenceCalendar(month);
+        applyPermanenceFromCalendar(month);
+      });
+    }
+
+    function exportPermanenceCalendarState() {
+      return {
+        month: permanenceCalendarState.month,
+        byMonth: safeJsonClone(permanenceCalendarState.byMonth)
+      };
+    }
+
+    function importPermanenceCalendarState(raw) {
+      permanenceCalendarState.month = "";
+      permanenceCalendarState.byMonth = {};
+      if (!raw || typeof raw !== "object") return;
+      const byMonth = raw.byMonth && typeof raw.byMonth === "object" ? raw.byMonth : {};
+      Object.entries(byMonth).forEach(([month, values]) => {
+        if (!parseMonthValue(month) || !Array.isArray(values)) return;
+        const days = getCalendarDaysInMonth(month);
+        const normalized = values.slice(0, days).map((v) => (Number(v) === 1 ? 1 : 2));
+        while (normalized.length < days) normalized.push(2);
+        permanenceCalendarState.byMonth[month] = normalized;
+      });
+      const fallbackMonth = getCurrentMonthValue();
+      permanenceCalendarState.month = parseMonthValue(raw.month) ? raw.month : fallbackMonth;
+      const monthInput = document.getElementById("permCalendarMonth");
+      if (monthInput) monthInput.value = permanenceCalendarState.month;
+      renderPermanenceCalendar(permanenceCalendarState.month);
+      applyPermanenceFromCalendar(permanenceCalendarState.month, { silentRender: true });
+    }
+
     function sumSpese(prefix) {
-      return expenseItems.reduce((acc, _, idx) => acc + num(`${prefix}_${idx}`), 0);
+      const base = expenseItems.reduce((acc, _, idx) => acc + num(`${prefix}_${idx}`), 0);
+      const extra = prefix === "c1" ? getExtraordinaryMonthly(1) : getExtraordinaryMonthly(2);
+      return base + extra;
     }
 
     /**
@@ -2205,8 +2815,16 @@ const defaultExpenseItems = [
     }
 
     function collectCalculationPayload() {
+      const c1Spese = expenseItems.map((_, idx) => num(`c1_${idx}`));
+      const c2Spese = expenseItems.map((_, idx) => num(`c2_${idx}`));
+      const extra1 = getExtraordinaryMonthly(1);
+      const extra2 = getExtraordinaryMonthly(2);
+      if (extra1 > 0) c1Spese.push(extra1);
+      if (extra2 > 0) c2Spese.push(extra2);
+
       return {
         incomeMode: document.getElementById("incomeMode").value || "monthly",
+        normProfile: document.getElementById("normProfile")?.value || "it-national-2026.1",
         r1Raw: num("reddito1"),
         r2Raw: num("reddito2"),
         figli: Math.max(1, Math.round(num("numFigli"))),
@@ -2219,8 +2837,8 @@ const defaultExpenseItems = [
         aPag2: num("assegnoPagato2"),
         aFam1: num("assegnoFam1"),
         aFam2: num("assegnoFam2"),
-        c1Spese: expenseItems.map((_, idx) => num(`c1_${idx}`)),
-        c2Spese: expenseItems.map((_, idx) => num(`c2_${idx}`))
+        c1Spese,
+        c2Spese
       };
     }
 
@@ -2341,6 +2959,13 @@ const defaultExpenseItems = [
     function c1n() { return (document.getElementById("nome1").value || "").trim() || tr("spouse1Default"); }
     function c2n() { return (document.getElementById("nome2").value || "").trim() || tr("spouse2Default"); }
 
+    function getSelectedNormProfileLabel() {
+      const select = document.getElementById("normProfile");
+      if (!select) return tr("normProfileNational");
+      const option = select.options[select.selectedIndex];
+      return option ? option.textContent : tr("normProfileNational");
+    }
+
     function updateSpouseLabels() {
       const th1 = document.getElementById("thSpese1");
       const th2 = document.getElementById("thSpese2");
@@ -2350,6 +2975,28 @@ const defaultExpenseItems = [
       if (th2) th2.textContent = `${c2n()} (${currentCurrency})`;
       if (lp1) lp1.textContent = c1n();
       if (lp2) lp2.textContent = c2n();
+      const lblStraordAnn1 = document.getElementById("lblStraordAnn1");
+      const lblStraordAnn2 = document.getElementById("lblStraordAnn2");
+      const hintStraordAnn1 = document.getElementById("hintStraordAnn1");
+      const hintStraordAnn2 = document.getElementById("hintStraordAnn2");
+      if (lblStraordAnn1) lblStraordAnn1.textContent = msg("extraAnnLabel1", { spouse: c1n(), currency: currentCurrency });
+      if (lblStraordAnn2) lblStraordAnn2.textContent = msg("extraAnnLabel2", { spouse: c2n(), currency: currentCurrency });
+      if (hintStraordAnn1) hintStraordAnn1.title = msg("extraAnnHint1", { spouse: c1n() });
+      if (hintStraordAnn2) hintStraordAnn2.title = msg("extraAnnHint2", { spouse: c2n() });
+      updateExtraordinaryModuleUi();
+      updatePermanenceCalendarSummary();
+    }
+
+    function getExtraordinaryMonthly(spouseIndex) {
+      const annual = num(`straordAnn${spouseIndex}`);
+      return annual > 0 ? annual / 12 : 0;
+    }
+
+    function updateExtraordinaryModuleUi() {
+      const month1 = document.getElementById("straordMonth1");
+      const month2 = document.getElementById("straordMonth2");
+      if (month1) month1.textContent = msg("extraMonthlyEstimate", { amount: eur(getExtraordinaryMonthly(1)) });
+      if (month2) month2.textContent = msg("extraMonthlyEstimate", { amount: eur(getExtraordinaryMonthly(2)) });
     }
 
     function renderLivePanel(m) {
@@ -2807,13 +3454,15 @@ const defaultExpenseItems = [
       }
 
       const hasMultiple = scenarioLab.length > 1;
+      const currentName1 = escapeHtml(c1n());
+      const currentName2 = escapeHtml(c2n());
       const metrics = [
         { label: () => tr("scenarioColMode"),    fmt: (m) => escapeHtml(getModeName(m.mode, m.simplePerc)), numeric: false },
         { label: () => tr("scenarioColAssegno"), fmt: (m) => eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1)), numeric: true,  val: (m) => Math.max(m.assegnoDa1a2, m.assegnoDa2a1) },
-        { label: () => tr("scenarioColDisp1"),   fmt: (m) => eur(m.disp1),           numeric: true,  val: (m) => m.disp1 },
-        { label: () => tr("scenarioColDisp2"),   fmt: (m) => eur(m.disp2),           numeric: true,  val: (m) => m.disp2 },
-        { label: () => tr("scenarioColPost1"),   fmt: (m) => eur(m.post1),           numeric: true,  val: (m) => m.post1 },
-        { label: () => tr("scenarioColPost2"),   fmt: (m) => eur(m.post2),           numeric: true,  val: (m) => m.post2 },
+        { label: () => `${escapeHtml(tr("scenarioColDisp1")).replace("C1", currentName1)}`, fmt: (m) => eur(m.disp1), numeric: true, val: (m) => m.disp1 },
+        { label: () => `${escapeHtml(tr("scenarioColDisp2")).replace("C2", currentName2)}`, fmt: (m) => eur(m.disp2), numeric: true, val: (m) => m.disp2 },
+        { label: () => `${escapeHtml(tr("scenarioColPost1")).replace("C1", currentName1)}`, fmt: (m) => eur(m.post1), numeric: true, val: (m) => m.post1 },
+        { label: () => `${escapeHtml(tr("scenarioColPost2")).replace("C2", currentName2)}`, fmt: (m) => eur(m.post2), numeric: true, val: (m) => m.post2 },
         { label: () => tr("scenarioColFabb"),    fmt: (m) => eur(m.fabbisognoFigli), numeric: true,  val: (m) => m.fabbisognoFigli }
       ];
 
@@ -2887,26 +3536,26 @@ const defaultExpenseItems = [
             <div class="spieg-item">
               <div class="spieg-item-label">${tr("spiegRedditiLabel")}</div>
               <div class="spieg-item-body">
-                ${n1}: ${eur(m.disp1)} &nbsp;|&nbsp; ${n2}: ${eur(m.disp2)}<br>
-                ${tr("pdfWeight")}: <strong>${n1} ${peso1Pct}%</strong> / <strong>${n2} ${peso2Pct}%</strong>
+                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${eur(m.disp1)}</strong> <span class="spieg-sep">|</span> <span>${n2}:</span> <strong class="spieg-value">${eur(m.disp2)}</strong></div>
+                <div class="spieg-line">${tr("pdfWeight")}: <strong class="spieg-value">${n1} ${peso1Pct}%</strong> / <strong class="spieg-value">${n2} ${peso2Pct}%</strong></div>
               </div>
             </div>
             <div class="spieg-item">
               <div class="spieg-item-label">${tr("spiegSpeseLabel")}</div>
               <div class="spieg-item-body">
-                ${eur(m.speseTot)} &times; 35% = <strong>${eur(m.fabbisognoFigli)}</strong>
+                <div class="spieg-line"><strong class="spieg-value">${eur(m.speseTot)}</strong> &times; 35% = <strong class="spieg-value">${eur(m.fabbisognoFigli)}</strong></div>
               </div>
             </div>
             <div class="spieg-item">
               <div class="spieg-item-label">${tr("spiegPermLabel")}</div>
               <div class="spieg-item-body">
-                ${n1}: ${m.perm1.toFixed(0)}% (${days1} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta1)}<br>
-                ${n2}: ${m.perm2.toFixed(0)}% (${days2} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta2)}
+                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta1)}</strong></div>
+                <div class="spieg-line"><span>${n2}:</span> <strong class="spieg-value">${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta2)}</strong></div>
               </div>
             </div>
             <div class="spieg-item spieg-item--result">
               <div class="spieg-item-label">${tr("spiegResultLabel")}</div>
-              <div class="spieg-item-body">${resultHtml}</div>
+              <div class="spieg-item-body spieg-item-body--result">${resultHtml}</div>
             </div>
           </div>
         </details>
@@ -2927,6 +3576,9 @@ const defaultExpenseItems = [
       if (!formulaNote || !resultMain || !kpi) return;
 
       const modeName = getModeName(m.mode, m.simplePerc);
+      const normProfileName = escapeHtml(getSelectedNormProfileLabel());
+      const negotiationPayerName = m.assegnoDa1a2 > 0.005 ? c1n() : (m.assegnoDa2a1 > 0.005 ? c2n() : c1n());
+      const negotiationReceiverName = m.assegnoDa1a2 > 0.005 ? c2n() : (m.assegnoDa2a1 > 0.005 ? c1n() : c2n());
 
       let modeSpecific = "";
       if (m.mode === "simple") {
@@ -3029,6 +3681,7 @@ const defaultExpenseItems = [
 
     function renderAll() {
       const m = computeModel();
+      updateExtraordinaryModuleUi();
       updateExpensePartials();
       renderLivePanel(m);
       calculate(m);
@@ -3071,7 +3724,29 @@ const defaultExpenseItems = [
         assegnoDir = `${c2NameEsc} &rarr; ${c1NameEsc}`;
       }
 
-      const speseRows = expenseItems.map((item, i) => {
+      const peso1Pct = (m.peso1 * 100).toFixed(1);
+      const peso2Pct = (m.peso2 * 100).toFixed(1);
+      const days1 = ((m.perm1 / 100) * 30).toFixed(1);
+      const days2 = ((m.perm2 / 100) * 30).toFixed(1);
+
+      let explainResultHtml = `<div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>`;
+      if (m.assegnoDa1a2 > 0.005) {
+        explainResultHtml = `
+          <div class="pdf-explain-flow">${c1NameEsc} &rarr; ${c2NameEsc}</div>
+          <div class="pdf-explain-formula">${c1NameEsc}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)}</div>
+          <div class="pdf-explain-amount">${eur(m.assegnoDa1a2)}</div>
+        `;
+      } else if (m.assegnoDa2a1 > 0.005) {
+        explainResultHtml = `
+          <div class="pdf-explain-flow">${c2NameEsc} &rarr; ${c1NameEsc}</div>
+          <div class="pdf-explain-formula">${c2NameEsc}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)}</div>
+          <div class="pdf-explain-amount">${eur(m.assegnoDa2a1)}</div>
+        `;
+      }
+
+      const extraSpese1Monthly = getExtraordinaryMonthly(1);
+      const extraSpese2Monthly = getExtraordinaryMonthly(2);
+      const speseRowsBase = expenseItems.map((item, i) => {
         const c1 = num(`c1_${i}`);
         const c2 = num(`c2_${i}`);
         return `<tr>
@@ -3081,6 +3756,113 @@ const defaultExpenseItems = [
           <td class="num bold">${(c1 + c2) > 0 ? eur(c1 + c2) : "–"}</td>
         </tr>`;
       }).join("");
+      const extraSpeseRow = (extraSpese1Monthly > 0 || extraSpese2Monthly > 0)
+        ? `<tr>
+          <td>${tr("pdfExtraordinaryRow")}</td>
+          <td class="num">${extraSpese1Monthly > 0 ? eur(extraSpese1Monthly) : "–"}</td>
+          <td class="num">${extraSpese2Monthly > 0 ? eur(extraSpese2Monthly) : "–"}</td>
+          <td class="num bold">${eur(extraSpese1Monthly + extraSpese2Monthly)}</td>
+        </tr>`
+        : "";
+      const speseRows = speseRowsBase + extraSpeseRow;
+
+      const scenarioMetrics = [
+        { label: tr("scenarioColMode"), val: (sm) => getModeName(sm.mode, sm.simplePerc), fmt: (v) => escapeHtml(v), numeric: false },
+        { label: tr("scenarioColAssegno"), val: (sm) => Math.max(sm.assegnoDa1a2, sm.assegnoDa2a1), fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColDisp1").replace("C1", c1Name), val: (sm) => sm.disp1, fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColDisp2").replace("C2", c2Name), val: (sm) => sm.disp2, fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColPost1").replace("C1", c1Name), val: (sm) => sm.post1, fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColPost2").replace("C2", c2Name), val: (sm) => sm.post2, fmt: (v) => eur(v), numeric: true },
+        { label: tr("scenarioColFabb"), val: (sm) => sm.fabbisognoFigli, fmt: (v) => eur(v), numeric: true }
+      ];
+
+      const scenarioPdfTable = (() => {
+        if (!scenarioLab.length) return "";
+        const isThreeScenarioLayout = scenarioLab.length >= 3;
+        const truncateScenarioName = (raw) => {
+          const value = String(raw || "").trim();
+          const maxLen = isThreeScenarioLayout ? 11 : 24;
+          if (value.length <= maxLen) return value;
+          return `${value.slice(0, Math.max(3, maxLen - 3))}...`;
+        };
+
+        let headerCells = `<th class="metric-col">${tr("scenarioColMetric")}</th>`;
+        scenarioLab.forEach((scenario, idx) => {
+          const n1 = escapeHtml(truncateScenarioName(scenario.payload._nome1 || tr("spouse1Default")));
+          const n2 = escapeHtml(truncateScenarioName(scenario.payload._nome2 || tr("spouse2Default")));
+          headerCells += `<th class="scenario-col"><span class="scenario-chip">Sc ${escapeHtml(scenario.label)}</span><span class="scenario-sub">${n1} / ${n2}</span></th>`;
+          if (idx > 0) {
+            headerCells += `<th class="delta-col-head">${tr("scenarioDeltaLabel")} ${escapeHtml(scenario.label)}</th>`;
+          }
+        });
+
+        const baseline = scenarioLab[0].model;
+        const bodyRows = scenarioMetrics.map((metric) => {
+          let row = `<tr><td class="metric-col">${escapeHtml(metric.label)}</td>`;
+          scenarioLab.forEach((scenario, idx) => {
+            const value = metric.val(scenario.model);
+            row += `<td class="num">${metric.fmt(value)}</td>`;
+
+            if (idx > 0) {
+              if (metric.numeric) {
+                const diff = value - metric.val(baseline);
+                const cls = diff > 0.005 ? "delta-pos" : (diff < -0.005 ? "delta-neg" : "delta-zero");
+                const sign = diff > 0.005 ? "+" : "";
+                row += `<td class="num ${cls}">${sign}${eur(diff)}</td>`;
+              } else {
+                row += `<td class="num delta-zero">&ndash;</td>`;
+              }
+            }
+          });
+          row += `</tr>`;
+          return row;
+        }).join("");
+
+        return `
+          <div class="scenario-compare-wrap">
+            <table class="scenario-compare-table${isThreeScenarioLayout ? " compact-3" : ""}">
+              <thead><tr>${headerCells}</tr></thead>
+              <tbody>${bodyRows}</tbody>
+            </table>
+          </div>
+        `;
+      })();
+      const negotiationRowsHtml = (() => {
+        const baseAmount = Math.max(m.assegnoDa1a2, m.assegnoDa2a1);
+        const payerIs1 = m.assegnoDa1a2 > 0.005;
+        const payerName = payerIs1 ? c1NameEsc : c2NameEsc;
+        const receiverName = payerIs1 ? c2NameEsc : c1NameEsc;
+
+        if (baseAmount <= 0.005) {
+          return `<tr>
+            <td>${tr("pdfNegotiationNoTransfer")}</td>
+            <td class="num">${eur(0)}</td>
+            <td class="num">${eur(m.disp1)}</td>
+            <td class="num">${eur(m.disp2)}</td>
+          </tr>`;
+        }
+
+        const options = [
+          { label: tr("pdfNegotiationLow"), factor: 0.9 },
+          { label: tr("pdfNegotiationTarget"), factor: 1 },
+          { label: tr("pdfNegotiationHigh"), factor: 1.1 }
+        ];
+
+        return options.map((opt) => {
+          const amount = Math.round(baseAmount * opt.factor * 100) / 100;
+          const payerPost = payerIs1 ? (m.disp1 - amount) : (m.disp2 - amount);
+          const receiverPost = payerIs1 ? (m.disp2 + amount) : (m.disp1 + amount);
+          return `<tr>
+            <td>${escapeHtml(opt.label)}</td>
+            <td class="num">${eur(amount)}</td>
+            <td class="num">${eur(payerPost)}</td>
+            <td class="num">${eur(receiverPost)}</td>
+          </tr>`;
+        }).join("");
+      })();
+      const scenarioSectionClass = scenarioLab.length >= 3
+        ? "section scenario-section compact-3"
+        : "section scenario-section";
 
       const html = `<!DOCTYPE html>
 <html lang="${pdfLang}">
@@ -3203,6 +3985,51 @@ const defaultExpenseItems = [
   .kpi-val.ok { color: #0b6e66; }
   .kpi-val.warn { color: #c77a11; }
   .kpi-val.bad { color: #c0392b; }
+
+  /* ── SCENARIO LAB ── */
+  .scenario-compare-wrap { overflow-x: auto; }
+  .scenario-compare-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+  .scenario-compare-table th, .scenario-compare-table td { border: 1px solid #c6ddd8; padding: 5px 8px; }
+  .scenario-compare-table thead th { background: linear-gradient(90deg,#f0f7f5,#e6f1ee); color: #183d39; font-weight: 700; }
+  .scenario-compare-table .metric-col { text-align: left; min-width: 140px; font-weight: 700; background: #f6fbf9; }
+  .scenario-compare-table .scenario-col { text-align: center; min-width: 170px; }
+  .scenario-compare-table .delta-col-head { text-align: center; min-width: 86px; }
+  .scenario-chip { display: inline-block; background: #0b6e66; color: #fff; border-radius: 5px; padding: 1px 8px; font-size: 7.5pt; font-weight: 700; }
+  .scenario-sub { display: block; margin-top: 4px; font-size: 7.2pt; color: #4c6964; font-weight: 600; }
+  .scenario-compare-table.compact-3 { table-layout: fixed; font-size: 7.3pt; }
+  .scenario-compare-table.compact-3 th, .scenario-compare-table.compact-3 td { padding: 3px 4px; }
+  .scenario-compare-table.compact-3 .metric-col,
+  .scenario-compare-table.compact-3 .scenario-col,
+  .scenario-compare-table.compact-3 .delta-col-head { min-width: 0; }
+  .scenario-compare-table.compact-3 .metric-col { width: 24%; }
+  .scenario-compare-table.compact-3 .scenario-col { width: 15%; }
+  .scenario-compare-table.compact-3 .delta-col-head { width: 10.5%; }
+  .scenario-compare-table.compact-3 .scenario-sub { font-size: 6.2pt; margin-top: 2px; line-height: 1.15; }
+  .scenario-compare-table.compact-3 .scenario-chip { font-size: 6.4pt; padding: 1px 5px; }
+  .scenario-compare-table.compact-3 .metric-col { font-size: 6.9pt; }
+  .scenario-compare-table.compact-3 td { line-height: 1.08; }
+  .scenario-compare-table.compact-3 td { word-break: break-word; }
+  .section.scenario-section.compact-3 { margin-bottom: 10px; }
+  .section.scenario-section.compact-3 .section-title { margin-bottom: 6px; }
+  .delta-pos { color: #0b6e66; }
+  .delta-neg { color: #c0392b; }
+  .delta-zero { color: #6a7f7b; }
+
+  /* ── EXPLAIN SECTION ── */
+  .pdf-explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pdf-explain-card { border: 1.5px solid #c9e2dd; border-radius: 8px; background: #f7fcfb; padding: 8px 10px; }
+  .pdf-explain-card.result { grid-column: 1 / -1; background: #eaf7f1; border-color: #a9d4c0; }
+  .pdf-explain-title { font-size: 8pt; font-weight: 700; color: #0e5c55; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+  .pdf-explain-line { font-size: 8.5pt; color: #254d48; margin-bottom: 3px; }
+  .pdf-explain-line strong { color: #0b6e66; }
+  .pdf-explain-equation { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .pdf-explain-pill { display: inline-flex; padding: 2px 8px; border-radius: 999px; border: 1px solid #bfdad1; background: #e8f3ef; color: #184a44; font-weight: 700; }
+  .pdf-explain-pill.result { background: #dff3ea; border-color: #9dceb8; color: #0a6157; }
+  .pdf-explain-op { font-weight: 700; color: #6d817c; }
+  .pdf-explain-flow { font-size: 9pt; font-weight: 800; color: #0f6a61; margin-bottom: 4px; }
+  .pdf-explain-formula { font-size: 8.5pt; color: #284e49; margin-bottom: 3px; }
+  .pdf-explain-amount { font-size: 13pt; font-weight: 900; color: #0e6b62; }
+  .pdf-explain-result-empty { font-size: 10pt; font-weight: 800; color: #0f6a61; }
 
   /* ── NOTE & FOOTER ── */
   .note-box { background: #f8fcfb; border-left: 3px solid #0b6e66;
@@ -3336,6 +4163,7 @@ const defaultExpenseItems = [
       <thead><tr><th colspan="2">${tr("pdfGeneralSettings")}</th></tr></thead>
       <tbody>
         <tr><td>${tr("pdfCalcMode")}</td><td>${modeName}</td></tr>
+        <tr><td>${tr("pdfNormProfile")}</td><td>${normProfileName}</td></tr>
         <tr><td>${tr("pdfIncomeBase")}</td><td>${m.incomeMode === "annual" ? tr("pdfIncomeAnnualBase") : m.incomeMode === "cu" ? tr("pdfIncomeCuBase") : tr("pdfIncomeMonthlyBase")}</td></tr>
         <tr><td>${tr("pdfChildrenCount")}</td><td>${m.figli}</td></tr>
         <tr><td>${tr("pdfPermanence")} ${c1n()}</td><td>${m.perm1.toFixed(0)}%</td></tr>
@@ -3434,6 +4262,60 @@ const defaultExpenseItems = [
   </div>
 </div>
 
+<div class="section">
+  <div class="section-title">${tr("spiegTitle")}</div>
+  <div class="pdf-explain-grid">
+    <div class="pdf-explain-card">
+      <div class="pdf-explain-title">${tr("spiegRedditiLabel")}</div>
+      <div class="pdf-explain-line">${c1NameEsc}: <strong>${eur(m.disp1)}</strong> (${tr("pdfWeight")}: ${peso1Pct}%)</div>
+      <div class="pdf-explain-line">${c2NameEsc}: <strong>${eur(m.disp2)}</strong> (${tr("pdfWeight")}: ${peso2Pct}%)</div>
+    </div>
+    <div class="pdf-explain-card">
+      <div class="pdf-explain-title">${tr("spiegSpeseLabel")}</div>
+      <div class="pdf-explain-equation">
+        <span class="pdf-explain-pill">${eur(m.speseTot)}</span>
+        <span class="pdf-explain-op">&times;</span>
+        <span class="pdf-explain-pill">35%</span>
+        <span class="pdf-explain-op">=</span>
+        <span class="pdf-explain-pill result">${eur(m.fabbisognoFigli)}</span>
+      </div>
+    </div>
+    <div class="pdf-explain-card">
+      <div class="pdf-explain-title">${tr("spiegPermLabel")}</div>
+      <div class="pdf-explain-line">${c1NameEsc}: <strong>${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong>${eur(m.quotaDiretta1)}</strong></div>
+      <div class="pdf-explain-line">${c2NameEsc}: <strong>${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong>${eur(m.quotaDiretta2)}</strong></div>
+    </div>
+    <div class="pdf-explain-card result">
+      <div class="pdf-explain-title">${tr("spiegResultLabel")}</div>
+      ${explainResultHtml}
+    </div>
+  </div>
+</div>
+
+${scenarioLab.length ? `
+<div class="${scenarioSectionClass}">
+  <div class="section-title">${tr("pdfScenarioSection")}</div>
+  ${scenarioPdfTable}
+</div>
+` : ""}
+
+<div class="section">
+  <div class="section-title">${tr("pdfNegotiationSection")}</div>
+  <table>
+    <thead>
+      <tr>
+        <th>${tr("pdfNegotiationOption")}</th>
+        <th class="num">${tr("pdfNegotiationAmount")}</th>
+        <th class="num">${msg("pdfNegotiationPayerPost", { spouse: negotiationPayerName })}</th>
+        <th class="num">${msg("pdfNegotiationReceiverPost", { spouse: negotiationReceiverName })}</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${negotiationRowsHtml}
+    </tbody>
+  </table>
+</div>
+
 <!-- NOTE METODOLOGICHE -->
 <div class="note-box">
   <strong>${tr("pdfMethodology")}</strong> — ${tr("pdfMethodologyText")}
@@ -3526,6 +4408,7 @@ const defaultExpenseItems = [
         reddito1: num("reddito1"),
         reddito2: num("reddito2"),
         incomeMode: document.getElementById("incomeMode").value,
+        normProfile: document.getElementById("normProfile").value,
         numFigli: num("numFigli"),
         perm1: num("perm1"),
         calcMode: document.getElementById("calcMode").value,
@@ -3535,11 +4418,19 @@ const defaultExpenseItems = [
         assegnoFam1: num("assegnoFam1"),
         assegnoPercepito2: num("assegnoPercepito2"),
         assegnoPagato2: num("assegnoPagato2"),
-        assegnoFam2: num("assegnoFam2")
+        assegnoFam2: num("assegnoFam2"),
+        straordAnn1: num("straordAnn1"),
+        straordAnn2: num("straordAnn2")
       };
       const spese = expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
       const expenseItemsState = expenseItems.map((item) => ({ label: item.label, help: item.help }));
+      const scenariosState = scenarioLab.map((scenario, idx) => ({
+        label: SCENARIO_LABELS[idx],
+        payload: safeJsonClone(scenario.payload)
+      }));
       return { base, spese, expenseItems: expenseItemsState,
+        scenarioLab: scenariosState,
+        permanenceCalendar: exportPermanenceCalendarState(),
         nome1: document.getElementById("nome1").value,
         nome2: document.getElementById("nome2").value };
     }
@@ -3558,8 +4449,10 @@ const defaultExpenseItems = [
       while (expenseItems.length < state.spese.length) {
         expenseItems.push(normalizeExpenseItem(null, expenseItems.length));
       }
+      scenarioLab = normalizeScenarioLabState(state.scenarioLab);
       if (state.nome1 !== undefined) document.getElementById("nome1").value = state.nome1;
       if (state.nome2 !== undefined) document.getElementById("nome2").value = state.nome2;
+      importPermanenceCalendarState(state.permanenceCalendar);
       updateSpouseLabels();
       buildExpenseRows();
       syncPermanenza();
@@ -3577,6 +4470,13 @@ const defaultExpenseItems = [
           el.value = el.defaultValue || 0;
         }
       });
+      permanenceCalendarState.byMonth = {};
+      const monthInput = document.getElementById("permCalendarMonth");
+      const monthValue = monthInput && parseMonthValue(monthInput.value) ? monthInput.value : getCurrentMonthValue();
+      permanenceCalendarState.month = monthValue;
+      if (monthInput) monthInput.value = monthValue;
+      renderPermanenceCalendar(monthValue);
+      applyPermanenceFromCalendar(monthValue, { silentRender: true });
       syncPermanenza();
       renderAll();
     }
@@ -3702,7 +4602,23 @@ const defaultExpenseItems = [
 
     document.getElementById("authLoginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      await loginKeyLockUser();
+      if (authUiState.mode === "signup") {
+        await registerKeyLockUser();
+      } else {
+        await loginKeyLockUser();
+      }
+    });
+
+    document.getElementById("btnAuthModeLogin").addEventListener("click", () => {
+      setAuthMode("login");
+    });
+
+    document.getElementById("btnAuthModeSignup").addEventListener("click", () => {
+      setAuthMode("signup");
+    });
+
+    document.getElementById("btnVerifyEmailCode").addEventListener("click", async () => {
+      await verifySignupEmailCode();
     });
 
     document.getElementById("btnLogoutKeyLock").addEventListener("click", async () => {
@@ -3753,7 +4669,7 @@ const defaultExpenseItems = [
     });
 
     document.addEventListener("change", (e) => {
-      if (e.target && (e.target.id === "calcMode" || e.target.id === "incomeMode")) {
+      if (e.target && (e.target.id === "calcMode" || e.target.id === "incomeMode" || e.target.id === "normProfile")) {
         if (e.target.id === "incomeMode") {
           const nextMode = document.getElementById("incomeMode").value || "monthly";
           convertIncomeValuesForModeChange(incomeModeLast, nextMode);
@@ -3795,10 +4711,12 @@ const defaultExpenseItems = [
     initUiZoom();
     initTopActionsMenu();
     initPermSliderBar();
+    initPermanenceCalendar();
     initAuthMenu();
     initCoffeeFloatVisibility();
     initCoffeeDonationPicker();
     void initVisitorCounters();
+    setAuthMode("login");
     updateAuthUi();
     renderCloudHistoryPanel();
     syncPermanenza();
