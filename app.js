@@ -64,6 +64,11 @@ const defaultExpenseItems = [
         modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
         redditoAnnuale: "Reddito annuale netto",
         redditoMensile: "Reddito mensile netto",
+        redditoCu: "Reddito lordo annuale CU (Certif. Unica)",
+        incomeHintCu: "Reddito lordo annuale da Certificazione Unica di {spouse}: il sistema stima il netto mensile deducendo IRPEF, INPS dipendente e addizionali (stima orientativa).",
+        pdfIncomeCuBase: "CU – Lordo annuale (netto stimato)",
+        pdfCuMonthlyConv: "Netto mensile stimato da CU (÷IRPEF/INPS)",
+        cuNetNoteText: "il netto mensile è stimato dal lordo CU applicando aliquote IRPEF 2025, contributi INPS dipendente (9,19%) e addizionali medie (1,73%). Stima orientativa, non sostitutiva di calcolo professionale.",
         coffeeHero: "Offrimi un caffè",
         authUserPrefix: "Utente",
         authNotAuthenticated: "Non autenticato.",
@@ -237,7 +242,8 @@ const defaultExpenseItems = [
         kpiActiveMode: "Modalita attiva",
         kpiIncomeBase: "Base reddito",
         kpiIncomeBaseAnnual: "Annuale (convertito in mensile)",
-        kpiIncomeBaseMonthly: "Mensile"
+        kpiIncomeBaseMonthly: "Mensile",
+        kpiIncomeBaseCu: "CU lordo annuale (netto stimato)"
       },
       en: {
         title: "Child Support Calculator",
@@ -263,6 +269,11 @@ const defaultExpenseItems = [
         modeGuidelineLink: "Genoa Court guidelines (PDF)",
         redditoAnnuale: "Annual net income",
         redditoMensile: "Monthly net income",
+        redditoCu: "Gross annual income – CU (tax certificate)",
+        incomeHintCu: "Gross annual income from {spouse}'s CU (Certificazione Unica): the system estimates monthly net by deducting IRPEF, employee INPS (9.19%) and average regional taxes (indicative estimate).",
+        pdfIncomeCuBase: "CU – Gross yearly (estimated net)",
+        pdfCuMonthlyConv: "Estimated monthly net from CU (÷IRPEF/INPS)",
+        cuNetNoteText: "monthly net is estimated from CU gross income applying 2025 IRPEF brackets, employee INPS contributions (9.19%) and average regional/municipal taxes (1.73%). Indicative estimate only.",
         coffeeHero: "Buy me a coffee",
         authUserPrefix: "User",
         authNotAuthenticated: "Not authenticated.",
@@ -436,7 +447,8 @@ const defaultExpenseItems = [
         kpiActiveMode: "Active mode",
         kpiIncomeBase: "Income base",
         kpiIncomeBaseAnnual: "Yearly (converted to monthly)",
-        kpiIncomeBaseMonthly: "Monthly"
+        kpiIncomeBaseMonthly: "Monthly",
+        kpiIncomeBaseCu: "CU gross yearly (estimated net)"
       }
     };
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
@@ -1655,20 +1667,91 @@ const defaultExpenseItems = [
       return expenseItems.reduce((acc, _, idx) => acc + num(`${prefix}_${idx}`), 0);
     }
 
+    /**
+     * Stima il netto mensile da reddito lordo annuale (Certificazione Unica).
+     * Applica: contributi INPS dipendente (9,19%), IRPEF 2025, detrazioni da
+     * lavoro dipendente, addizionale regionale/comunale media (1,73%).
+     * Risultato ORIENTATIVO — non sostituisce calcolo professionale.
+     */
+    function computeNetFromCU(grossAnnual) {
+      const g = Math.max(0, grossAnnual);
+      if (g === 0) return 0;
+
+      // INPS dipendente: 9,19% (tetto previdenziale 2025 ~109.954€, sopra: 10,19%)
+      const inpsRate = g <= 109954 ? 0.0919 : 0.1019;
+      const inps = g * inpsRate;
+      const taxable = g - inps;
+
+      // IRPEF lorda 2025 (aliquote DL 216/2023 confermate dalla Legge Bilancio 2025)
+      // 0–28.000: 23%, 28.001–50.000: 35%, oltre 50.000: 43%
+      let irpefGross = 0;
+      if (taxable <= 28000) {
+        irpefGross = taxable * 0.23;
+      } else if (taxable <= 50000) {
+        irpefGross = 28000 * 0.23 + (taxable - 28000) * 0.35;
+      } else {
+        irpefGross = 28000 * 0.23 + 22000 * 0.35 + (taxable - 50000) * 0.43;
+      }
+
+      // Detrazione da lavoro dipendente 2025
+      let detr = 0;
+      if (taxable > 0 && taxable <= 15000) {
+        detr = Math.max(690, 1955 * ((15000 - taxable) / 15000) + 1265);
+        // semplificazione: flat 1955 per redditi ≤15.000
+        detr = 1955;
+      } else if (taxable <= 28000) {
+        detr = 1910 + 1190 * ((28000 - taxable) / 13000);
+      } else if (taxable <= 50000) {
+        detr = 1910 * ((50000 - taxable) / 22000);
+      } else {
+        detr = 0;
+      }
+
+      // Bonus Irpef (ex "80€" / trattamento integrativo): ≤15.000 → 1.200, 15.001–28.000 → scala
+      let bonus = 0;
+      if (taxable <= 15000) {
+        bonus = Math.min(1200, Math.max(0, irpefGross - detr) > 0 ? 1200 : 0);
+      } else if (taxable <= 28000) {
+        bonus = 1200 * ((28000 - taxable) / 13000);
+      }
+
+      const irpefNetta = Math.max(0, irpefGross - detr - bonus);
+
+      // Addizionale regionale + comunale: media nazionale ~1,73% sul reddito imponibile
+      const addizionali = taxable * 0.0173;
+
+      const netAnnual = g - inps - irpefNetta - addizionali;
+      return Math.max(0, netAnnual) / 12;
+    }
+
     function convertIncomeValuesForModeChange(prevMode, nextMode) {
       if (!prevMode || !nextMode || prevMode === nextMode) return;
-      const factor = prevMode === "monthly" && nextMode === "annual"
-        ? 12
-        : (prevMode === "annual" && nextMode === "monthly" ? 1 / 12 : 1);
-      if (factor === 1) return;
 
+      // Fattore di conversione: CU è lordo annuale, monthly/annual sono netti.
+      // Conversioni con metà-stima quando si entra/esce da CU.
       ["reddito1", "reddito2"].forEach((id) => {
         const el = document.getElementById(id);
         if (!el) return;
         const raw = Number(el.value);
-        if (!Number.isFinite(raw)) return;
-        const converted = Math.round((raw * factor) * 100) / 100;
-        el.value = String(converted);
+        if (!Number.isFinite(raw) || raw === 0) return;
+
+        let converted = raw;
+        if (prevMode === "monthly" && nextMode === "annual") {
+          converted = raw * 12;
+        } else if (prevMode === "annual" && nextMode === "monthly") {
+          converted = raw / 12;
+        } else if (prevMode === "monthly" && nextMode === "cu") {
+          // Stima inversa: netto mensile → lordo annuale approssimato
+          // Usa il fattore empirico del calcolo inverso (lordo ≈ netto / 0.72)
+          converted = (raw * 12) / 0.72;
+        } else if (prevMode === "annual" && nextMode === "cu") {
+          converted = raw / 0.72;
+        } else if (prevMode === "cu" && nextMode === "monthly") {
+          converted = computeNetFromCU(raw);
+        } else if (prevMode === "cu" && nextMode === "annual") {
+          converted = computeNetFromCU(raw) * 12;
+        }
+        el.value = String(Math.round(converted * 100) / 100);
       });
     }
 
@@ -1689,15 +1772,22 @@ const defaultExpenseItems = [
       const redditoHint1 = document.getElementById("hintReddito1");
       const redditoHint2 = document.getElementById("hintReddito2");
       const annual = incomeMode === "annual";
-      const labelText = annual
-        ? `${tr("redditoAnnuale")} (${currentCurrency})`
-        : `${tr("redditoMensile")} (${currentCurrency})`;
-      const hintText1 = annual
-        ? msg("incomeHintAnnual", { spouse: c1n() })
-        : msg("incomeHintMonthly", { spouse: c1n() });
-      const hintText2 = annual
-        ? msg("incomeHintAnnual", { spouse: c2n() })
-        : msg("incomeHintMonthly", { spouse: c2n() });
+      const isCu = incomeMode === "cu";
+      const labelText = isCu
+        ? `${tr("redditoCu")} (${currentCurrency})`
+        : annual
+          ? `${tr("redditoAnnuale")} (${currentCurrency})`
+          : `${tr("redditoMensile")} (${currentCurrency})`;
+      const hintText1 = isCu
+        ? msg("incomeHintCu", { spouse: c1n() })
+        : annual
+          ? msg("incomeHintAnnual", { spouse: c1n() })
+          : msg("incomeHintMonthly", { spouse: c1n() });
+      const hintText2 = isCu
+        ? msg("incomeHintCu", { spouse: c2n() })
+        : annual
+          ? msg("incomeHintAnnual", { spouse: c2n() })
+          : msg("incomeHintMonthly", { spouse: c2n() });
       if (redditoLabel1) redditoLabel1.textContent = labelText;
       if (redditoLabel2) redditoLabel2.textContent = labelText;
       if (redditoHint1) redditoHint1.title = hintText1;
@@ -1737,11 +1827,17 @@ const defaultExpenseItems = [
 
     function computeModelLocal(payload) {
       const incomeMode = payload.incomeMode || "monthly";
-      const incomeDivisor = incomeMode === "annual" ? 12 : 1;
       const r1Raw = Number(payload.r1Raw || 0);
       const r2Raw = Number(payload.r2Raw || 0);
-      const r1 = r1Raw / incomeDivisor;
-      const r2 = r2Raw / incomeDivisor;
+      let r1, r2;
+      if (incomeMode === "cu") {
+        r1 = computeNetFromCU(r1Raw);
+        r2 = computeNetFromCU(r2Raw);
+      } else {
+        const incomeDivisor = incomeMode === "annual" ? 12 : 1;
+        r1 = r1Raw / incomeDivisor;
+        r2 = r2Raw / incomeDivisor;
+      }
       const figli = Math.max(1, Math.round(Number(payload.figli || 0)));
       const perm1 = Math.min(100, Math.max(0, Number(payload.perm1 || 0)));
       const perm2 = 100 - perm1;
@@ -2358,6 +2454,7 @@ const defaultExpenseItems = [
 
         ${modeSpecific}
         ${m.incomeMode === "annual" ? `<br /><strong>${tr("calcIncomeBaseNote")}</strong> ${tr("calcIncomeBaseNoteText")}` : ""}
+        ${m.incomeMode === "cu" ? `<br /><strong>${tr("calcIncomeBaseNote")}</strong> ${tr("cuNetNoteText")}` : ""}
       `;
 
       let mainText = tr("calcNoTransferSuggested");
@@ -2372,7 +2469,7 @@ const defaultExpenseItems = [
 
       const items = [
         [tr("kpiActiveMode"), modeName, "warn"],
-        [tr("kpiIncomeBase"), m.incomeMode === "annual" ? tr("kpiIncomeBaseAnnual") : tr("kpiIncomeBaseMonthly"), "warn"],
+        [tr("kpiIncomeBase"), m.incomeMode === "annual" ? tr("kpiIncomeBaseAnnual") : m.incomeMode === "cu" ? tr("kpiIncomeBaseCu") : tr("kpiIncomeBaseMonthly"), "warn"],
         [`${tr("pdfNetAvailable")} ${c1n()}`, eur(m.disp1), m.disp1 >= 0 ? "ok" : "bad"],
         [`${tr("pdfNetAvailable")} ${c2n()}`, eur(m.disp2), m.disp2 >= 0 ? "ok" : "bad"],
         [tr("liveTotalExpensesEntered"), eur(m.speseTot), "warn"],
@@ -2695,7 +2792,7 @@ const defaultExpenseItems = [
       <thead><tr><th colspan="2">${tr("pdfGeneralSettings")}</th></tr></thead>
       <tbody>
         <tr><td>${tr("pdfCalcMode")}</td><td>${modeName}</td></tr>
-        <tr><td>${tr("pdfIncomeBase")}</td><td>${m.incomeMode === "annual" ? tr("pdfIncomeAnnualBase") : tr("pdfIncomeMonthlyBase")}</td></tr>
+        <tr><td>${tr("pdfIncomeBase")}</td><td>${m.incomeMode === "annual" ? tr("pdfIncomeAnnualBase") : m.incomeMode === "cu" ? tr("pdfIncomeCuBase") : tr("pdfIncomeMonthlyBase")}</td></tr>
         <tr><td>${tr("pdfChildrenCount")}</td><td>${m.figli}</td></tr>
         <tr><td>${tr("pdfPermanence")} ${c1n()}</td><td>${m.perm1.toFixed(0)}%</td></tr>
         <tr><td>${tr("pdfPermanence")} ${c2n()}</td><td>${m.perm2.toFixed(0)}%</td></tr>
@@ -2704,9 +2801,10 @@ const defaultExpenseItems = [
     <table class="data-table">
       <thead><tr><th>${tr("pdfItem")}</th><th class="num">${c1n()}</th><th class="num">${c2n()}</th></tr></thead>
       <tbody>
-        <tr><td>${tr("pdfNetIncome")}${m.incomeMode === "annual" ? tr("pdfYearlySuffix") : tr("pdfMonthlySuffix")}</td>
+        <tr><td>${tr("pdfNetIncome")}${m.incomeMode === "annual" ? tr("pdfYearlySuffix") : m.incomeMode === "cu" ? " (CU lordo)" : tr("pdfMonthlySuffix")}</td>
             <td class="num">${eur(m.r1Raw)}</td><td class="num">${eur(m.r2Raw)}</td></tr>
         ${m.incomeMode === "annual" ? `<tr><td>${tr("pdfMonthlyConv")}</td><td class="num">${eur(m.r1)}</td><td class="num">${eur(m.r2)}</td></tr>` : ""}
+        ${m.incomeMode === "cu" ? `<tr><td>${tr("pdfCuMonthlyConv")}</td><td class="num">${eur(m.r1)}</td><td class="num">${eur(m.r2)}</td></tr>` : ""}
         <tr><td>${tr("pdfSupportReceived")}</td><td class="num">${eur(m.aPerc1)}</td><td class="num">${eur(m.aPerc2)}</td></tr>
         <tr><td>${tr("pdfSupportPaid")}</td><td class="num">${eur(m.aPag1)}</td><td class="num">${eur(m.aPag2)}</td></tr>
         <tr><td>${tr("pdfFamilyBenefits")}</td><td class="num">${eur(m.aFam1)}</td><td class="num">${eur(m.aFam2)}</td></tr>
@@ -2798,6 +2896,7 @@ const defaultExpenseItems = [
   ${tr("pdfModeText")}: <strong>${modeName}</strong>.
   ${tr("pdfNeedEstimate")}
   ${m.incomeMode === "annual" ? tr("pdfAnnualNote") : ""}
+  ${m.incomeMode === "cu" ? tr("cuNetNoteText") : ""}
   ${tr("pdfResultsDepend")}
 </div>
 
