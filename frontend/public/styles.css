@@ -991,8 +991,8 @@
     }
 
     .spieg-title::-webkit-details-marker { display: none; }
-    .spieg-title::before { content: "\\25BA\\0020"; font-size: 0.7rem; }
-    details[open] .spieg-title::before { content: "\\25BC\\0020"; }
+    .spieg-title::before { content: "\25BA\0020"; font-size: 0.7rem; }
+    details[open] .spieg-title::before { content: "\25BC\0020"; }
 
     .spieg-grid {
       display: grid;
