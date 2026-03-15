@@ -1,6 +1,10 @@
 'use strict';
 
-require('dotenv').config();
+// Allow a specific .env file path via DEV_ENV_FILE (e.g. .env.dev)
+// so the dev server can be configured independently from production.
+const { config: dotenvConfig } = require('dotenv');
+const envFile = process.env.DEV_ENV_FILE || '.env';
+dotenvConfig({ path: envFile });
 
 const path = require('path');
 const fs = require('fs');
@@ -17,6 +21,8 @@ const accessLogEnabled = String(process.env.ACCESS_LOG_ENABLED || (process.env.N
 const accessLogSalt = String(process.env.ACCESS_LOG_SALT || 'mantenimento-app');
 
 const publicDir = path.join(__dirname, '..', 'frontend', 'public');
+// When DEV_SOURCE_JS=true the server always serves raw app.js (no rebuild needed).
+const devSourceJs = String(process.env.DEV_SOURCE_JS || 'false').toLowerCase() === 'true';
 
 function createRequestId() {
   return typeof crypto.randomUUID === 'function'
@@ -134,7 +140,7 @@ app.use((err, req, res, next) => {
 app.get('/app.js', (req, res) => {
   const minPath = path.join(publicDir, 'app.min.js');
   const sourcePath = path.join(publicDir, 'app.js');
-  const target = fs.existsSync(minPath) ? minPath : sourcePath;
+  const target = (!devSourceJs && fs.existsSync(minPath)) ? minPath : sourcePath;
   res.sendFile(target);
 });
 
@@ -163,5 +169,6 @@ app.get('*', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  const mode = devSourceJs ? ' [DEV — raw app.js]' : '';
+  console.log(`Server running on http://localhost:${port}${mode}  (env: ${envFile})`);
 });
