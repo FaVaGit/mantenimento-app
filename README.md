@@ -59,6 +59,8 @@ npm start
 Parametri server utili:
 - `CALCULATE_RATE_WINDOW_MS`: finestra del rate limit per `/api/calculate` (default `60000`)
 - `CALCULATE_RATE_MAX_REQUESTS`: massimo richieste per IP nella finestra (default `30`)
+- `ACCESS_LOG_ENABLED`: abilita log strutturati minimizzati, attivo di default in produzione
+- `ACCESS_LOG_SALT`: sale usato per anonimizzare il riferimento client nei log applicativi
 - payload JSON in ingresso limitato a `64kb`
 
 ## KeyLock multi-device (Supabase)
@@ -90,10 +92,17 @@ Opzioni tipiche:
 - Fly.io
 - VPS con Node + reverse proxy
 
+Per deploy su VPS e disponibile un esempio Nginx in `deploy/nginx/mantenimento-app.conf` con:
+- redirect HTTP -> HTTPS
+- TLS 1.2/1.3
+- rate limit e limitazione connessioni su `/api/calculate`
+- filtro L7 sui metodi per `/api/`
+- access log minimizzato senza query string e senza payload
+
 ## Note
 - Strumento orientativo: non sostituisce valutazione legale/professionale.
-- Hardening gia applicato: redirect HTTPS in produzione, HSTS su connessioni sicure, `Cache-Control: no-store` sulle risposte di calcolo, rate limit in memoria per IP e body limit JSON a `64kb`.
-- Per ulteriore hardening: auth server-side, logging audit con minimizzazione dati, WAF/CDN.
+- Hardening gia applicato: redirect HTTPS in produzione, HSTS su connessioni sicure, `Cache-Control: no-store` sulle risposte di calcolo, rate limit in memoria per IP, body limit JSON a `64kb`, request ID e logging applicativo minimizzato senza payload o query string.
+- Per ulteriore hardening: auth server-side, WAF/CDN e storage centralizzato dei log con retention breve.
 
 ## Compliance GDPR e legale (checklist operativa)
 Questa checklist aiuta a ridurre rischi di non conformita per istanze pubblicate in Italia/UE.

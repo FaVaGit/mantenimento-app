@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const express = require('express');
 const { calculateModel } = require('./calculate-model');
 
@@ -12,8 +13,20 @@ const port = Number(process.env.PORT || 3000);
 const calculateRateWindowMs = Number(process.env.CALCULATE_RATE_WINDOW_MS || 60_000);
 const calculateRateMaxRequests = Number(process.env.CALCULATE_RATE_MAX_REQUESTS || 30);
 const calculateRequestLog = new Map();
+const accessLogEnabled = String(process.env.ACCESS_LOG_ENABLED || (process.env.NODE_ENV === 'production' ? 'true' : 'false')).toLowerCase() === 'true';
+const accessLogSalt = String(process.env.ACCESS_LOG_SALT || 'mantenimento-app');
 
 const publicDir = path.join(__dirname, '..', 'frontend', 'public');
+
+function createRequestId() {
+  return typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : crypto.randomBytes(16).toString('hex');
+}
+
+function anonymizeClientIp(ip) {
+  return crypto.createHash('sha256').update(`${accessLogSalt}:${ip}`).digest('hex').slice(0, 16);
+}
 
 function getClientIp(req) {
   return String(req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown');
@@ -62,6 +75,31 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(express.json({ limit: '64kb' }));
 app.use((req, res, next) => {
+  const startedAt = process.hrtime.bigint();
+  req.requestId = createRequestId();
+  res.setHeader('X-Request-Id', req.requestId);
+
+  res.on('finish', () => {
+    const shouldLog = accessLogEnabled && (req.path.startsWith('/api/') || res.statusCode >= 400);
+    if (!shouldLog) return;
+
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    const entry = {
+      ts: new Date().toISOString(),
+      requestId: req.requestId,
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      durationMs: Number(durationMs.toFixed(1)),
+      clientRef: anonymizeClientIp(getClientIp(req))
+    };
+
+    console.info(JSON.stringify(entry));
+  });
+
+  next();
+});
+app.use((req, res, next) => {
   const host = String(req.hostname || '').toLowerCase();
   const isLocal = host === 'localhost' || host === '127.0.0.1';
   const isSecure = req.secure || String(req.get('x-forwarded-proto') || '').toLowerCase() === 'https';
@@ -77,6 +115,19 @@ app.use((req, res, next) => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
   next();
+});
+app.use((err, req, res, next) => {
+  if (!err) return next();
+
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ ok: false, error: 'Calculation payload too large.' });
+  }
+
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ ok: false, error: 'Invalid JSON payload.' });
+  }
+
+  return next(err);
 });
 
 // Serve minified bundle when available, fallback to source app.js in development.
