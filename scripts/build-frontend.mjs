@@ -1,4 +1,5 @@
 import { build } from 'esbuild';
+import { context } from 'esbuild';
 import path from 'node:path';
 import fs from 'node:fs';
 
@@ -12,7 +13,9 @@ if (fs.existsSync(sourceApp)) {
   fs.copyFileSync(sourceApp, entry);
 }
 
-await build({
+const watchMode = process.argv.includes('--watch');
+
+const buildOptions = {
   entryPoints: [entry],
   outfile,
   bundle: false,
@@ -20,6 +23,31 @@ await build({
   legalComments: 'none',
   charset: 'ascii',
   target: ['es2020']
-});
+};
 
-console.log('Built frontend/public/app.min.js');
+if (watchMode) {
+  // In watch mode: also watch the root app.js source and re-sync on every rebuild.
+  const ctx = await context({
+    ...buildOptions,
+    plugins: [{
+      name: 'sync-source',
+      setup(build) {
+        build.onStart(() => {
+          if (fs.existsSync(sourceApp)) {
+            fs.copyFileSync(sourceApp, entry);
+          }
+        });
+        build.onEnd((result) => {
+          if (result.errors.length === 0) {
+            console.log(`[${new Date().toLocaleTimeString()}] Rebuilt app.min.js`);
+          }
+        });
+      }
+    }]
+  });
+  await ctx.watch();
+  console.log('Watching for changes (app.js -> app.min.js). Ctrl+C to stop.');
+} else {
+  await build(buildOptions);
+  console.log('Built frontend/public/app.min.js');
+}
