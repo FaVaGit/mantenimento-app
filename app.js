@@ -243,7 +243,8 @@ const defaultExpenseItems = [
         kpiIncomeBase: "Base reddito",
         kpiIncomeBaseAnnual: "Annuale (convertito in mensile)",
         kpiIncomeBaseMonthly: "Mensile",
-        kpiIncomeBaseCu: "CU lordo annuale (netto stimato)"
+        kpiIncomeBaseCu: "CU lordo annuale (netto stimato)",
+        kpiCuNetGrossRatioSpouse: "Rapporto netto/lordo CU {spouse}"
       },
       en: {
         title: "Child Support Calculator",
@@ -448,7 +449,8 @@ const defaultExpenseItems = [
         kpiIncomeBase: "Income base",
         kpiIncomeBaseAnnual: "Yearly (converted to monthly)",
         kpiIncomeBaseMonthly: "Monthly",
-        kpiIncomeBaseCu: "CU gross yearly (estimated net)"
+        kpiIncomeBaseCu: "CU gross yearly (estimated net)",
+        kpiCuNetGrossRatioSpouse: "CU net/gross ratio {spouse}"
       }
     };
     const SUPABASE_URL = String(window.KEYLOCK_SUPABASE_URL || "").trim();
@@ -2594,6 +2596,16 @@ const defaultExpenseItems = [
         [`${tr("pdfPostSupport")} ${c2n()}`, eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
         [tr("pdfAmountPerChild"), eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
       ];
+
+      if (m.incomeMode === "cu") {
+        const ratio1 = m.r1Raw > 0 ? ((m.r1 * 12 / m.r1Raw) * 100) : 0;
+        const ratio2 = m.r2Raw > 0 ? ((m.r2 * 12 / m.r2Raw) * 100) : 0;
+        const fmtRatio = (v) => `${v.toFixed(1)}%`;
+        items.splice(2, 0,
+          [msg("kpiCuNetGrossRatioSpouse", { spouse: c1n() }), fmtRatio(ratio1), "warn"],
+          [msg("kpiCuNetGrossRatioSpouse", { spouse: c2n() }), fmtRatio(ratio2), "warn"]
+        );
+      }
 
       items.forEach(([label, value, cls]) => {
         const el = document.createElement("div");
