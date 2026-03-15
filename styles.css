@@ -1002,70 +1002,221 @@
     .delta-neg { color: #c0392b; }
     .delta-zero { color: #7a8b80; }
 
-    /* ── Spiegabilità ──────────────────────────────────────────────── */
-    .spieg-panel { margin-top: 10px; }
+    /* ── Spiegabilita ─────────────────────────────────────────────── */
+    .spieg-panel { margin-top: 12px; }
 
     .spieg-details {
-      border: 1px solid #c9ddd6;
-      border-radius: 10px;
+      border: 1px solid #bfd7cf;
+      border-radius: 14px;
       overflow: hidden;
+      background: linear-gradient(180deg, #fbfdfc, #f4f9f7);
+      box-shadow: 0 8px 24px rgba(8, 74, 67, 0.08);
     }
 
     .spieg-title {
       cursor: pointer;
-      padding: 8px 12px;
-      background: linear-gradient(90deg, rgba(249,248,242,0.95), rgba(237,246,243,0.95));
-      font-weight: 600;
-      font-size: 0.88rem;
+      padding: 10px 14px;
+      background: linear-gradient(90deg, rgba(248, 247, 240, 0.95), rgba(229, 243, 238, 0.95));
+      font-weight: 700;
+      font-size: 0.92rem;
       line-height: 1.3;
       user-select: none;
       list-style: none;
+      color: #194f48;
+      border-bottom: 1px solid #d3e4de;
     }
 
     .spieg-title::-webkit-details-marker { display: none; }
-    .spieg-title::before { content: "\25BA\0020"; font-size: 0.7rem; }
-    details[open] .spieg-title::before { content: "\25BC\0020"; }
+    .spieg-title::before { content: "\25B8\0020"; font-size: 0.76rem; color: #1e6d63; }
+    details[open] .spieg-title::before { content: "\25BE\0020"; }
 
     .spieg-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      padding: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 12px;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 720px) {
       .spieg-grid { grid-template-columns: 1fr; }
     }
 
     .spieg-item {
-      background: rgba(243,248,245,0.8);
-      border: 1px solid #d5e5de;
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 0.8rem;
+      background: #f8fcfa;
+      border: 1px solid #cfe3dc;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      min-width: 0;
     }
 
     .spieg-item--result {
-      background: rgba(230,247,240,0.9);
-      border-color: #a8d5be;
       grid-column: 1 / -1;
+      background: linear-gradient(120deg, #ebf8f2, #e3f4ed);
+      border-color: #a5d2be;
     }
 
     .spieg-item-label {
-      font-weight: 700;
-      font-size: 0.72rem;
-      color: var(--brand);
-      margin-bottom: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+      font-size: 0.73rem;
+      color: #0f6a61;
+      margin-bottom: 8px;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
     }
 
-    .spieg-item-body { line-height: 1.55; }
-    .spieg-item-body { display: grid; gap: 4px; }
-    .spieg-item-body--result { gap: 0; }
-    .spieg-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
-    .spieg-sep { color: #7e8f88; }
-    .spieg-value { color: #164d47; }
+    .spieg-item-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: #e0f1eb;
+      color: #0f6a61;
+      font-size: 0.73rem;
+      line-height: 1;
+    }
+
+    .spieg-item-body {
+      display: grid;
+      gap: 8px;
+      line-height: 1.5;
+      min-width: 0;
+    }
+
+    .spieg-people {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .spieg-people { grid-template-columns: 1fr; }
+    }
+
+    .spieg-person {
+      border: 1px solid #d8e8e2;
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 8px;
+      min-width: 0;
+    }
+
+    .spieg-person--left { border-left: 4px solid #1d7d72; }
+    .spieg-person--right { border-left: 4px solid #bf7a1f; }
+
+    .spieg-person-name {
+      font-weight: 700;
+      color: #204e48;
+      margin-bottom: 2px;
+      overflow-wrap: anywhere;
+    }
+
+    .spieg-person-value {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f6259;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .spieg-person-sub {
+      margin-top: 2px;
+      color: #5f7772;
+      font-size: 0.74rem;
+    }
+
+    .spieg-equation {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .spieg-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e8f3ef;
+      border: 1px solid #cbe1d9;
+      color: #184a44;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .spieg-pill--result {
+      background: #dff3ea;
+      border-color: #9dceb8;
+      color: #0a6157;
+    }
+
+    .spieg-op {
+      color: #6d817c;
+      font-weight: 700;
+    }
+
+    .spieg-line--kv {
+      display: grid;
+      grid-template-columns: minmax(92px, 128px) minmax(0, 1fr);
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    @media (max-width: 560px) {
+      .spieg-line--kv { grid-template-columns: 1fr; gap: 2px; }
+    }
+
+    .spieg-k {
+      font-weight: 700;
+      color: #295b54;
+      overflow-wrap: anywhere;
+    }
+
+    .spieg-v {
+      color: #123f39;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+
+    .spieg-item-body--result {
+      background: #ffffff;
+      border: 1px dashed #9fceb9;
+      border-radius: 10px;
+      padding: 10px 12px;
+      gap: 6px;
+    }
+
+    .spieg-result-flow {
+      font-weight: 800;
+      color: #0f6a61;
+      letter-spacing: 0.01em;
+    }
+
+    .spieg-result-formula {
+      color: #284e49;
+      overflow-wrap: anywhere;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .spieg-result-amount {
+      font-size: 1.2rem;
+      font-weight: 900;
+      line-height: 1.2;
+      color: #0e6b62;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .spieg-result-empty {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f6a61;
+    }
 
     @page {
       size: A4 landscape;

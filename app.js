@@ -3093,11 +3093,19 @@ const defaultExpenseItems = [
 
       let resultHtml;
       if (isAssegno1) {
-        resultHtml = `${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)} = <strong class="ok">${eur(m.assegnoDa1a2)}</strong>`;
+        resultHtml = `
+          <div class="spieg-result-flow">${n1} &rarr; ${n2}</div>
+          <div class="spieg-result-formula">${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)}</div>
+          <div class="spieg-result-amount ok">${eur(m.assegnoDa1a2)}</div>
+        `;
       } else if (isAssegno2) {
-        resultHtml = `${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)} = <strong class="ok">${eur(m.assegnoDa2a1)}</strong>`;
+        resultHtml = `
+          <div class="spieg-result-flow">${n2} &rarr; ${n1}</div>
+          <div class="spieg-result-formula">${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)}</div>
+          <div class="spieg-result-amount ok">${eur(m.assegnoDa2a1)}</div>
+        `;
       } else {
-        resultHtml = `<span class="ok">${tr("calcNoTransferSuggested")}</span>`;
+        resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>`;
       }
 
       panel.innerHTML = `
@@ -3105,27 +3113,43 @@ const defaultExpenseItems = [
           <summary class="spieg-title">${tr("spiegTitle")}</summary>
           <div class="spieg-grid">
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegRedditiLabel")}</div>
+              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128184;</span>${tr("spiegRedditiLabel")}</div>
               <div class="spieg-item-body">
-                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${eur(m.disp1)}</strong> <span class="spieg-sep">|</span> <span>${n2}:</span> <strong class="spieg-value">${eur(m.disp2)}</strong></div>
-                <div class="spieg-line">${tr("pdfWeight")}: <strong class="spieg-value">${n1} ${peso1Pct}%</strong> / <strong class="spieg-value">${n2} ${peso2Pct}%</strong></div>
+                <div class="spieg-people">
+                  <div class="spieg-person spieg-person--left">
+                    <div class="spieg-person-name">${n1}</div>
+                    <div class="spieg-person-value">${eur(m.disp1)}</div>
+                    <div class="spieg-person-sub">${tr("pdfWeight")}: ${peso1Pct}%</div>
+                  </div>
+                  <div class="spieg-person spieg-person--right">
+                    <div class="spieg-person-name">${n2}</div>
+                    <div class="spieg-person-value">${eur(m.disp2)}</div>
+                    <div class="spieg-person-sub">${tr("pdfWeight")}: ${peso2Pct}%</div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegSpeseLabel")}</div>
+              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128221;</span>${tr("spiegSpeseLabel")}</div>
               <div class="spieg-item-body">
-                <div class="spieg-line"><strong class="spieg-value">${eur(m.speseTot)}</strong> &times; 35% = <strong class="spieg-value">${eur(m.fabbisognoFigli)}</strong></div>
+                <div class="spieg-equation">
+                  <span class="spieg-pill">${eur(m.speseTot)}</span>
+                  <span class="spieg-op">&times;</span>
+                  <span class="spieg-pill">35%</span>
+                  <span class="spieg-op">=</span>
+                  <span class="spieg-pill spieg-pill--result">${eur(m.fabbisognoFigli)}</span>
+                </div>
               </div>
             </div>
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegPermLabel")}</div>
+              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128197;</span>${tr("spiegPermLabel")}</div>
               <div class="spieg-item-body">
-                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta1)}</strong></div>
-                <div class="spieg-line"><span>${n2}:</span> <strong class="spieg-value">${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta2)}</strong></div>
+                <div class="spieg-line spieg-line--kv"><span class="spieg-k">${n1}</span><span class="spieg-v">${m.perm1.toFixed(0)}% (${days1} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta1)}</span></div>
+                <div class="spieg-line spieg-line--kv"><span class="spieg-k">${n2}</span><span class="spieg-v">${m.perm2.toFixed(0)}% (${days2} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta2)}</span></div>
               </div>
             </div>
             <div class="spieg-item spieg-item--result">
-              <div class="spieg-item-label">${tr("spiegResultLabel")}</div>
+              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#127919;</span>${tr("spiegResultLabel")}</div>
               <div class="spieg-item-body spieg-item-body--result">${resultHtml}</div>
             </div>
           </div>
