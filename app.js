@@ -158,6 +158,7 @@ const defaultExpenseItems = [
         pdfGeneralSettings: "Impostazioni Generali",
         pdfCalcMode: "Modalità di calcolo",
         pdfNormProfile: "Profilo normativo",
+        pdfCalcProfile: "Profilo di calcolo",
         pdfIncomeBase: "Base reddito",
         pdfIncomeAnnualBase: "Annuale (÷12 per mensile)",
         pdfIncomeMonthlyBase: "Mensile",
@@ -444,6 +445,7 @@ const defaultExpenseItems = [
         pdfGeneralSettings: "General Settings",
         pdfCalcMode: "Calculation mode",
         pdfNormProfile: "Normative profile",
+        pdfCalcProfile: "Calculation profile",
         pdfIncomeBase: "Income base",
         pdfIncomeAnnualBase: "Yearly (÷12 to monthly)",
         pdfIncomeMonthlyBase: "Monthly",
@@ -4291,8 +4293,7 @@ const defaultExpenseItems = [
     <table>
       <thead><tr><th colspan="2">${tr("pdfGeneralSettings")}</th></tr></thead>
       <tbody>
-        <tr><td>${tr("pdfCalcMode")}</td><td>${modeName}</td></tr>
-        <tr><td>${tr("pdfNormProfile")}</td><td>${normProfileName}</td></tr>
+        <tr><td>${tr("pdfCalcProfile")}</td><td>${normProfileName}</td></tr>
         <tr><td>${tr("pdfIncomeBase")}</td><td>${m.incomeMode === "annual" ? tr("pdfIncomeAnnualBase") : m.incomeMode === "cu" ? tr("pdfIncomeCuBase") : tr("pdfIncomeMonthlyBase")}</td></tr>
         <tr><td>${tr("pdfChildrenCount")}</td><td>${m.figli}</td></tr>
         <tr><td>${tr("pdfPermanence")} ${c1n()}</td><td>${m.perm1.toFixed(0)}%</td></tr>
@@ -4448,7 +4449,7 @@ ${scenarioLab.length ? `
 <!-- NOTE METODOLOGICHE -->
 <div class="note-box">
   <strong>${tr("pdfMethodology")}</strong> — ${tr("pdfMethodologyText")}
-  ${tr("pdfModeText")}: <strong>${modeName}</strong>.
+  ${tr("pdfCalcProfile")}: <strong>${normProfileName}</strong>.
   ${tr("pdfNeedEstimate")}
   ${m.incomeMode === "annual" ? tr("pdfAnnualNote") : ""}
   ${m.incomeMode === "cu" ? tr("cuNetNoteText") : ""}
