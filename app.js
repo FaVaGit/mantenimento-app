@@ -3723,8 +3723,11 @@ const defaultExpenseItems = [
         importPermanenceCalendarState(payload._permanenceCalendar);
         syncPermanenza("calendar");
       } else {
-        // Backward compatibility with older scenarios without calendar snapshot.
+        // Backward compatibility: no calendar snapshot in older scenarios.
+        // syncPermanenza("perm1") regenerates the calendar from the perm1 percentage.
         syncPermanenza("perm1");
+        // Retroactively save the regenerated calendar so future selections restore it.
+        scenarioLab[idx].payload._permanenceCalendar = exportPermanenceCalendarState();
       }
       updateModeUi();
       renderAll();
@@ -4096,6 +4099,34 @@ const defaultExpenseItems = [
       const days1 = ((m.perm1 / 100) * 30).toFixed(1);
       const days2 = ((m.perm2 / 100) * 30).toFixed(1);
 
+      // Build a compact HTML calendar grid for the current permanence calendar state.
+      const buildPdfCalendarHtml = () => {
+        const monthValue = permanenceCalendarState.month || getCurrentMonthValue();
+        const parsed = parseMonthValue(monthValue);
+        if (!parsed) return "";
+        const assignments = permanenceCalendarState.byMonth[monthValue];
+        if (!Array.isArray(assignments) || !assignments.length) return "";
+        const firstDay = new Date(parsed.year, parsed.month - 1, 1);
+        const firstWeekday = (firstDay.getDay() + 6) % 7; // Monday = 0
+        const wdLabels = getWeekdayShortLabels();
+        const hdHtml = wdLabels.map((l) => `<div class="pdf-cal-hd">${escapeHtml(l.slice(0, 2))}</div>`).join("");
+        let cells = "";
+        for (let i = 0; i < firstWeekday; i += 1) cells += `<div class="pdf-cal-day"></div>`;
+        assignments.forEach((owner, i) => {
+          cells += `<div class="pdf-cal-day ${owner === 1 ? "c1" : "c2"}">${i + 1}</div>`;
+        });
+        const monthLabel = escapeHtml(getMonthLabel(monthValue));
+        return `<div class="pdf-cal-wrap">
+          <div class="pdf-cal-month">${monthLabel}</div>
+          <div class="pdf-cal-grid">${hdHtml}${cells}</div>
+          <div class="pdf-cal-legend">
+            <span class="lc1">${c1NameEsc}</span>
+            <span class="lc2">${c2NameEsc}</span>
+          </div>
+        </div>`;
+      };
+      const pdfCalHtml = buildPdfCalendarHtml();
+
       let explainResultHtml = `<div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>`;
       if (m.assegnoDa1a2 > 0.005) {
         explainResultHtml = `
@@ -4412,6 +4443,18 @@ const defaultExpenseItems = [
   .pdf-explain-amount { font-size: 13pt; font-weight: 900; color: #0e6b62; }
   .pdf-explain-result-empty { font-size: 10pt; font-weight: 800; color: #0f6a61; }
 
+  /* ── PDF INLINE CALENDAR ── */
+  .pdf-cal-wrap { margin-top: 8px; }
+  .pdf-cal-month { font-size: 7.5pt; font-weight: 700; color: #2f4745; margin-bottom: 3px; }
+  .pdf-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+  .pdf-cal-hd { font-size: 6pt; text-align: center; color: #888; font-weight: 600; padding-bottom: 1px; }
+  .pdf-cal-day { font-size: 7pt; text-align: center; padding: 1.5px 0; border-radius: 2px; }
+  .pdf-cal-day.c1 { background: #c7ede7; color: #0a4a44; }
+  .pdf-cal-day.c2 { background: #f5e9cc; color: #5a3e10; }
+  .pdf-cal-legend { font-size: 7pt; margin-top: 4px; display: flex; gap: 10px; }
+  .pdf-cal-legend .lc1::before { content: "\\25A0  "; color: #0b6e66; }
+  .pdf-cal-legend .lc2::before { content: "\\25A0  "; color: #c49a30; }
+
   /* ── NOTE & FOOTER ── */
   .note-box { background: #f8fcfb; border-left: 3px solid #0b6e66;
     padding: 8px 12px; font-size: 8pt; color: #444; line-height: 1.6; }
@@ -4666,6 +4709,7 @@ const defaultExpenseItems = [
       <div class="pdf-explain-title">${tr("spiegPermLabel")}</div>
       <div class="pdf-explain-line">${c1NameEsc}: <strong>${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong>${eur(m.quotaDiretta1)}</strong></div>
       <div class="pdf-explain-line">${c2NameEsc}: <strong>${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong>${eur(m.quotaDiretta2)}</strong></div>
+      ${pdfCalHtml}
     </div>
     <div class="pdf-explain-card result">
       <div class="pdf-explain-title">${tr("spiegResultLabel")}</div>
