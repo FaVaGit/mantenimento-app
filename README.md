@@ -11,7 +11,7 @@ Applicazione web per il calcolo orientativo dell'assegno di mantenimento con arc
 - `supabase_schema.sql`: schema DB per KeyLock
 
 ## Perche questa separazione
-- Il frontend puo usare una formula locale e, solo se esplicitamente abilitato, il backend via API.
+- Il frontend invia il payload di calcolo al backend via API sullo stesso dominio oppure a un endpoint esplicitamente configurato.
 - Il JS client e modulare (non inline) e puo essere minificato per distribuzione.
 
 Nota importante:
@@ -53,8 +53,13 @@ npm start
 `npm start` esegue build frontend + avvio server.
 
 ## Endpoint backend
-- `POST /api/calculate`: calcolo modello mantenimento, disabilitato lato frontend per default per privacy/GDPR; il browser invia il payload al backend solo se `window.KEYLOCK_ALLOW_REMOTE_CALC=true`
+- `POST /api/calculate`: calcolo modello mantenimento server-side; il payload transita su HTTPS/TLS in produzione e la risposta applica header `Cache-Control: no-store`
 - `GET /api/health`: health check
+
+Parametri server utili:
+- `CALCULATE_RATE_WINDOW_MS`: finestra del rate limit per `/api/calculate` (default `60000`)
+- `CALCULATE_RATE_MAX_REQUESTS`: massimo richieste per IP nella finestra (default `30`)
+- payload JSON in ingresso limitato a `64kb`
 
 ## KeyLock multi-device (Supabase)
 Il login cloud resta lato frontend e usa `supabase-config.js` (chiave anon pubblica).
@@ -87,7 +92,8 @@ Opzioni tipiche:
 
 ## Note
 - Strumento orientativo: non sostituisce valutazione legale/professionale.
-- Per ulteriore hardening: rate limit API, auth server-side, logging audit, WAF/CDN.
+- Hardening gia applicato: redirect HTTPS in produzione, HSTS su connessioni sicure, `Cache-Control: no-store` sulle risposte di calcolo, rate limit in memoria per IP e body limit JSON a `64kb`.
+- Per ulteriore hardening: auth server-side, logging audit con minimizzazione dati, WAF/CDN.
 
 ## Compliance GDPR e legale (checklist operativa)
 Questa checklist aiuta a ridurre rischi di non conformita per istanze pubblicate in Italia/UE.
@@ -107,7 +113,8 @@ Questa checklist aiuta a ridurre rischi di non conformita per istanze pubblicate
 4. Sicurezza
 - Non salvare segreti backend nel frontend.
 - Mantieni cifratura lato client del profilo cloud.
-- Mantieni locale nel browser il payload di calcolo quando i dati trattati sono sensibili; se abiliti il backend, considera il payload leggibile dal server e quindi non E2E.
+- Proteggi il trasporto del payload di calcolo con HTTPS/TLS end-to-end verso il backend pubblicato e considera il dato leggibile dal server applicativo durante l'elaborazione.
+- Mantieni redirect HTTPS, HSTS, no-store sulle risposte di calcolo e policy di logging che non serializzino i payload sensibili.
 - Applica controllo accessi, backup e monitoraggio su infrastruttura server.
 
 5. Conservazione e diritti interessati

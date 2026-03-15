@@ -508,7 +508,6 @@ const defaultExpenseItems = [
     let currentLang = "it";
     let currentCurrency = "EUR";
     const CALC_API_BASE = String(window.KEYLOCK_CALC_API_BASE || "").trim().replace(/\/+$/, "");
-    const ALLOW_REMOTE_CALC = String(window.KEYLOCK_ALLOW_REMOTE_CALC || "").trim().toLowerCase() === "true";
 
     function tr(key) {
       const table = I18N[currentLang] || I18N.it;
@@ -534,14 +533,8 @@ const defaultExpenseItems = [
     }
 
     function resolveCalculationApiUrl() {
-      // GDPR/privacy hardening: calculation payload stays in-browser by default.
-      // Remote calculation must be an explicit opt-in because true E2E protection
-      // is incompatible with a server that needs to inspect the cleartext payload.
-      if (!ALLOW_REMOTE_CALC) return null;
       if (CALC_API_BASE) return `${CALC_API_BASE}/api/calculate`;
-      const host = String((window.location && window.location.hostname) || "").toLowerCase();
-      if (host === "localhost" || host === "127.0.0.1") return "/api/calculate";
-      return null;
+      return "/api/calculate";
     }
 
     function patchFabricTextBaselineTypo() {

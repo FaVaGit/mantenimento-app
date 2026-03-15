@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy | Calcolatore Mantenimento Figli</title>
-  <meta name="description" content="Privacy policy del Calcolatore Mantenimento Figli: trattamento dati, calcolo locale nel browser, cloud cifrato lato client e diritti utente." />
+  <meta name="description" content="Privacy policy del Calcolatore Mantenimento Figli: trattamento dati, calcolo server-side su HTTPS/TLS, cloud cifrato lato client e diritti utente." />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://favagit.github.io/mantenimento-app/privacy.html" />
   <style>
@@ -86,9 +86,10 @@
       <h2>5. Modalita di trattamento e misure di sicurezza</h2>
       <p>
         I dati sono trattati con strumenti elettronici secondo principi di minimizzazione e limitazione delle finalita.
-        Nella configurazione standard il payload di calcolo resta nel browser dell'utente e non viene trasmesso al backend applicativo.
+        Nella configurazione standard il payload di calcolo viene trasmesso al backend applicativo tramite connessione HTTPS/TLS
+        per consentire l'elaborazione server-side.
         Per le funzionalita cloud, il profilo utente e cifrato lato client prima del salvataggio remoto.
-        L'eventuale abilitazione esplicita di servizi server-side per il calcolo comporta un diverso modello di trattamento, da valutare separatamente dal titolare dell'istanza.
+        Il server applica misure di hardening del trasporto e delle risposte, incluse politiche di no-store sui risultati di calcolo.
         Sono adottate misure tecniche e organizzative ragionevoli per proteggere dati e infrastrutture.
       </p>
 
@@ -104,7 +105,7 @@
         I dati possono essere trattati da fornitori tecnici strettamente necessari al funzionamento del servizio
         (es. hosting/autenticazione/database). Qualora vi siano trasferimenti verso Paesi extra UE/SEE,
         questi avvengono nel rispetto del Capo V del GDPR (es. decisioni di adeguatezza o clausole contrattuali standard).
-        Nella configurazione standard del progetto il contenuto del calcolo non viene inviato a un backend di elaborazione.
+        Nella configurazione standard del progetto il contenuto del calcolo viene elaborato dal backend dell'istanza pubblicata.
       </p>
 
       <h2>8. Cookie e tecnologie simili</h2>
