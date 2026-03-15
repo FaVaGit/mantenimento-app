@@ -11,7 +11,7 @@ Applicazione web per il calcolo orientativo dell'assegno di mantenimento con arc
 - `supabase_schema.sql`: schema DB per KeyLock
 
 ## Perche questa separazione
-- Il frontend non contiene piu la formula principale in chiaro: il calcolo viene fatto da backend via API.
+- Il frontend puo usare una formula locale e, solo se esplicitamente abilitato, il backend via API.
 - Il JS client e modulare (non inline) e puo essere minificato per distribuzione.
 
 Nota importante:
@@ -53,7 +53,7 @@ npm start
 `npm start` esegue build frontend + avvio server.
 
 ## Endpoint backend
-- `POST /api/calculate`: calcolo modello mantenimento
+- `POST /api/calculate`: calcolo modello mantenimento, disabilitato lato frontend per default per privacy/GDPR; il browser invia il payload al backend solo se `window.KEYLOCK_ALLOW_REMOTE_CALC=true`
 - `GET /api/health`: health check
 
 ## KeyLock multi-device (Supabase)
@@ -107,6 +107,7 @@ Questa checklist aiuta a ridurre rischi di non conformita per istanze pubblicate
 4. Sicurezza
 - Non salvare segreti backend nel frontend.
 - Mantieni cifratura lato client del profilo cloud.
+- Mantieni locale nel browser il payload di calcolo quando i dati trattati sono sensibili; se abiliti il backend, considera il payload leggibile dal server e quindi non E2E.
 - Applica controllo accessi, backup e monitoraggio su infrastruttura server.
 
 5. Conservazione e diritti interessati
