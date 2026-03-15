@@ -3247,6 +3247,26 @@ const defaultExpenseItems = [
         assegnoDir = `${c2NameEsc} &rarr; ${c1NameEsc}`;
       }
 
+      const peso1Pct = (m.peso1 * 100).toFixed(1);
+      const peso2Pct = (m.peso2 * 100).toFixed(1);
+      const days1 = ((m.perm1 / 100) * 30).toFixed(1);
+      const days2 = ((m.perm2 / 100) * 30).toFixed(1);
+
+      let explainResultHtml = `<div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>`;
+      if (m.assegnoDa1a2 > 0.005) {
+        explainResultHtml = `
+          <div class="pdf-explain-flow">${c1NameEsc} &rarr; ${c2NameEsc}</div>
+          <div class="pdf-explain-formula">${c1NameEsc}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)}</div>
+          <div class="pdf-explain-amount">${eur(m.assegnoDa1a2)}</div>
+        `;
+      } else if (m.assegnoDa2a1 > 0.005) {
+        explainResultHtml = `
+          <div class="pdf-explain-flow">${c2NameEsc} &rarr; ${c1NameEsc}</div>
+          <div class="pdf-explain-formula">${c2NameEsc}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)}</div>
+          <div class="pdf-explain-amount">${eur(m.assegnoDa2a1)}</div>
+        `;
+      }
+
       const speseRows = expenseItems.map((item, i) => {
         const c1 = num(`c1_${i}`);
         const c2 = num(`c2_${i}`);
@@ -3432,6 +3452,22 @@ const defaultExpenseItems = [
   .delta-pos { color: #0b6e66; }
   .delta-neg { color: #c0392b; }
   .delta-zero { color: #6a7f7b; }
+
+  /* ── EXPLAIN SECTION ── */
+  .pdf-explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pdf-explain-card { border: 1.5px solid #c9e2dd; border-radius: 8px; background: #f7fcfb; padding: 8px 10px; }
+  .pdf-explain-card.result { grid-column: 1 / -1; background: #eaf7f1; border-color: #a9d4c0; }
+  .pdf-explain-title { font-size: 8pt; font-weight: 700; color: #0e5c55; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+  .pdf-explain-line { font-size: 8.5pt; color: #254d48; margin-bottom: 3px; }
+  .pdf-explain-line strong { color: #0b6e66; }
+  .pdf-explain-equation { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .pdf-explain-pill { display: inline-flex; padding: 2px 8px; border-radius: 999px; border: 1px solid #bfdad1; background: #e8f3ef; color: #184a44; font-weight: 700; }
+  .pdf-explain-pill.result { background: #dff3ea; border-color: #9dceb8; color: #0a6157; }
+  .pdf-explain-op { font-weight: 700; color: #6d817c; }
+  .pdf-explain-flow { font-size: 9pt; font-weight: 800; color: #0f6a61; margin-bottom: 4px; }
+  .pdf-explain-formula { font-size: 8.5pt; color: #284e49; margin-bottom: 3px; }
+  .pdf-explain-amount { font-size: 13pt; font-weight: 900; color: #0e6b62; }
+  .pdf-explain-result-empty { font-size: 10pt; font-weight: 800; color: #0f6a61; }
 
   /* ── NOTE & FOOTER ── */
   .note-box { background: #f8fcfb; border-left: 3px solid #0b6e66;
@@ -3660,6 +3696,36 @@ const defaultExpenseItems = [
       <div class="kpi-val ${m.post2 >= 0 ? 'ok' : 'bad'}">${eur(m.post2)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfDirectShareC1C2")}</div>
       <div class="kpi-val ok" style="font-size:10pt">${eur(m.quotaDiretta1)} / ${eur(m.quotaDiretta2)}</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">${tr("spiegTitle")}</div>
+  <div class="pdf-explain-grid">
+    <div class="pdf-explain-card">
+      <div class="pdf-explain-title">${tr("spiegRedditiLabel")}</div>
+      <div class="pdf-explain-line">${c1NameEsc}: <strong>${eur(m.disp1)}</strong> (${tr("pdfWeight")}: ${peso1Pct}%)</div>
+      <div class="pdf-explain-line">${c2NameEsc}: <strong>${eur(m.disp2)}</strong> (${tr("pdfWeight")}: ${peso2Pct}%)</div>
+    </div>
+    <div class="pdf-explain-card">
+      <div class="pdf-explain-title">${tr("spiegSpeseLabel")}</div>
+      <div class="pdf-explain-equation">
+        <span class="pdf-explain-pill">${eur(m.speseTot)}</span>
+        <span class="pdf-explain-op">&times;</span>
+        <span class="pdf-explain-pill">35%</span>
+        <span class="pdf-explain-op">=</span>
+        <span class="pdf-explain-pill result">${eur(m.fabbisognoFigli)}</span>
+      </div>
+    </div>
+    <div class="pdf-explain-card">
+      <div class="pdf-explain-title">${tr("spiegPermLabel")}</div>
+      <div class="pdf-explain-line">${c1NameEsc}: <strong>${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong>${eur(m.quotaDiretta1)}</strong></div>
+      <div class="pdf-explain-line">${c2NameEsc}: <strong>${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong>${eur(m.quotaDiretta2)}</strong></div>
+    </div>
+    <div class="pdf-explain-card result">
+      <div class="pdf-explain-title">${tr("spiegResultLabel")}</div>
+      ${explainResultHtml}
+    </div>
   </div>
 </div>
 
