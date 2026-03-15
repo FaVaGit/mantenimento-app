@@ -1185,8 +1185,20 @@ const defaultExpenseItems = [
     function normalizeExpenseItem(item, fallbackIdx = 0) {
       const rawLabel = String(item && item.label ? item.label : "").trim();
       const rawHelp = String(item && item.help ? item.help : "").trim();
-      const label = rawLabel || `Voce personalizzata ${fallbackIdx + 1}`;
-      const help = rawHelp || `Voce aggiunta manualmente: ${label}.`;
+      // Strip leading non-letter characters (emoji, spaces) for default-item matching.
+      const stripLeading = (s) => s.replace(/^[^A-Za-z\u00C0-\u024F]+/, "").trim();
+      const strippedRaw = stripLeading(rawLabel);
+      // If the saved label matches a default item (with or without emoji prefix), use
+      // the current default label (so emoji survive save/load round-trips).
+      const defaultMatch = strippedRaw
+        ? defaultExpenseItems.find((d) => stripLeading(d.label) === strippedRaw)
+        : null;
+      const label = defaultMatch
+        ? defaultMatch.label
+        : (rawLabel || `Voce personalizzata ${fallbackIdx + 1}`);
+      const help = defaultMatch
+        ? defaultMatch.help
+        : (rawHelp || `Voce aggiunta manualmente: ${label}.`);
       return { label, help };
     }
 
