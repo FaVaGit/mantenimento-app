@@ -1239,6 +1239,9 @@ const defaultExpenseItems = [
       const heroCoffeeBtn = document.querySelector(".btn-coffee-hero");
       const heroDonateWrap = document.querySelector(".hero-donate");
       const heroDonateMenu = document.querySelector(".hero-donate-menu");
+      const heroContactsBtn = document.querySelector(".btn-contacts-hero");
+      const heroContactsWrap = document.querySelector(".hero-contacts");
+      const heroContactsMenu = document.querySelector(".hero-contacts-menu");
       const coffeeFloat = document.querySelector(".coffee-float");
       const floatBtn = document.querySelector(".coffee-float-btn");
       const floatCard = document.querySelector(".coffee-float-card");
@@ -1251,20 +1254,45 @@ const defaultExpenseItems = [
         heroCoffeeBtn.setAttribute("aria-expanded", open ? "true" : "false");
       }
 
+      function setHeroContactsOpen(open) {
+        if (!heroContactsWrap || !heroContactsBtn) return;
+        heroContactsWrap.classList.toggle("is-open", !!open);
+        heroContactsBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
       floatBtn.setAttribute("aria-haspopup", "true");
       floatBtn.setAttribute("aria-expanded", "false");
       heroCoffeeBtn.setAttribute("aria-haspopup", "true");
       heroCoffeeBtn.setAttribute("aria-expanded", "false");
+      if (heroContactsBtn) {
+        heroContactsBtn.setAttribute("aria-haspopup", "true");
+        heroContactsBtn.setAttribute("aria-expanded", "false");
+      }
 
       heroCoffeeBtn.addEventListener("click", (e) => {
         e.preventDefault();
         const willOpen = !(heroDonateWrap && heroDonateWrap.classList.contains("is-open"));
+        setHeroContactsOpen(false);
         setHeroDonateOpen(willOpen);
       });
+
+      if (heroContactsBtn) {
+        heroContactsBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const willOpen = !(heroContactsWrap && heroContactsWrap.classList.contains("is-open"));
+          setHeroDonateOpen(false);
+          setHeroContactsOpen(willOpen);
+        });
+      }
 
       if (heroDonateMenu) {
         heroDonateMenu.addEventListener("click", (e) => {
           if (e.target && e.target.closest("a")) setHeroDonateOpen(false);
+        });
+      }
+      if (heroContactsMenu) {
+        heroContactsMenu.addEventListener("click", (e) => {
+          if (e.target && e.target.closest("a")) setHeroContactsOpen(false);
         });
       }
 
@@ -1296,13 +1324,15 @@ const defaultExpenseItems = [
       });
 
       document.addEventListener("click", (e) => {
-        if (e.target.closest(".coffee-float") || e.target.closest(".hero-donate")) return;
+        if (e.target.closest(".coffee-float") || e.target.closest(".hero-donate") || e.target.closest(".hero-contacts")) return;
+        setHeroContactsOpen(false);
         setHeroDonateOpen(false);
         setCoffeePickerOpen(false);
       });
 
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
+          setHeroContactsOpen(false);
           setHeroDonateOpen(false);
           setCoffeePickerOpen(false);
         }
@@ -3388,16 +3418,6 @@ const defaultExpenseItems = [
     document.getElementById("btnPdf").addEventListener("click", () => {
       exportPdfDirect();
     });
-
-    const btnGoContacts = document.getElementById("btnGoContacts");
-    if (btnGoContacts) {
-      btnGoContacts.addEventListener("click", () => {
-        const contactsSection = document.getElementById("contactsSection");
-        if (contactsSection) {
-          contactsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      });
-    }
 
     document.getElementById("btnAddExpenseItem").addEventListener("click", () => {
       document.getElementById("expenseItemEditor").classList.remove("is-hidden");

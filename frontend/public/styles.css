@@ -143,6 +143,73 @@
       align-items: center;
     }
 
+    .hero-contacts {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .btn-contacts-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1.5px solid #6ea8a0;
+      background: linear-gradient(135deg, #e9f8f4, #d8f0ea);
+      color: #1d5650;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      box-shadow: 0 1px 4px rgba(33, 111, 102, 0.12);
+      white-space: nowrap;
+    }
+
+    .btn-contacts-hero:hover {
+      background: linear-gradient(135deg, #ddf4ef, #c8ebe3);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(33, 111, 102, 0.2);
+    }
+
+    .hero-contacts-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 42;
+      min-width: 235px;
+      display: none;
+      gap: 6px;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid #9fcac1;
+      background: linear-gradient(150deg, #f3fcf9, #e4f3ee);
+      box-shadow: 0 8px 20px rgba(23, 76, 70, 0.2);
+    }
+
+    .hero-contacts:hover .hero-contacts-menu,
+    .hero-contacts.is-open .hero-contacts-menu {
+      display: grid;
+    }
+
+    .hero-contacts-menu a {
+      display: block;
+      padding: 7px 9px;
+      border-radius: 8px;
+      color: #165d55;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.82rem;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid #c8ddd8;
+    }
+
+    .hero-contacts-menu a:hover {
+      text-decoration: underline;
+      background: #ffffff;
+    }
+
     .btn-coffee-hero {
       display: inline-flex;
       align-items: center;
@@ -1465,57 +1532,6 @@
     .btn-donate-kofi {
       background: #ff5e5b;
       color: #fff;
-    }
-
-    .contacts-card {
-      margin-top: 14px;
-    }
-
-    .contacts-content {
-      display: grid;
-      gap: 10px;
-    }
-
-    .contacts-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .contact-row {
-      display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 10px;
-      align-items: center;
-      border: 1px solid #d3e2dd;
-      border-radius: 10px;
-      background: linear-gradient(180deg, #fbfefc, #f3f8f6);
-      padding: 9px 12px;
-    }
-
-    .contact-label {
-      font-size: 0.84rem;
-      color: #4a6060;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .contact-link {
-      color: #0f5f57;
-      text-decoration: none;
-      font-weight: 700;
-      word-break: break-word;
-    }
-
-    .contact-link:hover {
-      text-decoration: underline;
-    }
-
-    @media (max-width: 760px) {
-      .contact-row {
-        grid-template-columns: 1fr;
-        gap: 4px;
-      }
     }
 
     details {

@@ -105,7 +105,6 @@
             <button class="btn-secondary" id="btnExportJson" type="button">Esporta JSON cifrato</button>
             <button class="btn-secondary" id="btnImportJson" type="button">Carica JSON cifrato</button>
             <button class="btn-secondary" id="btnPdf" type="button">Genera e scarica PDF</button>
-            <button class="btn-secondary" id="btnGoContacts" type="button">Contatti</button>
             <input id="fileJson" type="file" accept="application/json,.json" style="display:none" />
           </div>
         </div>
@@ -128,6 +127,16 @@
             <option value="GBP">GBP</option>
             <option value="CHF">CHF</option>
           </select>
+        </div>
+        <div class="hero-contacts" id="heroContacts">
+          <button class="btn-contacts-hero" id="btnContactsHero" type="button" aria-expanded="false" aria-haspopup="true" aria-controls="heroContactsMenu" title="Contatti">Contatti</button>
+          <div class="hero-contacts-menu" id="heroContactsMenu" aria-label="Contatti ufficiali">
+            <a href="https://it.linkedin.com/in/fabiovacchino" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://github.com/FaVaGit" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://github.com/FaVaGit/mantenimento-app/issues" target="_blank" rel="noopener noreferrer">Supporto (Issues)</a>
+            <a href="https://paypal.me/fabiovacchino" target="_blank" rel="noopener noreferrer">PayPal</a>
+            <a href="https://ko-fi.com/fabiovacchino" target="_blank" rel="noopener noreferrer">Ko-fi</a>
+          </div>
         </div>
         <div class="hero-donate" id="heroDonate">
           <button class="btn-coffee-hero" id="btnCoffeeHero" type="button" aria-expanded="false" aria-haspopup="true" aria-controls="heroDonateMenu" title="Offrimi un caffè!">&#9749; Offrimi un caffè</button>
@@ -390,35 +399,6 @@
         </div>
       </section>
     </div>
-
-    <section class="card contacts-card" id="contactsSection" aria-labelledby="contattiTitle">
-      <h2 id="contattiTitle">Contatti</h2>
-      <div class="content contacts-content">
-        <p class="note">Canali pubblici ufficiali:</p>
-        <div class="contacts-list" role="list">
-          <div class="contact-row" role="listitem">
-            <span class="contact-label">LinkedIn</span>
-            <a class="contact-link" href="https://it.linkedin.com/in/fabiovacchino" target="_blank" rel="noopener noreferrer">Fabio Vacchino (Esaote)</a>
-          </div>
-          <div class="contact-row" role="listitem">
-            <span class="contact-label">GitHub</span>
-            <a class="contact-link" href="https://github.com/FaVaGit" target="_blank" rel="noopener noreferrer">@FaVaGit</a>
-          </div>
-          <div class="contact-row" role="listitem">
-            <span class="contact-label">Supporto</span>
-            <a class="contact-link" href="https://github.com/FaVaGit/mantenimento-app/issues" target="_blank" rel="noopener noreferrer">Apri una issue sul progetto</a>
-          </div>
-          <div class="contact-row" role="listitem">
-            <span class="contact-label">Donazione PayPal</span>
-            <a class="contact-link" href="https://paypal.me/fabiovacchino" target="_blank" rel="noopener noreferrer">paypal.me/fabiovacchino</a>
-          </div>
-          <div class="contact-row" role="listitem">
-            <span class="contact-label">Donazione Ko-fi</span>
-            <a class="contact-link" href="https://ko-fi.com/fabiovacchino" target="_blank" rel="noopener noreferrer">ko-fi.com/fabiovacchino</a>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <div class="donate-banner" role="button" tabindex="0" aria-label="Apri scelta metodo di donazione">
       <div class="donate-text">
