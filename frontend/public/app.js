@@ -1799,6 +1799,32 @@ const defaultExpenseItems = [
       return Math.max(0, netAnnual) / 12;
     }
 
+    // Inversione numerica: dato il netto mensile target, stima il lordo annuale CU.
+    function estimateGrossFromMonthlyNet(targetMonthlyNet) {
+      const target = Math.max(0, Number(targetMonthlyNet || 0));
+      if (target <= 0) return 0;
+
+      let low = 0;
+      let high = Math.max(12000, target * 24);
+
+      // Espande l'intervallo finché il netto stimato supera (o raggiunge) il target.
+      let guard = 0;
+      while (computeNetFromCU(high) < target && high < 5000000 && guard < 60) {
+        high *= 1.6;
+        guard += 1;
+      }
+
+      // Ricerca binaria sul lordo annuale.
+      for (let i = 0; i < 56; i += 1) {
+        const mid = (low + high) / 2;
+        const n = computeNetFromCU(mid);
+        if (n < target) low = mid;
+        else high = mid;
+      }
+
+      return high;
+    }
+
     function convertIncomeValuesForModeChange(prevMode, nextMode) {
       if (!prevMode || !nextMode || prevMode === nextMode) return;
 
@@ -1819,8 +1845,8 @@ const defaultExpenseItems = [
         if (fromMode === toMode) return raw;
         if (fromMode === "monthly" && toMode === "annual") return raw * 12;
         if (fromMode === "annual" && toMode === "monthly") return raw / 12;
-        if (fromMode === "monthly" && toMode === "cu") return (raw * 12) / 0.72;
-        if (fromMode === "annual" && toMode === "cu") return raw / 0.72;
+        if (fromMode === "monthly" && toMode === "cu") return estimateGrossFromMonthlyNet(raw);
+        if (fromMode === "annual" && toMode === "cu") return estimateGrossFromMonthlyNet(raw / 12);
         if (fromMode === "cu" && toMode === "monthly") return computeNetFromCU(raw);
         if (fromMode === "cu" && toMode === "annual") return computeNetFromCU(raw) * 12;
         return raw;
