@@ -600,6 +600,53 @@ const defaultExpenseItems = [
         return storedBase || configBase;
       }
 
+      function getRuntimeVariantLabels() {
+        const labels = [];
+
+        try {
+          const params = new URLSearchParams(window.location.search || "");
+          const frontendVariant = String(params.get("frontend") || "").trim().toLowerCase();
+          const envVariant = String(params.get("env") || "").trim().toLowerCase();
+          const apiBaseVariant = String(params.get("apiBase") || "").trim();
+
+          if (frontendVariant === "dev" || window.location.host.includes("githack.com")) {
+            labels.push("dev-frontend");
+          }
+          if (envVariant === "dev" || !!apiBaseVariant) {
+            labels.push("dev-api");
+          }
+        } catch (_) {}
+
+        return labels;
+      }
+
+      function renderRuntimeBadge() {
+        const heroTools = document.querySelector(".hero-tools");
+        if (!heroTools) return;
+
+        const labels = getRuntimeVariantLabels();
+        let badge = document.getElementById("runtimeEnvBadge");
+
+        if (!labels.length) {
+          if (badge) badge.remove();
+          return;
+        }
+
+        if (!badge) {
+          badge = document.createElement("div");
+          badge.id = "runtimeEnvBadge";
+          badge.className = "runtime-badge";
+          heroTools.prepend(badge);
+        }
+
+        badge.innerHTML = labels.map((label) => {
+          if (label === "dev-frontend") {
+            return '<span class="runtime-badge-chip runtime-badge-chip--frontend">DEV FRONTEND</span>';
+          }
+          return '<span class="runtime-badge-chip runtime-badge-chip--api">DEV API</span>';
+        }).join("");
+      }
+
     function tr(key) {
       const table = I18N[currentLang] || I18N.it;
       return table[key] || I18N.it[key] || key;
@@ -796,6 +843,7 @@ const defaultExpenseItems = [
       }
       if (cardTitles[0]) cardTitles[0].textContent = tr("inputsTitle");
       if (cardTitles[1]) cardTitles[1].textContent = tr("resultsTitle");
+      renderRuntimeBadge();
       if (calcSummary) calcSummary.textContent = tr("howCalc");
       if (orientativeNote) orientativeNote.textContent = tr("orientative");
 
