@@ -105,6 +105,7 @@
             <button class="btn-secondary" id="btnExportJson" type="button">Esporta JSON cifrato</button>
             <button class="btn-secondary" id="btnImportJson" type="button">Carica JSON cifrato</button>
             <button class="btn-secondary" id="btnPdf" type="button">Genera e scarica PDF</button>
+            <button class="btn-secondary" id="btnGoContacts" type="button">Contatti</button>
             <input id="fileJson" type="file" accept="application/json,.json" style="display:none" />
           </div>
         </div>
@@ -390,16 +391,31 @@
       </section>
     </div>
 
-    <section class="card contacts-card" aria-labelledby="contattiTitle">
+    <section class="card contacts-card" id="contactsSection" aria-labelledby="contattiTitle">
       <h2 id="contattiTitle">Contatti</h2>
       <div class="content contacts-content">
-        <p class="note">Contatti pubblici professionali di Fabio Vacchino reperibili online:</p>
-        <div class="contacts-links">
-          <a class="contact-chip" href="https://it.linkedin.com/in/fabiovacchino" target="_blank" rel="noopener noreferrer">LinkedIn: Fabio Vacchino (Esaote)</a>
-          <a class="contact-chip" href="https://github.com/FaVaGit" target="_blank" rel="noopener noreferrer">GitHub: @FaVaGit</a>
-          <a class="contact-chip" href="https://github.com/FaVaGit/mantenimento-app/issues" target="_blank" rel="noopener noreferrer">Supporto progetto: GitHub Issues</a>
-          <a class="contact-chip" href="https://paypal.me/fabiovacchino" target="_blank" rel="noopener noreferrer">PayPal: paypal.me/fabiovacchino</a>
-          <a class="contact-chip" href="https://ko-fi.com/fabiovacchino" target="_blank" rel="noopener noreferrer">Ko-fi: ko-fi.com/fabiovacchino</a>
+        <p class="note">Canali pubblici ufficiali:</p>
+        <div class="contacts-list" role="list">
+          <div class="contact-row" role="listitem">
+            <span class="contact-label">LinkedIn</span>
+            <a class="contact-link" href="https://it.linkedin.com/in/fabiovacchino" target="_blank" rel="noopener noreferrer">Fabio Vacchino (Esaote)</a>
+          </div>
+          <div class="contact-row" role="listitem">
+            <span class="contact-label">GitHub</span>
+            <a class="contact-link" href="https://github.com/FaVaGit" target="_blank" rel="noopener noreferrer">@FaVaGit</a>
+          </div>
+          <div class="contact-row" role="listitem">
+            <span class="contact-label">Supporto</span>
+            <a class="contact-link" href="https://github.com/FaVaGit/mantenimento-app/issues" target="_blank" rel="noopener noreferrer">Apri una issue sul progetto</a>
+          </div>
+          <div class="contact-row" role="listitem">
+            <span class="contact-label">Donazione PayPal</span>
+            <a class="contact-link" href="https://paypal.me/fabiovacchino" target="_blank" rel="noopener noreferrer">paypal.me/fabiovacchino</a>
+          </div>
+          <div class="contact-row" role="listitem">
+            <span class="contact-label">Donazione Ko-fi</span>
+            <a class="contact-link" href="https://ko-fi.com/fabiovacchino" target="_blank" rel="noopener noreferrer">ko-fi.com/fabiovacchino</a>
+          </div>
         </div>
       </div>
     </section>

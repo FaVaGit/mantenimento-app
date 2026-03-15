@@ -3389,6 +3389,16 @@ const defaultExpenseItems = [
       exportPdfDirect();
     });
 
+    const btnGoContacts = document.getElementById("btnGoContacts");
+    if (btnGoContacts) {
+      btnGoContacts.addEventListener("click", () => {
+        const contactsSection = document.getElementById("contactsSection");
+        if (contactsSection) {
+          contactsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    }
+
     document.getElementById("btnAddExpenseItem").addEventListener("click", () => {
       document.getElementById("expenseItemEditor").classList.remove("is-hidden");
       resetExpenseEditorFields();
