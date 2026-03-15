@@ -3411,11 +3411,17 @@ const defaultExpenseItems = [
       const scenarioPdfTable = (() => {
         if (!scenarioLab.length) return "";
         const isThreeScenarioLayout = scenarioLab.length >= 3;
+        const truncateScenarioName = (raw) => {
+          const value = String(raw || "").trim();
+          const maxLen = isThreeScenarioLayout ? 11 : 24;
+          if (value.length <= maxLen) return value;
+          return `${value.slice(0, Math.max(3, maxLen - 3))}...`;
+        };
 
         let headerCells = `<th class="metric-col">${tr("scenarioColMetric")}</th>`;
         scenarioLab.forEach((scenario, idx) => {
-          const n1 = escapeHtml(scenario.payload._nome1 || tr("spouse1Default"));
-          const n2 = escapeHtml(scenario.payload._nome2 || tr("spouse2Default"));
+          const n1 = escapeHtml(truncateScenarioName(scenario.payload._nome1 || tr("spouse1Default")));
+          const n2 = escapeHtml(truncateScenarioName(scenario.payload._nome2 || tr("spouse2Default")));
           headerCells += `<th class="scenario-col"><span class="scenario-chip">Sc ${escapeHtml(scenario.label)}</span><span class="scenario-sub">${n1} / ${n2}</span></th>`;
           if (idx > 0) {
             headerCells += `<th class="delta-col-head">${tr("scenarioDeltaLabel")} ${escapeHtml(scenario.label)}</th>`;
@@ -3453,6 +3459,9 @@ const defaultExpenseItems = [
           </div>
         `;
       })();
+      const scenarioSectionClass = scenarioLab.length >= 3
+        ? "section scenario-section compact-3"
+        : "section scenario-section";
 
       const html = `<!DOCTYPE html>
 <html lang="${pdfLang}">
@@ -3595,7 +3604,12 @@ const defaultExpenseItems = [
   .scenario-compare-table.compact-3 .scenario-col { width: 15%; }
   .scenario-compare-table.compact-3 .delta-col-head { width: 10.5%; }
   .scenario-compare-table.compact-3 .scenario-sub { font-size: 6.2pt; margin-top: 2px; line-height: 1.15; }
+  .scenario-compare-table.compact-3 .scenario-chip { font-size: 6.4pt; padding: 1px 5px; }
+  .scenario-compare-table.compact-3 .metric-col { font-size: 6.9pt; }
+  .scenario-compare-table.compact-3 td { line-height: 1.08; }
   .scenario-compare-table.compact-3 td { word-break: break-word; }
+  .section.scenario-section.compact-3 { margin-bottom: 10px; }
+  .section.scenario-section.compact-3 .section-title { margin-bottom: 6px; }
   .delta-pos { color: #0b6e66; }
   .delta-neg { color: #c0392b; }
   .delta-zero { color: #6a7f7b; }
@@ -3877,7 +3891,7 @@ const defaultExpenseItems = [
 </div>
 
 ${scenarioLab.length ? `
-<div class="section">
+<div class="${scenarioSectionClass}">
   <div class="section-title">${tr("pdfScenarioSection")}</div>
   ${scenarioPdfTable}
 </div>
