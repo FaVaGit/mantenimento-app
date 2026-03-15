@@ -55,7 +55,7 @@ const defaultExpenseItems = [
         btnZoomResetTitle: "Ripristina zoom",
         lang: "Lingua",
         currency: "Valuta",
-        inputsTitle: "Input",
+        inputsTitle: "Risultati simulazione",
         resultsTitle: "Risultati",
         howCalc: "Come viene calcolato",
         orientative: "Questo strumento e solo orientativo e non sostituisce una valutazione legale/professionale del caso concreto.",
@@ -254,7 +254,7 @@ const defaultExpenseItems = [
         btnZoomResetTitle: "Reset zoom",
         lang: "Language",
         currency: "Currency",
-        inputsTitle: "Inputs",
+        inputsTitle: "Simulation Results",
         resultsTitle: "Results",
         howCalc: "How it is calculated",
         orientative: "This tool is indicative only and does not replace legal/professional assessment of the specific case.",
@@ -1635,6 +1635,20 @@ const defaultExpenseItems = [
       document.getElementById("perm2").value = p2;
       const slider = document.getElementById("permSlider");
       if (slider) slider.value = p1;
+
+      // Update days bar below slider.
+      const daysLeft = document.getElementById("permDaysLeft");
+      const daysRight = document.getElementById("permDaysRight");
+      if (daysLeft && daysRight) {
+        const fmtD = (v) => Number.isInteger(v) ? String(v) : v.toFixed(1);
+        const suffix = tr("langDaysSuffix");
+        const d1 = Math.round(p1 * 30 * 10 / 100) / 10;
+        const d2 = Math.round(p2 * 30 * 10 / 100) / 10;
+        daysLeft.style.width = p1 + "%";
+        daysRight.style.width = p2 + "%";
+        daysLeft.textContent = fmtD(d1) + " " + suffix;
+        daysRight.textContent = fmtD(d2) + " " + suffix;
+      }
     }
 
     function sumSpese(prefix) {
@@ -2200,28 +2214,56 @@ const defaultExpenseItems = [
         ? sideBaseFont
         : Math.max(10, Math.floor(sideBaseFont * sideLabelMaxW / rightProbe.width));
 
-      // Days count centered inside each colored half of the gradient bar (white text on teal/amber).
-      fc.add(new window.fabric.Text(fmtDays(days1) + " " + daysSuffix, {
+      // Days count centered inside each colored half — pill background + dark text for legibility.
+      const daysStr1 = fmtDays(days1) + " " + daysSuffix;
+      const daysStr2 = fmtDays(days2) + " " + daysSuffix;
+      const daysProbeLeft = new window.fabric.Text(daysStr1, { fontSize: 12, fontFamily: sideFontFamily, fontWeight: "700" });
+      const daysProbeRight = new window.fabric.Text(daysStr2, { fontSize: 12, fontFamily: sideFontFamily, fontWeight: "700" });
+      const pillW1 = Math.max(38, daysProbeLeft.width + 14);
+      const pillW2 = Math.max(38, daysProbeRight.width + 14);
+      fc.add(new window.fabric.Rect({
+        left: trackLeft + trackWidth / 4,
+        top: centerY,
+        originX: "center",
+        originY: "center",
+        width: pillW1,
+        height: 18,
+        rx: 9,
+        ry: 9,
+        fill: "rgba(255,255,255,0.65)",
+        selectable: false
+      }));
+      fc.add(new window.fabric.Text(daysStr1, {
         left: trackLeft + trackWidth / 4,
         top: centerY,
         originX: "center",
         originY: "center",
         fontSize: 12,
-        fill: "#ffffff",
+        fill: "#0c4e49",
         fontFamily: sideFontFamily,
-        fontWeight: "700",
-        shadow: "0 1px 3px rgba(0,0,0,0.35)"
+        fontWeight: "700"
       }));
-      fc.add(new window.fabric.Text(fmtDays(days2) + " " + daysSuffix, {
+      fc.add(new window.fabric.Rect({
+        left: trackLeft + (trackWidth * 3 / 4),
+        top: centerY,
+        originX: "center",
+        originY: "center",
+        width: pillW2,
+        height: 18,
+        rx: 9,
+        ry: 9,
+        fill: "rgba(255,255,255,0.65)",
+        selectable: false
+      }));
+      fc.add(new window.fabric.Text(daysStr2, {
         left: trackLeft + (trackWidth * 3 / 4),
         top: centerY,
         originX: "center",
         originY: "center",
         fontSize: 12,
-        fill: "#ffffff",
+        fill: "#7c4b09",
         fontFamily: sideFontFamily,
-        fontWeight: "700",
-        shadow: "0 1px 3px rgba(0,0,0,0.35)"
+        fontWeight: "700"
       }));
 
       // Name labels below bar.
