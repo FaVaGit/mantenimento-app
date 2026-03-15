@@ -875,6 +875,39 @@
       font-size: 0.95rem;
     }
 
+    .auth-mode-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #c3d9d2;
+      border-radius: 999px;
+      padding: 3px;
+      background: #edf6f3;
+      margin-bottom: 8px;
+    }
+
+    .auth-mode-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      min-height: 0;
+      box-shadow: none;
+      background: transparent;
+      color: #345553;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .auth-mode-btn:hover {
+      transform: none;
+      filter: brightness(0.98);
+    }
+
+    .auth-mode-btn.is-active {
+      background: linear-gradient(90deg, #0f7f75, #15998e);
+      color: #fff;
+    }
+
     .auth-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -895,6 +928,12 @@
       color: #8e1f1f;
       border-color: #e1b2b2;
       background: #fff5f5;
+    }
+
+    .auth-verify {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed #c6d8d2;
     }
 
     .is-hidden {

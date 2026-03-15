@@ -158,31 +158,46 @@
             </button>
             <div class="auth-dropdown" id="authDropdown">
               <div class="auth-box">
-                <div class="auth-head">KeyLock Cloud</div>
+                <div class="auth-head" id="authHead">KeyLock Cloud</div>
+                <div class="auth-mode-switch" id="authModeSwitch" role="tablist" aria-label="Modalita autenticazione">
+                  <button class="auth-mode-btn is-active" id="btnAuthModeLogin" type="button" role="tab" aria-selected="true">Login</button>
+                  <button class="auth-mode-btn" id="btnAuthModeSignup" type="button" role="tab" aria-selected="false">Signup</button>
+                </div>
                 <form id="authLoginForm" autocomplete="on" onsubmit="return false;">
                 <div id="authLoginSection" class="auth-grid">
                   <div class="field">
-                    <label for="keylockUser" class="label-row">Utente
+                    <label for="keylockUser" class="label-row" id="lblKeylockUser">Utente
                       <span class="hint" title="Nome utente univoco per accedere e sincronizzare i dati su piu dispositivi.">i</span>
                     </label>
                     <input id="keylockUser" type="text" autocomplete="username" placeholder="es. favagit" />
                   </div>
-                  <div class="field">
-                    <label for="keylockEmail" class="label-row">Email di registrazione
+                  <div class="field is-hidden" id="authEmailFieldWrap">
+                    <label for="keylockEmail" class="label-row" id="lblKeylockEmail">Email di registrazione
                       <span class="hint" title="Viene usata per la verifica account. Inseriscila in registrazione; nel login puoi usare utente o email.">i</span>
                     </label>
                     <input id="keylockEmail" type="email" autocomplete="email" placeholder="es. nome@dominio.it" />
                   </div>
                   <div class="field">
-                    <label for="keylockPass" class="label-row">Password KeyLock
+                    <label for="keylockPass" class="label-row" id="lblKeylockPass">Password KeyLock
                       <span class="hint" title="Password usata per login e cifratura del profilo sincronizzato.">i</span>
                     </label>
                     <input id="keylockPass" type="password" autocomplete="current-password" placeholder="min 6 caratteri" />
                   </div>
                 </div>
                 <div id="authLoginActions" class="toolbar">
-                  <button class="btn-secondary" id="btnRegisterKeyLock" type="button">Registrati</button>
                   <button class="btn-primary" id="btnLoginKeyLock" type="submit">Login</button>
+                  <button class="btn-primary is-hidden" id="btnRegisterKeyLock" type="button">Registrati</button>
+                </div>
+                <div id="authVerifySection" class="auth-verify is-hidden">
+                  <div class="field">
+                    <label for="keylockEmailOtp" class="label-row" id="lblKeylockEmailOtp">Codice verifica email
+                      <span class="hint" title="Inserisci il codice ricevuto via email per attivare il tuo account.">i</span>
+                    </label>
+                    <input id="keylockEmailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="es. 123456" />
+                  </div>
+                  <div class="toolbar" id="authVerifyActions">
+                    <button class="btn-secondary" id="btnVerifyEmailCode" type="button">Verifica codice</button>
+                  </div>
                 </div>
                 </form>
                 <div id="authSessionActions" class="toolbar is-hidden">
@@ -471,6 +486,6 @@
   <script src="supabase.min.js"></script>
   <script src="fabric.min.js"></script>
   <script src="html2pdf.bundle.min.js"></script>
-    <script src="app.js?v=1.1.5"></script>
+    <script src="app.js?v=1.1.6"></script>
 </body>
 </html>
