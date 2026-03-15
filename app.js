@@ -641,6 +641,12 @@ const defaultExpenseItems = [
       loaded: null,
       history: []
     };
+    const uiViewState = {
+      spiegOpen: true,
+      formulaOpen: false,
+      permCalendarOpen: true,
+      cloudHistoryOpen: false
+    };
     let netDiffFabricCanvas = null;
     let authFlowInProgress = false;
     let authRateLimitedUntilTs = 0;
@@ -897,6 +903,33 @@ const defaultExpenseItems = [
       return zoom;
     }
 
+    function getCurrentUiZoomValue() {
+      const raw = document.documentElement.style.getPropertyValue("--ui-zoom");
+      const n = Number(raw);
+      if (!Number.isFinite(n)) return 1;
+      return normalizeUiZoom(n);
+    }
+
+    function captureUiViewStateFromDom() {
+      const spieg = document.querySelector("#spiegPanel details.spieg-details");
+      const formula = document.getElementById("formulaDetails");
+      const permCalendar = document.getElementById("permCalendarDetails");
+      const cloudHistory = document.getElementById("cloudHistoryPanel");
+      if (spieg) uiViewState.spiegOpen = !!spieg.open;
+      if (formula) uiViewState.formulaOpen = !!formula.open;
+      if (permCalendar) uiViewState.permCalendarOpen = !!permCalendar.open;
+      if (cloudHistory) uiViewState.cloudHistoryOpen = !!cloudHistory.open;
+    }
+
+    function applyUiViewStateToDom() {
+      const formula = document.getElementById("formulaDetails");
+      const permCalendar = document.getElementById("permCalendarDetails");
+      const cloudHistory = document.getElementById("cloudHistoryPanel");
+      if (formula) formula.open = !!uiViewState.formulaOpen;
+      if (permCalendar) permCalendar.open = !!uiViewState.permCalendarOpen;
+      if (cloudHistory) cloudHistory.open = !!uiViewState.cloudHistoryOpen;
+    }
+
     function initUiZoom() {
       let stored = null;
       try {
@@ -978,7 +1011,7 @@ const defaultExpenseItems = [
       const lblNormProfile = document.getElementById("lblNormProfile");
       const hintNormProfile = document.getElementById("hintNormProfile");
       const cardTitles = document.querySelectorAll(".card h2");
-      const calcSummary = document.querySelector("details summary");
+      const calcSummary = document.querySelector("#formulaDetails > summary");
       const orientativeNote = document.querySelectorAll(".card .content > p.note")[0];
 
       if (btnReset) btnReset.textContent = tr("btnReset");
@@ -3557,7 +3590,7 @@ const defaultExpenseItems = [
       }
 
       panel.innerHTML = `
-        <details class="spieg-details">
+        <details class="spieg-details" id="spiegDetails" ${uiViewState.spiegOpen ? "open" : ""}>
           <summary class="spieg-title">${tr("spiegTitle")}</summary>
           <div class="spieg-grid">
             <div class="spieg-item">
@@ -3587,6 +3620,12 @@ const defaultExpenseItems = [
           </div>
         </details>
       `;
+      const spiegDetailsEl = panel.querySelector("#spiegDetails");
+      if (spiegDetailsEl) {
+        spiegDetailsEl.addEventListener("toggle", () => {
+          uiViewState.spiegOpen = !!spiegDetailsEl.open;
+        });
+      }
     }
 
     function getModeName(mode, simplePerc) {
@@ -3740,6 +3779,9 @@ const defaultExpenseItems = [
       const pdfLang = currentLang === "en" ? "en" : "it";
 
       const modeName = getModeName(m.mode, m.simplePerc);
+      const normProfileName = escapeHtml(getSelectedNormProfileLabel());
+      const negotiationPayerName = m.assegnoDa1a2 > 0.005 ? c1Name : (m.assegnoDa2a1 > 0.005 ? c2Name : c1Name);
+      const negotiationReceiverName = m.assegnoDa1a2 > 0.005 ? c2Name : (m.assegnoDa2a1 > 0.005 ? c1Name : c2Name);
 
       let assegnoText = tr("pdfNoTransfer");
       let assegnoDir = "";
@@ -4431,6 +4473,7 @@ ${scenarioLab.length ? `
     }
 
     function serializeState() {
+      captureUiViewStateFromDom();
       const base = {
         reddito1: num("reddito1"),
         reddito2: num("reddito2"),
@@ -4455,9 +4498,21 @@ ${scenarioLab.length ? `
         label: SCENARIO_LABELS[idx],
         payload: safeJsonClone(scenario.payload)
       }));
+      const uiState = {
+        currentLang,
+        currentCurrency,
+        uiZoom: getCurrentUiZoomValue(),
+        view: {
+          spiegOpen: !!uiViewState.spiegOpen,
+          formulaOpen: !!uiViewState.formulaOpen,
+          permCalendarOpen: !!uiViewState.permCalendarOpen,
+          cloudHistoryOpen: !!uiViewState.cloudHistoryOpen
+        }
+      };
       return { base, spese, expenseItems: expenseItemsState,
         scenarioLab: scenariosState,
         permanenceCalendar: exportPermanenceCalendarState(),
+        uiState,
         nome1: document.getElementById("nome1").value,
         nome2: document.getElementById("nome2").value };
     }
@@ -4479,6 +4534,26 @@ ${scenarioLab.length ? `
       scenarioLab = normalizeScenarioLabState(state.scenarioLab);
       if (state.nome1 !== undefined) document.getElementById("nome1").value = state.nome1;
       if (state.nome2 !== undefined) document.getElementById("nome2").value = state.nome2;
+      if (state.uiState && typeof state.uiState === "object") {
+        const nextLang = String(state.uiState.currentLang || "").toLowerCase();
+        if (SUPPORTED_LANGS.includes(nextLang)) currentLang = nextLang;
+        const nextCurrency = String(state.uiState.currentCurrency || "").toUpperCase();
+        if (SUPPORTED_CURRENCIES.includes(nextCurrency)) currentCurrency = nextCurrency;
+        if (state.uiState.uiZoom !== undefined) {
+          setUiZoom(state.uiState.uiZoom, false);
+        }
+        const view = state.uiState.view || {};
+        uiViewState.spiegOpen = view.spiegOpen !== undefined ? !!view.spiegOpen : true;
+        uiViewState.formulaOpen = !!view.formulaOpen;
+        uiViewState.permCalendarOpen = view.permCalendarOpen !== undefined ? !!view.permCalendarOpen : true;
+        uiViewState.cloudHistoryOpen = !!view.cloudHistoryOpen;
+      }
+      const langSelect = document.getElementById("langSelect");
+      const currencySelect = document.getElementById("currencySelect");
+      if (langSelect) langSelect.value = currentLang;
+      if (currencySelect) currencySelect.value = currentCurrency;
+      applyStaticTranslations();
+      applyUiViewStateToDom();
       importPermanenceCalendarState(state.permanenceCalendar);
       updateSpouseLabels();
       buildExpenseRows();
@@ -4498,12 +4573,17 @@ ${scenarioLab.length ? `
         }
       });
       permanenceCalendarState.byMonth = {};
+      uiViewState.spiegOpen = true;
+      uiViewState.formulaOpen = false;
+      uiViewState.permCalendarOpen = true;
+      uiViewState.cloudHistoryOpen = false;
       const monthInput = document.getElementById("permCalendarMonth");
       const monthValue = monthInput && parseMonthValue(monthInput.value) ? monthInput.value : getCurrentMonthValue();
       permanenceCalendarState.month = monthValue;
       if (monthInput) monthInput.value = monthValue;
       renderPermanenceCalendar(monthValue);
       applyPermanenceFromCalendar(monthValue, { silentRender: true });
+      applyUiViewStateToDom();
       syncPermanenza();
       renderAll();
     }
@@ -4678,6 +4758,27 @@ ${scenarioLab.length ? `
       setAuthStatus(tr("authHistoryRestored"));
     });
 
+    const formulaDetailsEl = document.getElementById("formulaDetails");
+    if (formulaDetailsEl) {
+      formulaDetailsEl.addEventListener("toggle", () => {
+        uiViewState.formulaOpen = !!formulaDetailsEl.open;
+      });
+    }
+
+    const permCalendarDetailsEl = document.getElementById("permCalendarDetails");
+    if (permCalendarDetailsEl) {
+      permCalendarDetailsEl.addEventListener("toggle", () => {
+        uiViewState.permCalendarOpen = !!permCalendarDetailsEl.open;
+      });
+    }
+
+    const cloudHistoryPanelEl = document.getElementById("cloudHistoryPanel");
+    if (cloudHistoryPanelEl) {
+      cloudHistoryPanelEl.addEventListener("toggle", () => {
+        uiViewState.cloudHistoryOpen = !!cloudHistoryPanelEl.open;
+      });
+    }
+
     document.addEventListener("input", (e) => {
       if (e.target && e.target.matches("input[type='number'], input[data-numeric='1']")) {
         if (e.target.id === "perm1") {
@@ -4746,6 +4847,7 @@ ${scenarioLab.length ? `
     setAuthMode("login");
     updateAuthUi();
     renderCloudHistoryPanel();
+    applyUiViewStateToDom();
     syncPermanenza();
     incomeModeLast = document.getElementById("incomeMode").value || "monthly";
     incomeValuesByMode[incomeModeLast] = {
