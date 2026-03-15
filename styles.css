@@ -978,6 +978,13 @@
 
     .spese-input-wrap {
       display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .spese-input-main {
+      display: flex;
       align-items: center;
       gap: 4px;
     }
@@ -987,6 +994,48 @@
       min-width: 66px;
       padding: 6px 7px;
       font-size: 0.86rem;
+    }
+
+    .spese-detail-btn {
+      padding: 6px 8px;
+      font-size: 0.73rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .spese-detail-btn::before {
+      content: "[]";
+      margin-right: 4px;
+      font-weight: 900;
+    }
+
+    .spese-detail-btn.has-note {
+      border-color: #0b6e66;
+      color: #0b6e66;
+      background: #e8f6f2;
+      font-weight: 700;
+    }
+
+    .spese-detail-btn.is-open {
+      border-color: #0b6e66;
+      box-shadow: inset 0 0 0 1px rgba(11, 110, 102, 0.25);
+    }
+
+    .spese-detail-wrap {
+      margin-top: 2px;
+    }
+
+    .spese-detail-text {
+      width: 100%;
+      min-height: 52px;
+      resize: vertical;
+      border-radius: 8px;
+      border: 1px solid #c8dad4;
+      background: #f9fcfb;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+      line-height: 1.3;
+      color: #204644;
     }
 
     .spese-partial {
@@ -2073,6 +2122,25 @@
       color: #12554f;
     }
 
+    .scenario-transition-flash {
+      animation: scenarioFlash 0.5s ease;
+    }
+
+    @keyframes scenarioFlash {
+      0% {
+        transform: translateY(0);
+        box-shadow: 0 0 0 rgba(11, 110, 102, 0);
+      }
+      35% {
+        transform: translateY(-1px);
+        box-shadow: 0 0 0 3px rgba(11, 110, 102, 0.2);
+      }
+      100% {
+        transform: translateY(0);
+        box-shadow: 0 0 0 rgba(11, 110, 102, 0);
+      }
+    }
+
     #btnSaveMyScenario::before,
     #btnLoadMyScenario::before,
     #btnHistoryMyScenario::before,
@@ -2408,9 +2476,15 @@
       }
       .spese-table input { min-width: 74px; }
       .spese-input-wrap {
-        flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 2px;
+      }
+      .spese-input-main {
+        width: 100%;
+      }
+      .spese-detail-btn {
+        font-size: 0.7rem;
+        padding: 5px 7px;
       }
       .spese-editor-grid {
         grid-template-columns: 1fr;

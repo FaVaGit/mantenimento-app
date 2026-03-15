@@ -25,6 +25,7 @@ const defaultExpenseItems = [
     let expenseItems = defaultExpenseItems.map((item) => ({ ...item }));
     let scenarioLab = [];
     let selectedScenarioIdx = -1;
+    let scenarioTransitionTimer = null;
     const SCENARIO_LAB_MAX = 3;
     const SCENARIO_LABELS = ["A", "B", "C"];
 
@@ -224,6 +225,9 @@ const defaultExpenseItems = [
         expenseCountNote: "Elenco spese compilabili: {count} voci.",
         expensePartialLabel: "Tot",
         expensePartialTitle: "Somma parziale progressiva",
+        expenseDetailBtn: "Dettaglio",
+        expenseDetailTitle: "Apri dettaglio voce spesa",
+        expenseDetailPlaceholder: "Scrivi qui il dettaglio di questa cifra (es. mesi, quota, riferimento).",
         expenseRemoveTitle: "Rimuovi voce spesa",
         expenseRemoveBtn: "Rimuovi",
         expenseMinOneAlert: "Deve restare almeno una voce spesa.",
@@ -514,6 +518,9 @@ const defaultExpenseItems = [
         expenseCountNote: "Editable expense items: {count} entries.",
         expensePartialLabel: "Tot",
         expensePartialTitle: "Progressive partial sum",
+        expenseDetailBtn: "Detail",
+        expenseDetailTitle: "Open expense detail",
+        expenseDetailPlaceholder: "Write details for this amount (e.g. months, share, reference).",
         expenseRemoveTitle: "Remove expense item",
         expenseRemoveBtn: "Remove",
         expenseMinOneAlert: "At least one expense item must remain.",
@@ -2378,13 +2385,25 @@ const defaultExpenseItems = [
           <td><span class="label-row">${labelEsc}<span class="hint" title="${helpEsc}">i</span></span></td>
           <td>
             <div class="spese-input-wrap">
-              <input type="number" min="0" step="0.01" id="c1_${idx}" value="0" />
+              <div class="spese-input-main">
+                <input type="number" min="0" step="0.01" id="c1_${idx}" value="0" />
+                <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c1d_${idx}" data-detail-wrap="c1dw_${idx}" title="${tr("expenseDetailTitle")}">${tr("expenseDetailBtn")}</button>
+              </div>
+              <div class="spese-detail-wrap is-hidden" id="c1dw_${idx}">
+                <textarea id="c1d_${idx}" class="spese-detail-text" rows="2" maxlength="280" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}"></textarea>
+              </div>
               <span class="spese-partial" id="p1_${idx}" title="${tr("expensePartialTitle")}">${tr("expensePartialLabel")}: ${eurTiny(0)}</span>
             </div>
           </td>
           <td>
             <div class="spese-input-wrap">
-              <input type="number" min="0" step="0.01" id="c2_${idx}" value="0" />
+              <div class="spese-input-main">
+                <input type="number" min="0" step="0.01" id="c2_${idx}" value="0" />
+                <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c2d_${idx}" data-detail-wrap="c2dw_${idx}" title="${tr("expenseDetailTitle")}">${tr("expenseDetailBtn")}</button>
+              </div>
+              <div class="spese-detail-wrap is-hidden" id="c2dw_${idx}">
+                <textarea id="c2d_${idx}" class="spese-detail-text" rows="2" maxlength="280" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}"></textarea>
+              </div>
               <span class="spese-partial" id="p2_${idx}" title="${tr("expensePartialTitle")}">${tr("expensePartialLabel")}: ${eurTiny(0)}</span>
             </div>
           </td>
@@ -2394,10 +2413,16 @@ const defaultExpenseItems = [
         `;
         rowsSpese.appendChild(rowEl);
       });
+      refreshExpenseDetailButtonState();
     }
 
     function snapshotExpenseValues() {
-      return expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
+      return expenseItems.map((_, i) => ({
+        c1: num(`c1_${i}`),
+        c2: num(`c2_${i}`),
+        d1: String(document.getElementById(`c1d_${i}`)?.value || "").trim(),
+        d2: String(document.getElementById(`c2d_${i}`)?.value || "").trim()
+      }));
     }
 
     function restoreExpenseValues(values) {
@@ -2405,8 +2430,23 @@ const defaultExpenseItems = [
       values.forEach((row, i) => {
         const c1 = document.getElementById(`c1_${i}`);
         const c2 = document.getElementById(`c2_${i}`);
+        const d1 = document.getElementById(`c1d_${i}`);
+        const d2 = document.getElementById(`c2d_${i}`);
         if (c1) c1.value = Number.isFinite(Number(row && row.c1)) ? Number(row.c1) : 0;
         if (c2) c2.value = Number.isFinite(Number(row && row.c2)) ? Number(row.c2) : 0;
+        if (d1) d1.value = String(row && row.d1 ? row.d1 : "");
+        if (d2) d2.value = String(row && row.d2 ? row.d2 : "");
+      });
+      refreshExpenseDetailButtonState();
+    }
+
+    function refreshExpenseDetailButtonState() {
+      const buttons = rowsSpese.querySelectorAll("button[data-detail-target]");
+      buttons.forEach((btn) => {
+        const targetId = String(btn.getAttribute("data-detail-target") || "");
+        const detailEl = document.getElementById(targetId);
+        const hasNote = !!(detailEl && String(detailEl.value || "").trim());
+        btn.classList.toggle("has-note", hasNote);
       });
     }
 
@@ -2958,6 +2998,8 @@ const defaultExpenseItems = [
     function collectCalculationPayload() {
       const c1Spese = expenseItems.map((_, idx) => num(`c1_${idx}`));
       const c2Spese = expenseItems.map((_, idx) => num(`c2_${idx}`));
+      const c1SpeseDetails = expenseItems.map((_, idx) => String(document.getElementById(`c1d_${idx}`)?.value || "").trim());
+      const c2SpeseDetails = expenseItems.map((_, idx) => String(document.getElementById(`c2d_${idx}`)?.value || "").trim());
       const extra1 = getExtraordinaryMonthly(1);
       const extra2 = getExtraordinaryMonthly(2);
       if (extra1 > 0) c1Spese.push(extra1);
@@ -2982,6 +3024,8 @@ const defaultExpenseItems = [
         aFam2: num("assegnoFam2"),
         straordAnn1: num("straordAnn1"),
         straordAnn2: num("straordAnn2"),
+        c1SpeseDetails,
+        c2SpeseDetails,
         c1Spese,
         c2Spese
       };
@@ -3653,12 +3697,19 @@ const defaultExpenseItems = [
 
       const c1Spese = Array.isArray(payload.c1Spese) ? payload.c1Spese : [];
       const c2Spese = Array.isArray(payload.c2Spese) ? payload.c2Spese : [];
+      const c1SpeseDetails = Array.isArray(payload.c1SpeseDetails) ? payload.c1SpeseDetails : [];
+      const c2SpeseDetails = Array.isArray(payload.c2SpeseDetails) ? payload.c2SpeseDetails : [];
       expenseItems.forEach((_, i) => {
         const c1 = document.getElementById(`c1_${i}`);
         const c2 = document.getElementById(`c2_${i}`);
+        const d1 = document.getElementById(`c1d_${i}`);
+        const d2 = document.getElementById(`c2d_${i}`);
         if (c1) c1.value = Number(c1Spese[i] || 0);
         if (c2) c2.value = Number(c2Spese[i] || 0);
+        if (d1) d1.value = String(c1SpeseDetails[i] || "");
+        if (d2) d2.value = String(c2SpeseDetails[i] || "");
       });
+      refreshExpenseDetailButtonState();
 
       incomeModeLast = document.getElementById("incomeMode")?.value || "monthly";
       incomeValuesByMode[incomeModeLast] = {
@@ -3670,6 +3721,27 @@ const defaultExpenseItems = [
       syncPermanenza("perm1");
       updateModeUi();
       renderAll();
+      triggerScenarioTransitionAnimation();
+    }
+
+    function triggerScenarioTransitionAnimation() {
+      const targets = [
+        document.querySelector(".grid > .card:nth-child(1)"),
+        document.querySelector(".grid > .card:nth-child(2)")
+      ].filter(Boolean);
+      if (!targets.length) return;
+
+      targets.forEach((el) => el.classList.remove("scenario-transition-flash"));
+      void document.body.offsetWidth;
+      targets.forEach((el) => el.classList.add("scenario-transition-flash"));
+
+      if (scenarioTransitionTimer) {
+        clearTimeout(scenarioTransitionTimer);
+      }
+      scenarioTransitionTimer = setTimeout(() => {
+        targets.forEach((el) => el.classList.remove("scenario-transition-flash"));
+        scenarioTransitionTimer = null;
+      }, 520);
     }
 
     function removeScenario(idx) {
@@ -4034,14 +4106,27 @@ const defaultExpenseItems = [
 
       const extraSpese1Monthly = getExtraordinaryMonthly(1);
       const extraSpese2Monthly = getExtraordinaryMonthly(2);
+      const formatExpenseDetail = (idx, spouseKey) => {
+        const el = document.getElementById(`${spouseKey}d_${idx}`);
+        const raw = String(el && el.value ? el.value : "").trim();
+        if (!raw) return "";
+        return raw;
+      };
       const speseRowsBase = expenseItems.map((item, i) => {
         const c1 = num(`c1_${i}`);
         const c2 = num(`c2_${i}`);
+        const d1 = formatExpenseDetail(i, "c1");
+        const d2 = formatExpenseDetail(i, "c2");
+        const details = [
+          d1 ? `${escapeHtml(c1n())}: ${escapeHtml(d1)}` : "",
+          d2 ? `${escapeHtml(c2n())}: ${escapeHtml(d2)}` : ""
+        ].filter(Boolean).join("<br>");
         return `<tr>
           <td>${item.label}</td>
           <td class="num">${c1 > 0 ? eur(c1) : "–"}</td>
           <td class="num">${c2 > 0 ? eur(c2) : "–"}</td>
           <td class="num bold">${(c1 + c2) > 0 ? eur(c1 + c2) : "–"}</td>
+          <td class="expense-detail-cell">${details || "–"}</td>
         </tr>`;
       }).join("");
       const extraSpeseRow = (extraSpese1Monthly > 0 || extraSpese2Monthly > 0)
@@ -4050,6 +4135,7 @@ const defaultExpenseItems = [
           <td class="num">${extraSpese1Monthly > 0 ? eur(extraSpese1Monthly) : "–"}</td>
           <td class="num">${extraSpese2Monthly > 0 ? eur(extraSpese2Monthly) : "–"}</td>
           <td class="num bold">${eur(extraSpese1Monthly + extraSpese2Monthly)}</td>
+          <td class="expense-detail-cell">–</td>
         </tr>`
         : "";
       const speseRows = speseRowsBase + extraSpeseRow;
@@ -4482,6 +4568,7 @@ const defaultExpenseItems = [
         <th class="num" style="width:110px">${c1n()} ${msg("pdfPerMonthShort", { currency: currentCurrency })}</th>
         <th class="num" style="width:110px">${c2n()} ${msg("pdfPerMonthShort", { currency: currentCurrency })}</th>
         <th class="num" style="width:110px">${msg("pdfTotalMonthly", { currency: currentCurrency })}</th>
+        <th>${tr("expenseDetailBtn")}</th>
       </tr>
     </thead>
     <tbody>
@@ -4491,6 +4578,7 @@ const defaultExpenseItems = [
         <td class="num">${eur(m.spese1)}</td>
         <td class="num">${eur(m.spese2)}</td>
         <td class="num">${eur(m.speseTot)}</td>
+        <td class="expense-detail-cell">–</td>
       </tr>
     </tbody>
   </table>
@@ -4712,7 +4800,12 @@ ${scenarioLab.length ? `
         straordAnn1: num("straordAnn1"),
         straordAnn2: num("straordAnn2")
       };
-      const spese = expenseItems.map((_, i) => ({ c1: num(`c1_${i}`), c2: num(`c2_${i}`) }));
+      const spese = expenseItems.map((_, i) => ({
+        c1: num(`c1_${i}`),
+        c2: num(`c2_${i}`),
+        d1: String(document.getElementById(`c1d_${i}`)?.value || "").trim(),
+        d2: String(document.getElementById(`c2d_${i}`)?.value || "").trim()
+      }));
       const expenseItemsState = expenseItems.map((item) => ({ label: item.label, help: item.help }));
       const scenariosState = scenarioLab.map((scenario, idx) => ({
         label: SCENARIO_LABELS[idx],
@@ -4789,9 +4882,14 @@ ${scenarioLab.length ? `
       state.spese.forEach((row, i) => {
         const c1 = document.getElementById(`c1_${i}`);
         const c2 = document.getElementById(`c2_${i}`);
+        const d1 = document.getElementById(`c1d_${i}`);
+        const d2 = document.getElementById(`c2d_${i}`);
         if (c1) c1.value = row.c1;
         if (c2) c2.value = row.c2;
+        if (d1) d1.value = String(row && row.d1 ? row.d1 : "");
+        if (d2) d2.value = String(row && row.d2 ? row.d2 : "");
       });
+      refreshExpenseDetailButtonState();
     }
 
     function resetAll() {
@@ -4918,10 +5016,31 @@ ${scenarioLab.length ? `
     });
 
     rowsSpese.addEventListener("click", (e) => {
+      const detailBtn = e.target && e.target.closest("button[data-detail-target]");
+      if (detailBtn) {
+        const wrapId = String(detailBtn.getAttribute("data-detail-wrap") || "");
+        const targetId = String(detailBtn.getAttribute("data-detail-target") || "");
+        const wrap = document.getElementById(wrapId);
+        const target = document.getElementById(targetId);
+        if (wrap) {
+          const willOpen = wrap.classList.contains("is-hidden");
+          wrap.classList.toggle("is-hidden", !willOpen);
+          detailBtn.classList.toggle("is-open", willOpen);
+          if (willOpen && target) target.focus();
+        }
+        return;
+      }
+
       const btn = e.target && e.target.closest("button[data-remove-expense-idx]");
       if (!btn) return;
       const idx = Number(btn.getAttribute("data-remove-expense-idx"));
       removeExpenseItemAt(idx);
+    });
+
+    rowsSpese.addEventListener("input", (e) => {
+      if (e.target && e.target.matches("textarea.spese-detail-text")) {
+        refreshExpenseDetailButtonState();
+      }
     });
 
     document.getElementById("btnZoomOut").addEventListener("click", () => {
