@@ -1662,10 +1662,12 @@ const defaultExpenseItems = [
         const suffix = tr("langDaysSuffix");
         const d1 = Math.round(p1 * 30 * 10 / 100) / 10;
         const d2 = Math.round(p2 * 30 * 10 / 100) / 10;
+        const leftTxt = fmtD(d1) + " " + suffix;
+        const rightTxt = fmtD(d2) + " " + suffix;
         daysLeft.style.width = p1 + "%";
         daysRight.style.width = p2 + "%";
-        daysLeft.textContent = fmtD(d1) + " " + suffix;
-        daysRight.textContent = fmtD(d2) + " " + suffix;
+        daysLeft.innerHTML = `<span class="perm-days-chip">${leftTxt}</span>`;
+        daysRight.innerHTML = `<span class="perm-days-chip">${rightTxt}</span>`;
       }
     }
 
@@ -2122,9 +2124,14 @@ const defaultExpenseItems = [
         strokeWidth: 1
       }));
 
+      const days1Badge = Math.round((m.perm1 / 100) * 30 * 10) / 10;
+      const days2Badge = Math.round((m.perm2 / 100) * 30 * 10) / 10;
+      const fmtDaysBadge = (v) => Number.isInteger(v) ? String(v) : v.toFixed(1);
+      const badgeDaysSuffix = tr("langDaysSuffix");
+      const permanenceText = `${fmtDaysBadge(days1Badge)} ${badgeDaysSuffix} / ${fmtDaysBadge(days2Badge)} ${badgeDaysSuffix}`;
       const statusText = diffDisp === 0
-        ? tr("liveEquivalentNets")
-        : msg("liveNetAdvantageSpouse", { spouse: diffDisp > 0 ? c1n() : c2n() });
+        ? `${tr("liveEquivalentNets")} | ${tr("pdfPermanence")} ${permanenceText}`
+        : `${msg("liveNetAdvantageSpouse", { spouse: diffDisp > 0 ? c1n() : c2n() })} | ${tr("pdfPermanence")} ${permanenceText}`;
 
       const winnerSpouse = diffDisp === 0 ? 0 : (diffDisp > 0 ? 1 : 2);
       const loserSpouse = diffDisp === 0 ? 0 : (diffDisp > 0 ? 2 : 1);

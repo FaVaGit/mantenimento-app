@@ -503,6 +503,19 @@
       letter-spacing: 0.02em;
     }
 
+    .perm-days-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 74px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+      line-height: 1;
+    }
+
     .perm-days-half--left {
       background: linear-gradient(90deg, #bfe9df, #6ec0b0);
     }
