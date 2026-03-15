@@ -59,7 +59,7 @@ const defaultExpenseItems = [
         resultsTitle: "Risultati",
         howCalc: "Come viene calcolato",
         orientative: "Questo strumento e solo orientativo e non sostituisce una valutazione legale/professionale del caso concreto.",
-        authLogin: "KeyLock Login",
+        authLogin: "Login",
         modeGuidelinePrefix: "Riferimento modalita selezionata:",
         modeGuidelineLink: "Linee guida del Tribunale di Genova (PDF)",
         redditoAnnuale: "Reddito annuale netto",
@@ -1636,8 +1636,10 @@ const defaultExpenseItems = [
 
       if (source === "perm2") {
         p1 = 100 - p2;
-      } else if (source === "slider") {
-        p1 = Math.min(100, Math.max(0, num("permSlider")));
+      } else if (source === "slider" || source === "sliderbar") {
+        const sliderBar = document.getElementById("permSliderBar");
+        const sliderVal = sliderBar ? Number(sliderBar.getAttribute("aria-valuenow")) : p1;
+        p1 = Math.min(100, Math.max(0, Number.isFinite(sliderVal) ? sliderVal : p1));
       }
 
       p1 = Math.round(p1);
@@ -1645,8 +1647,12 @@ const defaultExpenseItems = [
 
       document.getElementById("perm1").value = p1;
       document.getElementById("perm2").value = p2;
-      const slider = document.getElementById("permSlider");
-      if (slider) slider.value = p1;
+      const sliderBar = document.getElementById("permSliderBar");
+      if (sliderBar) {
+        sliderBar.style.setProperty("--perm-left", `${p1}%`);
+        sliderBar.setAttribute("aria-valuenow", String(p1));
+        sliderBar.setAttribute("aria-valuetext", `${p1}% / ${p2}%`);
+      }
 
       // Update days bar below slider.
       const daysLeft = document.getElementById("permDaysLeft");
@@ -1661,6 +1667,65 @@ const defaultExpenseItems = [
         daysLeft.textContent = fmtD(d1) + " " + suffix;
         daysRight.textContent = fmtD(d2) + " " + suffix;
       }
+    }
+
+    function initPermSliderBar() {
+      const bar = document.getElementById("permSliderBar");
+      if (!bar) return;
+
+      const applyFromClientX = (clientX) => {
+        const rect = bar.getBoundingClientRect();
+        if (!rect || rect.width <= 0) return;
+        const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+        const p1 = Math.round(ratio * 100);
+        document.getElementById("perm1").value = p1;
+        syncPermanenza("perm1");
+        renderAll();
+      };
+
+      let dragging = false;
+      bar.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        if (typeof bar.setPointerCapture === "function") {
+          try { bar.setPointerCapture(e.pointerId); } catch (_) {}
+        }
+        applyFromClientX(e.clientX);
+      });
+
+      bar.addEventListener("pointermove", (e) => {
+        if (!dragging) return;
+        applyFromClientX(e.clientX);
+      });
+
+      const stopDragging = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        if (typeof bar.releasePointerCapture === "function") {
+          try { bar.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+      };
+
+      bar.addEventListener("pointerup", stopDragging);
+      bar.addEventListener("pointercancel", stopDragging);
+      bar.addEventListener("lostpointercapture", () => { dragging = false; });
+
+      bar.addEventListener("keydown", (e) => {
+        const current = Math.round(Math.min(100, Math.max(0, Number(bar.getAttribute("aria-valuenow")) || 0)));
+        let next = current;
+        if (e.key === "ArrowLeft" || e.key === "ArrowDown") next = current - 1;
+        else if (e.key === "ArrowRight" || e.key === "ArrowUp") next = current + 1;
+        else if (e.key === "PageDown") next = current - 5;
+        else if (e.key === "PageUp") next = current + 5;
+        else if (e.key === "Home") next = 0;
+        else if (e.key === "End") next = 100;
+        else return;
+
+        next = Math.min(100, Math.max(0, next));
+        document.getElementById("perm1").value = next;
+        syncPermanenza("perm1");
+        renderAll();
+        e.preventDefault();
+      });
     }
 
     function sumSpese(prefix) {
@@ -3174,12 +3239,6 @@ const defaultExpenseItems = [
     });
 
     document.addEventListener("input", (e) => {
-      if (e.target && e.target.id === "permSlider") {
-        syncPermanenza("slider");
-        renderAll();
-        return;
-      }
-
       if (e.target && e.target.matches("input[type='number']")) {
         if (e.target.id === "perm1") {
           syncPermanenza("perm1");
@@ -3232,6 +3291,7 @@ const defaultExpenseItems = [
     buildExpenseRows();
     initUiZoom();
     initTopActionsMenu();
+    initPermSliderBar();
     initAuthMenu();
     initCoffeeFloatVisibility();
     initCoffeeDonationPicker();

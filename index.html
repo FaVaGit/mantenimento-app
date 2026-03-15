@@ -176,17 +176,17 @@
               <input id="simplePerc" type="number" min="0" max="100" step="1" value="50" />
             </div>
             <div class="field perm-inline-field">
-              <label for="permSlider" class="label-row">Permanenza figli (% <span id="lblPerm1">Coniuge 1</span> / <span id="lblPerm2">Coniuge 2</span>)
+              <label for="permSliderBar" class="label-row">Permanenza figli (% <span id="lblPerm1">Coniuge 1</span> / <span id="lblPerm2">Coniuge 2</span>)
                 <span class="hint" title="Usa slider o caselle laterali: i due valori restano sempre complementari e sommano 100%.">i</span>
               </label>
               <div class="perm-inline-control">
                 <input id="perm1" type="number" min="0" max="100" step="1" value="40" aria-label="Permanenza figli presso Coniuge 1 (%)" />
-                <input id="permSlider" type="range" min="0" max="100" step="1" value="40" aria-label="Slider permanenza Coniuge 1" />
+                <div class="perm-days-bar" id="permSliderBar" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="40" aria-label="Permanenza figli presso Coniuge 1 (%)">
+                  <div class="perm-days-half perm-days-half--left" id="permDaysLeft" style="width:40%">12 gg</div>
+                  <div class="perm-days-half perm-days-half--right" id="permDaysRight" style="width:60%">18 gg</div>
+                  <div class="perm-days-thumb" id="permDaysThumb" aria-hidden="true"></div>
+                </div>
                 <input id="perm2" type="number" min="0" max="100" step="1" value="60" aria-label="Permanenza figli presso Coniuge 2 (%)" />
-              </div>
-              <div class="perm-days-bar" id="permDaysBar" aria-hidden="true">
-                <div class="perm-days-half perm-days-half--left" id="permDaysLeft" style="width:40%">12 gg</div>
-                <div class="perm-days-half perm-days-half--right" id="permDaysRight" style="width:60%">18 gg</div>
               </div>
             </div>
           </div>
