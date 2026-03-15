@@ -894,6 +894,142 @@
       border: 1px solid #c6cdc3;
     }
 
+    /* ── Scenario Lab ─────────────────────────────────────────────── */
+    .scenario-lab-card {
+      margin-top: 14px;
+    }
+
+    .scenario-lab-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .scenario-lab-empty {
+      color: #6b7e78;
+      font-style: italic;
+      margin: 0;
+    }
+
+    .scenario-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scenario-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.82rem;
+    }
+
+    .scenario-table th,
+    .scenario-table td {
+      border: 1px solid var(--line);
+      padding: 6px 10px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .scenario-table thead th {
+      background: linear-gradient(90deg, rgba(249,248,242,0.95), rgba(237,246,243,0.95));
+      font-weight: 700;
+    }
+
+    .scenario-table td.metric-label,
+    .scenario-table th.metric-label {
+      text-align: left;
+      font-weight: 600;
+      background: rgba(243,248,245,0.7);
+      white-space: nowrap;
+      min-width: 110px;
+    }
+
+    .scenario-col-head { min-width: 120px; }
+
+    .scenario-badge {
+      display: inline-block;
+      background: var(--brand);
+      color: #fff;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+
+    .scenario-val { min-width: 90px; white-space: nowrap; }
+
+    .scenario-remove-btn {
+      font-size: 0.72rem !important;
+      padding: 2px 8px !important;
+      margin-top: 4px;
+      min-height: unset !important;
+    }
+
+    .delta-col, .delta-col-head { min-width: 76px; font-weight: 600; white-space: nowrap; }
+    .delta-pos { color: #18855e; }
+    .delta-neg { color: #c0392b; }
+    .delta-zero { color: #7a8b80; }
+
+    /* ── Spiegabilità ──────────────────────────────────────────────── */
+    .spieg-panel { margin-top: 10px; }
+
+    .spieg-details {
+      border: 1px solid #c9ddd6;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .spieg-title {
+      cursor: pointer;
+      padding: 8px 12px;
+      background: linear-gradient(90deg, rgba(249,248,242,0.95), rgba(237,246,243,0.95));
+      font-weight: 600;
+      font-size: 0.88rem;
+      user-select: none;
+      list-style: none;
+    }
+
+    .spieg-title::-webkit-details-marker { display: none; }
+    .spieg-title::before { content: "\\25BA\\0020"; font-size: 0.7rem; }
+    details[open] .spieg-title::before { content: "\\25BC\\0020"; }
+
+    .spieg-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .spieg-grid { grid-template-columns: 1fr; }
+    }
+
+    .spieg-item {
+      background: rgba(243,248,245,0.8);
+      border: 1px solid #d5e5de;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+    }
+
+    .spieg-item--result {
+      background: rgba(230,247,240,0.9);
+      border-color: #a8d5be;
+      grid-column: 1 / -1;
+    }
+
+    .spieg-item-label {
+      font-weight: 700;
+      font-size: 0.72rem;
+      color: var(--brand);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .spieg-item-body { line-height: 1.55; }
+
     @page {
       size: A4 landscape;
       margin: 8mm;
