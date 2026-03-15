@@ -1655,6 +1655,116 @@
       text-align: right;
     }
 
+    .spieg-details {
+      border: 1px solid #bed9d4;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f4fbf9, #edf6f4);
+      padding: 10px;
+    }
+
+    .spieg-title {
+      font-weight: 800;
+      color: #0f5d56;
+      letter-spacing: 0.02em;
+    }
+
+    .spieg-grid {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .spieg-item {
+      border: 1px dashed #b6d6cf;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .spieg-item--result {
+      grid-column: 1 / -1;
+      background: #f8fffd;
+    }
+
+    .spieg-item-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #1a4f49;
+      margin-bottom: 5px;
+    }
+
+    .spieg-item-body {
+      font-size: 0.84rem;
+      color: #2a4b47;
+      line-height: 1.35;
+    }
+
+    .spieg-item-body--result {
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .spieg-line + .spieg-line {
+      margin-top: 4px;
+    }
+
+    .spieg-help-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .spieg-help-btn {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid #8ebdb4;
+      background: #def0eb;
+      color: #0f5f58;
+      font-size: 0.72rem;
+      font-weight: 800;
+      line-height: 1;
+      cursor: help;
+      padding: 0;
+    }
+
+    .spieg-help-tip {
+      position: absolute;
+      left: 22px;
+      top: -8px;
+      z-index: 40;
+      min-width: 230px;
+      max-width: 320px;
+      padding: 8px 9px;
+      border-radius: 8px;
+      border: 1px solid #b3d3cb;
+      background: #ffffff;
+      color: #254944;
+      font-size: 0.76rem;
+      font-weight: 500;
+      line-height: 1.35;
+      box-shadow: 0 8px 22px rgba(10, 40, 36, 0.16);
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+      transition: opacity 0.14s ease, transform 0.14s ease;
+    }
+
+    .spieg-help-wrap:hover .spieg-help-tip,
+    .spieg-help-wrap:focus-within .spieg-help-tip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .spieg-help-btn:focus-visible {
+      outline: 2px solid #0f766d;
+      outline-offset: 1px;
+    }
+
     body.pdf-exporting {
       background: #ffffff !important;
     }
@@ -2212,6 +2322,15 @@
       }
       .extra-grid {
         grid-template-columns: 1fr;
+      }
+      .spieg-grid {
+        grid-template-columns: 1fr;
+      }
+      .spieg-help-tip {
+        left: 0;
+        right: auto;
+        top: 24px;
+        max-width: min(84vw, 320px);
       }
       .top-actions {
         display: block;
