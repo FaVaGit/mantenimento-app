@@ -24,6 +24,7 @@ const defaultExpenseItems = [
     ];
     let expenseItems = defaultExpenseItems.map((item) => ({ ...item }));
     let scenarioLab = [];
+    let selectedScenarioIdx = -1;
     const SCENARIO_LAB_MAX = 3;
     const SCENARIO_LABELS = ["A", "B", "C"];
 
@@ -309,6 +310,9 @@ const defaultExpenseItems = [
         scenarioLabClearBtn: "Azzera scenari",
         scenarioLabEmpty: "Nessuno scenario salvato. Configura i parametri e clicca \u00abSalva scenario corrente\u00bb.",
         scenarioLabMaxReached: "Massimo 3 scenari salvabili. Rimuovi uno scenario per salvarne un altro.",
+        scenarioLabSelectBtn: "Seleziona",
+        scenarioLabSelectedBtn: "Selezionato",
+        scenarioLabSelectedFlag: "Scenario selezionato",
         scenarioLabRemoveBtn: "Rimuovi",
         scenarioColMetric: "Metrica",
         scenarioColMode: "Modalit\u00e0",
@@ -596,6 +600,9 @@ const defaultExpenseItems = [
         scenarioLabClearBtn: "Clear all scenarios",
         scenarioLabEmpty: "No scenario saved yet. Configure parameters and click \u00abSave current scenario\u00bb.",
         scenarioLabMaxReached: "Maximum 3 scenarios. Remove one to save another.",
+        scenarioLabSelectBtn: "Select",
+        scenarioLabSelectedBtn: "Selected",
+        scenarioLabSelectedFlag: "Selected scenario",
         scenarioLabRemoveBtn: "Remove",
         scenarioColMetric: "Metric",
         scenarioColMode: "Mode",
@@ -1128,9 +1135,8 @@ const defaultExpenseItems = [
       renderRuntimeBadge();
       const btnSaveScenarioTr = document.getElementById("btnSaveScenario");
       const btnClearScenariosTr = document.getElementById("btnClearScenarios");
-      if (btnSaveScenarioTr) btnSaveScenarioTr.textContent = tr("scenarioLabSaveBtn");
-      if (btnClearScenariosTr) btnClearScenariosTr.textContent = tr("scenarioLabClearBtn");
-      renderRuntimeBadge();
+      if (btnSaveScenarioTr) btnSaveScenarioTr.innerHTML = `<span class="btn-icon" aria-hidden="true">+</span>${escapeHtml(tr("scenarioLabSaveBtn"))}`;
+      if (btnClearScenariosTr) btnClearScenariosTr.innerHTML = `<span class="btn-icon" aria-hidden="true">~</span>${escapeHtml(tr("scenarioLabClearBtn"))}`;
       if (calcSummary) calcSummary.textContent = tr("howCalc");
       if (orientativeNote) orientativeNote.textContent = tr("orientative");
 
@@ -2974,6 +2980,8 @@ const defaultExpenseItems = [
         aPag2: num("assegnoPagato2"),
         aFam1: num("assegnoFam1"),
         aFam2: num("assegnoFam2"),
+        straordAnn1: num("straordAnn1"),
+        straordAnn2: num("straordAnn2"),
         c1Spese,
         c2Spese
       };
@@ -3600,12 +3608,79 @@ const defaultExpenseItems = [
       payload._nome2 = c2n();
       const model = computeModelLocal(payload);
       scenarioLab.push({ label, payload, model });
+      selectedScenarioIdx = scenarioLab.length - 1;
       renderScenarioLab();
+    }
+
+    function applyScenarioSelection(idx) {
+      const scenario = scenarioLab[idx];
+      if (!scenario || !scenario.payload) return;
+      const payload = scenario.payload;
+      selectedScenarioIdx = idx;
+
+      const setVal = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = value;
+      };
+
+      setVal("nome1", payload._nome1 || c1n());
+      setVal("nome2", payload._nome2 || c2n());
+      setVal("incomeMode", payload.incomeMode || "monthly");
+
+      const profileEl = document.getElementById("calcProfile");
+      if (profileEl) {
+        profileEl.value = resolveCalcProfileIdFromState({
+          calcProfile: payload.calcProfile,
+          normProfile: payload.normProfile,
+          calcMode: payload.mode
+        });
+      }
+
+      setVal("reddito1", Number(payload.r1Raw || 0));
+      setVal("reddito2", Number(payload.r2Raw || 0));
+      setVal("numFigli", Math.max(1, Math.round(Number(payload.figli || 1))));
+      setVal("perm1", Math.min(100, Math.max(0, Number(payload.perm1 || 0))));
+      setVal("simplePerc", Math.min(100, Math.max(0, Number(payload.simplePerc || 0))));
+      setVal("assegnoPercepito1", Number(payload.aPerc1 || 0));
+      setVal("assegnoPagato1", Number(payload.aPag1 || 0));
+      setVal("assegnoFam1", Number(payload.aFam1 || 0));
+      setVal("assegnoPercepito2", Number(payload.aPerc2 || 0));
+      setVal("assegnoPagato2", Number(payload.aPag2 || 0));
+      setVal("assegnoFam2", Number(payload.aFam2 || 0));
+      setVal("straordAnn1", Number(payload.straordAnn1 || 0));
+      setVal("straordAnn2", Number(payload.straordAnn2 || 0));
+
+      const c1Spese = Array.isArray(payload.c1Spese) ? payload.c1Spese : [];
+      const c2Spese = Array.isArray(payload.c2Spese) ? payload.c2Spese : [];
+      expenseItems.forEach((_, i) => {
+        const c1 = document.getElementById(`c1_${i}`);
+        const c2 = document.getElementById(`c2_${i}`);
+        if (c1) c1.value = Number(c1Spese[i] || 0);
+        if (c2) c2.value = Number(c2Spese[i] || 0);
+      });
+
+      incomeModeLast = document.getElementById("incomeMode")?.value || "monthly";
+      incomeValuesByMode[incomeModeLast] = {
+        r1: num("reddito1"),
+        r2: num("reddito2")
+      };
+
+      updateSpouseLabels();
+      syncPermanenza("perm1");
+      updateModeUi();
+      renderAll();
     }
 
     function removeScenario(idx) {
       scenarioLab.splice(idx, 1);
+      if (selectedScenarioIdx === idx) {
+        selectedScenarioIdx = -1;
+      } else if (selectedScenarioIdx > idx) {
+        selectedScenarioIdx -= 1;
+      }
       scenarioLab.forEach((s, i) => { s.label = SCENARIO_LABELS[i]; });
+      if (selectedScenarioIdx >= scenarioLab.length) selectedScenarioIdx = -1;
       renderScenarioLab();
     }
 
@@ -3635,7 +3710,13 @@ const defaultExpenseItems = [
       scenarioLab.forEach((s, si) => {
         const n1 = escapeHtml(s.payload._nome1 || tr("spouse1Default"));
         const n2 = escapeHtml(s.payload._nome2 || tr("spouse2Default"));
-        headerRow += `<th class="scenario-col-head"><span class="scenario-badge">Sc ${escapeHtml(s.label)}</span><br><small>${n1} / ${n2}</small><br><button class="btn-secondary scenario-remove-btn" data-scenario-idx="${si}" type="button">${tr("scenarioLabRemoveBtn")}</button></th>`;
+        const isSelected = si === selectedScenarioIdx;
+        const selectedFlag = isSelected
+          ? `<span class="scenario-selected-flag" title="${escapeHtml(tr("scenarioLabSelectedFlag"))}" aria-label="${escapeHtml(tr("scenarioLabSelectedFlag"))}">&#10003;</span>`
+          : "";
+        const selectLabel = isSelected ? tr("scenarioLabSelectedBtn") : tr("scenarioLabSelectBtn");
+        const selectClass = isSelected ? "btn-primary scenario-select-btn is-selected" : "btn-secondary scenario-select-btn";
+        headerRow += `<th class="scenario-col-head ${isSelected ? "is-selected" : ""}"><span class="scenario-badge">Sc ${escapeHtml(s.label)}${selectedFlag}</span><br><small>${n1} / ${n2}</small><br><div class="scenario-col-actions"><button class="${selectClass}" data-scenario-select-idx="${si}" type="button">${escapeHtml(selectLabel)}</button><button class="btn-secondary scenario-remove-btn" data-scenario-idx="${si}" type="button">${tr("scenarioLabRemoveBtn")}</button></div></th>`;
         if (hasMultiple && si > 0) {
           headerRow += `<th class="delta-col-head">${tr("scenarioDeltaLabel")} ${escapeHtml(s.label)}</th>`;
         }
@@ -3647,7 +3728,7 @@ const defaultExpenseItems = [
         dataRows += `<tr><td class="metric-label">${metric.label()}</td>`;
         scenarioLab.forEach((s, si) => {
           const m = s.model;
-          dataRows += `<td class="scenario-val">${metric.fmt(m)}</td>`;
+          dataRows += `<td class="scenario-val ${si === selectedScenarioIdx ? "scenario-val-selected" : ""}">${metric.fmt(m)}</td>`;
           if (hasMultiple && si > 0) {
             if (metric.numeric) {
               const diff = metric.val(m) - metric.val(scenarioLab[0].model);
@@ -4650,6 +4731,7 @@ ${scenarioLab.length ? `
       };
       return { base, spese, expenseItems: expenseItemsState,
         scenarioLab: scenariosState,
+        scenarioLabSelectedIdx: selectedScenarioIdx,
         permanenceCalendar: exportPermanenceCalendarState(),
         uiState,
         nome1: document.getElementById("nome1").value,
@@ -4671,6 +4753,9 @@ ${scenarioLab.length ? `
         expenseItems.push(normalizeExpenseItem(null, expenseItems.length));
       }
       scenarioLab = normalizeScenarioLabState(state.scenarioLab);
+      selectedScenarioIdx = Number.isInteger(state.scenarioLabSelectedIdx)
+        ? Math.max(-1, Math.min(scenarioLab.length - 1, state.scenarioLabSelectedIdx))
+        : -1;
       if (state.nome1 !== undefined) document.getElementById("nome1").value = state.nome1;
       if (state.nome2 !== undefined) document.getElementById("nome2").value = state.nome2;
       if (state.uiState && typeof state.uiState === "object") {
@@ -4716,6 +4801,7 @@ ${scenarioLab.length ? `
         }
       });
       permanenceCalendarState.byMonth = {};
+      selectedScenarioIdx = -1;
       uiViewState.spiegOpen = true;
       uiViewState.formulaOpen = false;
       uiViewState.permCalendarOpen = true;
@@ -4759,13 +4845,23 @@ ${scenarioLab.length ? `
 
     document.getElementById("btnClearScenarios").addEventListener("click", () => {
       scenarioLab = [];
+      selectedScenarioIdx = -1;
       renderScenarioLab();
     });
 
     document.getElementById("scenarioLabBody").addEventListener("click", (e) => {
-      const btn = e.target && e.target.closest("button[data-scenario-idx]");
-      if (!btn) return;
-      const idx = Number(btn.getAttribute("data-scenario-idx"));
+      const selectBtn = e.target && e.target.closest("button[data-scenario-select-idx]");
+      if (selectBtn) {
+        const idx = Number(selectBtn.getAttribute("data-scenario-select-idx"));
+        if (Number.isInteger(idx) && idx >= 0 && idx < scenarioLab.length) {
+          applyScenarioSelection(idx);
+        }
+        return;
+      }
+
+      const removeBtn = e.target && e.target.closest("button[data-scenario-idx]");
+      if (!removeBtn) return;
+      const idx = Number(removeBtn.getAttribute("data-scenario-idx"));
       if (Number.isInteger(idx) && idx >= 0 && idx < scenarioLab.length) {
         removeScenario(idx);
       }

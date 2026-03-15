@@ -1663,6 +1663,110 @@
       font-size: 0.82rem;
     }
 
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 14px;
+      margin-right: 6px;
+      font-weight: 900;
+    }
+
+    .scenario-table-wrap {
+      overflow-x: auto;
+      border: 1px solid #c8dad4;
+      border-radius: 12px;
+      background: #f8fcfa;
+    }
+
+    .scenario-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    .scenario-table th,
+    .scenario-table td {
+      border: 1px solid #b8cdc6;
+      padding: 8px 10px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .scenario-table .metric-label {
+      text-align: left;
+      font-weight: 700;
+      background: #eef4f1;
+      min-width: 170px;
+    }
+
+    .scenario-col-head {
+      background: linear-gradient(180deg, #f5faf8, #edf4f1);
+      transition: background 0.18s ease;
+    }
+
+    .scenario-col-head.is-selected {
+      background: linear-gradient(180deg, #e6f7f3, #d9f0ea);
+      box-shadow: inset 0 0 0 2px rgba(11, 110, 102, 0.22);
+    }
+
+    .scenario-col-actions {
+      display: inline-flex;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .scenario-select-btn,
+    .scenario-remove-btn {
+      font-size: 0.78rem;
+      padding: 5px 9px;
+    }
+
+    .scenario-select-btn.is-selected {
+      box-shadow: 0 0 0 1px rgba(11, 110, 102, 0.35);
+    }
+
+    .scenario-selected-flag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      margin-left: 6px;
+      border-radius: 999px;
+      background: #0b6e66;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 900;
+      vertical-align: middle;
+    }
+
+    .scenario-val-selected {
+      background: #eefaf6;
+      font-weight: 700;
+      color: #12554f;
+    }
+
+    #btnSaveMyScenario::before,
+    #btnLoadMyScenario::before,
+    #btnHistoryMyScenario::before,
+    #btnPdf::before,
+    .scenario-select-btn::before,
+    .scenario-remove-btn::before {
+      display: inline-block;
+      margin-right: 6px;
+      font-weight: 900;
+    }
+
+    #btnSaveMyScenario::before { content: "^"; }
+    #btnLoadMyScenario::before { content: "v"; }
+    #btnHistoryMyScenario::before { content: "#"; }
+    #btnPdf::before { content: "[]"; }
+    .scenario-select-btn::before { content: "+"; }
+    .scenario-remove-btn::before { content: "x"; }
+
     .live-row {
       font-size: 0.9rem;
       display: flex;
