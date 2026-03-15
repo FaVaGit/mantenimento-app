@@ -3480,6 +3480,7 @@ const defaultExpenseItems = [
 
       const scenarioPdfTable = (() => {
         if (!scenarioLab.length) return "";
+        const isThreeScenarioLayout = scenarioLab.length >= 3;
 
         let headerCells = `<th class="metric-col">${tr("scenarioColMetric")}</th>`;
         scenarioLab.forEach((scenario, idx) => {
@@ -3515,7 +3516,7 @@ const defaultExpenseItems = [
 
         return `
           <div class="scenario-compare-wrap">
-            <table class="scenario-compare-table">
+            <table class="scenario-compare-table${isThreeScenarioLayout ? " compact-3" : ""}">
               <thead><tr>${headerCells}</tr></thead>
               <tbody>${bodyRows}</tbody>
             </table>
@@ -3655,6 +3656,16 @@ const defaultExpenseItems = [
   .scenario-compare-table .delta-col-head { text-align: center; min-width: 86px; }
   .scenario-chip { display: inline-block; background: #0b6e66; color: #fff; border-radius: 5px; padding: 1px 8px; font-size: 7.5pt; font-weight: 700; }
   .scenario-sub { display: block; margin-top: 4px; font-size: 7.2pt; color: #4c6964; font-weight: 600; }
+  .scenario-compare-table.compact-3 { table-layout: fixed; font-size: 7.3pt; }
+  .scenario-compare-table.compact-3 th, .scenario-compare-table.compact-3 td { padding: 3px 4px; }
+  .scenario-compare-table.compact-3 .metric-col,
+  .scenario-compare-table.compact-3 .scenario-col,
+  .scenario-compare-table.compact-3 .delta-col-head { min-width: 0; }
+  .scenario-compare-table.compact-3 .metric-col { width: 24%; }
+  .scenario-compare-table.compact-3 .scenario-col { width: 15%; }
+  .scenario-compare-table.compact-3 .delta-col-head { width: 10.5%; }
+  .scenario-compare-table.compact-3 .scenario-sub { font-size: 6.2pt; margin-top: 2px; line-height: 1.15; }
+  .scenario-compare-table.compact-3 td { word-break: break-word; }
   .delta-pos { color: #0b6e66; }
   .delta-neg { color: #c0392b; }
   .delta-zero { color: #6a7f7b; }
