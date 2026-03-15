@@ -1,26 +1,26 @@
 const defaultExpenseItems = [
-      { label: "Affitto", help: "Canone mensile di locazione dell'abitazione." },
-      { label: "Mutuo casa", help: "Rata mensile del mutuo abitazione." },
-      { label: "Casa (valore locativo)", help: "Valore locativo teorico della casa in uso, se rilevante." },
-      { label: "Utenze", help: "Luce, gas, acqua, internet e altre utenze domestiche." },
-      { label: "Cibo/Alimenti", help: "Spesa alimentare mensile imputabile al nucleo familiare." },
-      { label: "Abbigliamento", help: "Spese medie mensili per abbigliamento dei figli." },
-      { label: "Finanziamenti in corso (extra mutuo)", help: "Rate mensili di finanziamenti diversi dal mutuo." },
-      { label: "Spese macchina", help: "Carburante, assicurazione, bollo, manutenzione ordinaria." },
-      { label: "Amministrazione condominio", help: "Quote condominiali ordinarie e costi amministrativi ricorrenti." },
-      { label: "Spese scolastiche/mensa", help: "Costi scolastici ricorrenti, mensa e contributi periodici." },
-      { label: "Spese sanitarie ricorrenti", help: "Farmaci, visite periodiche e terapie ricorrenti." },
-      { label: "Sport/attivita figli", help: "Costi medi mensili per sport e attivita extrascolastiche." }
+      { label: "🏠 Affitto", help: "Canone mensile di locazione dell'abitazione." },
+      { label: "🏦 Mutuo casa", help: "Rata mensile del mutuo abitazione." },
+      { label: "🏡 Casa (valore locativo)", help: "Valore locativo teorico della casa in uso, se rilevante." },
+      { label: "💡 Utenze", help: "Luce, gas, acqua, internet e altre utenze domestiche." },
+      { label: "🛒 Cibo/Alimenti", help: "Spesa alimentare mensile imputabile al nucleo familiare." },
+      { label: "👕 Abbigliamento", help: "Spese medie mensili per abbigliamento dei figli." },
+      { label: "💳 Finanziamenti in corso (extra mutuo)", help: "Rate mensili di finanziamenti diversi dal mutuo." },
+      { label: "🚗 Spese macchina", help: "Carburante, assicurazione, bollo, manutenzione ordinaria." },
+      { label: "🏢 Amministrazione condominio", help: "Quote condominiali ordinarie e costi amministrativi ricorrenti." },
+      { label: "🎒 Spese scolastiche/mensa", help: "Costi scolastici ricorrenti, mensa e contributi periodici." },
+      { label: "🩺 Spese sanitarie ricorrenti", help: "Farmaci, visite periodiche e terapie ricorrenti." },
+      { label: "⚽ Sport/attivita figli", help: "Costi medi mensili per sport e attivita extrascolastiche." }
     ];
     const suggestedExpenseCatalog = [
-      { label: "Trasporto scolastico", help: "Abbonamenti bus/treno, navetta scolastica o carburante dedicato ai trasferimenti scuola." },
-      { label: "Libri e materiale didattico", help: "Testi scolastici, quaderni, cancelleria e materiali ricorrenti per lo studio." },
-      { label: "Doposcuola / ripetizioni", help: "Supporto didattico continuativo o corsi di recupero con cadenza periodica." },
-      { label: "Centro estivo", help: "Quota media mensile stimata per centri estivi e attivita educative stagionali." },
-      { label: "Spese mediche non coperte SSN", help: "Visite specialistiche, terapie e farmaci ricorrenti non totalmente rimborsati." },
-      { label: "Attivita artistiche/musicali", help: "Corsi ricorrenti (musica, teatro, danza) e quote di frequenza periodiche." },
-      { label: "Tecnologia per studio", help: "Canone internet, software didattici e strumenti digitali con costo ricorrente." },
-      { label: "Abbigliamento stagionale figli", help: "Spesa periodica media per rinnovo abbigliamento in relazione alla stagione." }
+      { label: "🚌 Trasporto scolastico", help: "Abbonamenti bus/treno, navetta scolastica o carburante dedicato ai trasferimenti scuola." },
+      { label: "📚 Libri e materiale didattico", help: "Testi scolastici, quaderni, cancelleria e materiali ricorrenti per lo studio." },
+      { label: "✏️ Doposcuola / ripetizioni", help: "Supporto didattico continuativo o corsi di recupero con cadenza periodica." },
+      { label: "☀️ Centro estivo", help: "Quota media mensile stimata per centri estivi e attivita educative stagionali." },
+      { label: "🔬 Spese mediche non coperte SSN", help: "Visite specialistiche, terapie e farmaci ricorrenti non totalmente rimborsati." },
+      { label: "🎨 Attivita artistiche/musicali", help: "Corsi ricorrenti (musica, teatro, danza) e quote di frequenza periodiche." },
+      { label: "💻 Tecnologia per studio", help: "Canone internet, software didattici e strumenti digitali con costo ricorrente." },
+      { label: "🧥 Abbigliamento stagionale figli", help: "Spesa periodica media per rinnovo abbigliamento in relazione alla stagione." }
     ];
     let expenseItems = defaultExpenseItems.map((item) => ({ ...item }));
     let scenarioLab = [];
