@@ -175,7 +175,7 @@
 
     .hero-contacts-menu {
       position: absolute;
-      top: calc(100% + 8px);
+      top: calc(100% - 1px);
       right: 0;
       z-index: 42;
       min-width: 235px;
@@ -236,7 +236,7 @@
 
     .hero-donate-menu {
       position: absolute;
-      top: calc(100% + 8px);
+      top: calc(100% - 1px);
       right: 0;
       z-index: 42;
       display: none;
