@@ -320,6 +320,12 @@ const defaultExpenseItems = [
         spiegSpeseLabel: "Spese \u2192 fabbisogno figli",
         spiegPermLabel: "Permanenza \u2192 quota diretta",
         spiegResultLabel: "Come si forma l'assegno",
+        spiegTooltipTrigger: "Dettaglio calcolo",
+        spiegDetailIncome: "Si parte dal netto disponibile di ciascun coniuge. Il peso contributivo e dato da netto coniuge / somma dei netti positivi.",
+        spiegDetailExpense: "Il fabbisogno figli viene stimato come 35% del totale spese inserite (ordinarie + eventuali straordinarie mensilizzate).",
+        spiegDetailPerm: "La quota diretta dipende dai giorni di permanenza presso ciascun coniuge: quota diretta = fabbisogno x permanenza%.",
+        spiegDetailResultTransfer: "L'assegno suggerito nasce dal saldo: quota teorica del pagante - quota diretta del pagante. Se il saldo e positivo, viene trasferito all'altro coniuge.",
+        spiegDetailResultNoTransfer: "Se nessun saldo risulta positivo, il modello non suggerisce trasferimenti tra coniugi.",
         footerVisitorsTotal: "Visitatori totali",
         footerVisitorsActive: "Visitatori attivi",
         footerLoggedUsers: "Utenti loggati",
@@ -597,6 +603,12 @@ const defaultExpenseItems = [
         spiegSpeseLabel: "Expenses \u2192 children needs",
         spiegPermLabel: "Permanence \u2192 direct share",
         spiegResultLabel: "How the support is formed",
+        spiegTooltipTrigger: "Calculation details",
+        spiegDetailIncome: "The model starts from each spouse's available net. Contribution weight is spouse net / sum of positive nets.",
+        spiegDetailExpense: "Children needs are estimated as 35% of total entered expenses (regular + any extraordinary annual costs converted to monthly).",
+        spiegDetailPerm: "Direct share depends on permanence days with each spouse: direct share = children needs x permanence%.",
+        spiegDetailResultTransfer: "Suggested support comes from the balance: payer theoretical share - payer direct share. If the balance is positive, it is transferred to the other spouse.",
+        spiegDetailResultNoTransfer: "If no balance is positive, the model suggests no transfer between spouses.",
         footerVisitorsTotal: "Total visitors",
         footerVisitorsActive: "Active visitors",
         footerLoggedUsers: "Logged users",
@@ -3519,14 +3531,29 @@ const defaultExpenseItems = [
       const isAssegno2 = m.assegnoDa2a1 > 0.005;
       const n1 = escapeHtml(c1n());
       const n2 = escapeHtml(c2n());
+      const tooltipLabel = escapeHtml(tr("spiegTooltipTrigger"));
+      const infoTip = (text) => {
+        const safeText = escapeHtml(text);
+        return `<span class="spieg-help-wrap"><button type="button" class="spieg-help-btn" aria-label="${tooltipLabel}">i</button><span class="spieg-help-tip">${safeText}</span></span>`;
+      };
 
       let resultHtml;
+      let resultDetail;
       if (isAssegno1) {
-        resultHtml = `${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)} = <strong class="ok">${eur(m.assegnoDa1a2)}</strong>`;
+        resultHtml = `
+          <div class="spieg-line"><strong>${n1} &rarr; ${n2}</strong></div>
+          <div class="spieg-line">${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)} = <strong class="ok">${eur(m.assegnoDa1a2)}</strong></div>
+        `;
+        resultDetail = tr("spiegDetailResultTransfer");
       } else if (isAssegno2) {
-        resultHtml = `${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)} = <strong class="ok">${eur(m.assegnoDa2a1)}</strong>`;
+        resultHtml = `
+          <div class="spieg-line"><strong>${n2} &rarr; ${n1}</strong></div>
+          <div class="spieg-line">${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)} = <strong class="ok">${eur(m.assegnoDa2a1)}</strong></div>
+        `;
+        resultDetail = tr("spiegDetailResultTransfer");
       } else {
         resultHtml = `<span class="ok">${tr("calcNoTransferSuggested")}</span>`;
+        resultDetail = tr("spiegDetailResultNoTransfer");
       }
 
       panel.innerHTML = `
@@ -3534,27 +3561,27 @@ const defaultExpenseItems = [
           <summary class="spieg-title">${tr("spiegTitle")}</summary>
           <div class="spieg-grid">
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegRedditiLabel")}</div>
+              <div class="spieg-item-label">${tr("spiegRedditiLabel")} ${infoTip(tr("spiegDetailIncome"))}</div>
               <div class="spieg-item-body">
                 <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${eur(m.disp1)}</strong> <span class="spieg-sep">|</span> <span>${n2}:</span> <strong class="spieg-value">${eur(m.disp2)}</strong></div>
                 <div class="spieg-line">${tr("pdfWeight")}: <strong class="spieg-value">${n1} ${peso1Pct}%</strong> / <strong class="spieg-value">${n2} ${peso2Pct}%</strong></div>
               </div>
             </div>
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegSpeseLabel")}</div>
+              <div class="spieg-item-label">${tr("spiegSpeseLabel")} ${infoTip(tr("spiegDetailExpense"))}</div>
               <div class="spieg-item-body">
                 <div class="spieg-line"><strong class="spieg-value">${eur(m.speseTot)}</strong> &times; 35% = <strong class="spieg-value">${eur(m.fabbisognoFigli)}</strong></div>
               </div>
             </div>
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegPermLabel")}</div>
+              <div class="spieg-item-label">${tr("spiegPermLabel")} ${infoTip(tr("spiegDetailPerm"))}</div>
               <div class="spieg-item-body">
                 <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta1)}</strong></div>
                 <div class="spieg-line"><span>${n2}:</span> <strong class="spieg-value">${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta2)}</strong></div>
               </div>
             </div>
             <div class="spieg-item spieg-item--result">
-              <div class="spieg-item-label">${tr("spiegResultLabel")}</div>
+              <div class="spieg-item-label">${tr("spiegResultLabel")} ${infoTip(resultDetail)}</div>
               <div class="spieg-item-body spieg-item-body--result">${resultHtml}</div>
             </div>
           </div>
