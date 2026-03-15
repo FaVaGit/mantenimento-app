@@ -3650,6 +3650,7 @@ const defaultExpenseItems = [
       const payload = collectCalculationPayload();
       payload._nome1 = c1n();
       payload._nome2 = c2n();
+      payload._permanenceCalendar = exportPermanenceCalendarState();
       const model = computeModelLocal(payload);
       scenarioLab.push({ label, payload, model });
       selectedScenarioIdx = scenarioLab.length - 1;
@@ -3718,7 +3719,13 @@ const defaultExpenseItems = [
       };
 
       updateSpouseLabels();
-      syncPermanenza("perm1");
+      if (payload._permanenceCalendar && typeof payload._permanenceCalendar === "object") {
+        importPermanenceCalendarState(payload._permanenceCalendar);
+        syncPermanenza("calendar");
+      } else {
+        // Backward compatibility with older scenarios without calendar snapshot.
+        syncPermanenza("perm1");
+      }
       updateModeUi();
       renderAll();
       triggerScenarioTransitionAnimation();
