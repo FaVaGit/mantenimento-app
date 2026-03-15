@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
+# Primary sitemap for all public pages.
 Sitemap: https://favagit.github.io/mantenimento-app/sitemap.xml

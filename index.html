@@ -4,23 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calcolatore Mantenimento Figli</title>
-  <meta name="description" content="Calcolatore mantenimento figli online: stima orientativa assegno, confronto economico tra coniugi, export PDF e sincronizzazione cloud cifrata." />
-  <meta name="keywords" content="calcolatore mantenimento figli, assegno mantenimento, separazione, divorzio, stima contributo figli, calcolo assegno" />
+  <meta name="description" content="Calcolatore mantenimento figli online: stima orientativa assegno, confronto economico tra coniugi, modalita reddito netto mensile/annuale o CU-CUD, export PDF e sincronizzazione cloud cifrata." />
+  <meta name="keywords" content="calcolatore mantenimento figli, assegno mantenimento, separazione, divorzio, stima contributo figli, calcolo assegno, certificazione unica, cud, cu" />
   <meta name="author" content="Fabio Vacchino" />
+  <meta name="theme-color" content="#0b6e66" />
+  <meta name="application-name" content="Calcolatore Mantenimento Figli" />
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
   <meta name="googlebot" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
   <link rel="canonical" href="https://favagit.github.io/mantenimento-app/" />
+  <link rel="alternate" href="https://favagit.github.io/mantenimento-app/" hreflang="it" />
+  <link rel="alternate" href="https://favagit.github.io/mantenimento-app/" hreflang="en" />
+  <link rel="alternate" href="https://favagit.github.io/mantenimento-app/" hreflang="x-default" />
 
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="it_IT" />
   <meta property="og:site_name" content="Calcolatore Mantenimento Figli" />
   <meta property="og:title" content="Calcolatore Mantenimento Figli" />
-  <meta property="og:description" content="Strumento online per stima orientativa dell'assegno di mantenimento figli con confronto economico, cloud cifrato ed export PDF." />
+  <meta property="og:description" content="Strumento online per stima orientativa assegno mantenimento figli con confronto economico, modalita CU-CUD, cloud cifrato ed export PDF." />
   <meta property="og:url" content="https://favagit.github.io/mantenimento-app/" />
+  <meta property="og:image" content="https://favagit.github.io/mantenimento-app/social-preview.svg" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Calcolatore Mantenimento Figli" />
-  <meta name="twitter:description" content="Stima orientativa assegno mantenimento figli, confronto economico, export PDF e sincronizzazione cloud cifrata." />
+  <meta name="twitter:description" content="Stima orientativa assegno mantenimento figli, confronto economico, modalita CU-CUD, export PDF e cloud cifrato." />
+  <meta name="twitter:image" content="https://favagit.github.io/mantenimento-app/social-preview.svg" />
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='28'>⚖️</text></svg>" />
   <script type="application/ld+json">
@@ -36,7 +43,49 @@
       "@type": "Person",
       "name": "Fabio Vacchino"
     },
-    "description": "Applicazione web per la stima orientativa dell'assegno di mantenimento figli con modalita di calcolo, analisi comparativa, esportazione PDF e profilo cloud cifrato."
+    "description": "Applicazione web per la stima orientativa dell'assegno di mantenimento figli con modalita di calcolo, analisi comparativa, gestione CU-CUD, esportazione PDF e profilo cloud cifrato.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Calcolatore Mantenimento Figli",
+    "url": "https://favagit.github.io/mantenimento-app/",
+    "inLanguage": ["it-IT", "en-US"],
+    "publisher": {
+      "@type": "Person",
+      "name": "Fabio Vacchino"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Come funziona la modalita CU/CUD?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Inserisci il lordo annuale da Certificazione Unica (CU/CUD). L'app stima il netto mensile con un modello orientativo basato su IRPEF, contributi INPS e addizionali."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "I risultati hanno valore legale?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Il risultato e orientativo e non sostituisce la valutazione professionale di avvocati o consulenti."
+        }
+      }
+    ]
   }
   </script>
     <link rel="stylesheet" href="styles.css" />
@@ -46,7 +95,7 @@
     <section class="hero">
       <h1>Calcolatore Assegno di Mantenimento</h1>
       <p>
-        Modello di calcolo orientativo adattato al <strong>reddito netto mensile o annuale</strong> e con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
+        Modello di calcolo orientativo adattato a <strong>reddito netto mensile/annuale</strong> o <strong>CU-CUD (lordo annuale con stima del netto)</strong>, con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.
       </p>
       <div class="hero-tools">
         <div class="top-actions" id="topActions" tabindex="0">
