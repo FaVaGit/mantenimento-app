@@ -477,6 +477,11 @@ const defaultExpenseItems = [
     let authFlowInProgress = false;
     let authRateLimitedUntilTs = 0;
     let incomeModeLast = "monthly";
+    const incomeValuesByMode = {
+      monthly: null,
+      annual: null,
+      cu: null
+    };
     let currentLang = "it";
     let currentCurrency = "EUR";
     const CALC_API_BASE = String(window.KEYLOCK_CALC_API_BASE || "").trim().replace(/\/+$/, "");
@@ -1794,32 +1799,48 @@ const defaultExpenseItems = [
     function convertIncomeValuesForModeChange(prevMode, nextMode) {
       if (!prevMode || !nextMode || prevMode === nextMode) return;
 
-      // Fattore di conversione: CU è lordo annuale, monthly/annual sono netti.
-      // Conversioni con metà-stima quando si entra/esce da CU.
-      ["reddito1", "reddito2"].forEach((id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const raw = Number(el.value);
-        if (!Number.isFinite(raw) || raw === 0) return;
-
-        let converted = raw;
-        if (prevMode === "monthly" && nextMode === "annual") {
-          converted = raw * 12;
-        } else if (prevMode === "annual" && nextMode === "monthly") {
-          converted = raw / 12;
-        } else if (prevMode === "monthly" && nextMode === "cu") {
-          // Stima inversa: netto mensile → lordo annuale approssimato
-          // Usa il fattore empirico del calcolo inverso (lordo ≈ netto / 0.72)
-          converted = (raw * 12) / 0.72;
-        } else if (prevMode === "annual" && nextMode === "cu") {
-          converted = raw / 0.72;
-        } else if (prevMode === "cu" && nextMode === "monthly") {
-          converted = computeNetFromCU(raw);
-        } else if (prevMode === "cu" && nextMode === "annual") {
-          converted = computeNetFromCU(raw) * 12;
-        }
-        el.value = String(Math.round(converted * 100) / 100);
+      const readCurrentPair = () => ({
+        r1: Number(document.getElementById("reddito1")?.value || 0),
+        r2: Number(document.getElementById("reddito2")?.value || 0)
       });
+
+      const setPair = (pair) => {
+        const r1El = document.getElementById("reddito1");
+        const r2El = document.getElementById("reddito2");
+        if (r1El) r1El.value = String(Math.round((Number(pair.r1) || 0) * 100) / 100);
+        if (r2El) r2El.value = String(Math.round((Number(pair.r2) || 0) * 100) / 100);
+      };
+
+      const convertOne = (raw, fromMode, toMode) => {
+        if (!Number.isFinite(raw)) return 0;
+        if (fromMode === toMode) return raw;
+        if (fromMode === "monthly" && toMode === "annual") return raw * 12;
+        if (fromMode === "annual" && toMode === "monthly") return raw / 12;
+        if (fromMode === "monthly" && toMode === "cu") return (raw * 12) / 0.72;
+        if (fromMode === "annual" && toMode === "cu") return raw / 0.72;
+        if (fromMode === "cu" && toMode === "monthly") return computeNetFromCU(raw);
+        if (fromMode === "cu" && toMode === "annual") return computeNetFromCU(raw) * 12;
+        return raw;
+      };
+
+      // Persist the last values explicitly used in the previous mode.
+      const currentPair = readCurrentPair();
+      incomeValuesByMode[prevMode] = { r1: currentPair.r1, r2: currentPair.r2 };
+
+      // If user has already entered values for the target mode, restore them as-is.
+      const cachedTarget = incomeValuesByMode[nextMode];
+      if (cachedTarget && Number.isFinite(cachedTarget.r1) && Number.isFinite(cachedTarget.r2)) {
+        setPair(cachedTarget);
+        return;
+      }
+
+      // First time entering a mode: derive once from current mode, then cache it.
+      const convertedPair = {
+        r1: convertOne(currentPair.r1, prevMode, nextMode),
+        r2: convertOne(currentPair.r2, prevMode, nextMode)
+      };
+      setPair(convertedPair);
+      incomeValuesByMode[nextMode] = convertedPair;
     }
 
     function updateModeUi() {
@@ -2571,6 +2592,10 @@ const defaultExpenseItems = [
     function applyState(state) {
       hydrateState(state);
       incomeModeLast = document.getElementById("incomeMode").value || "monthly";
+      incomeValuesByMode[incomeModeLast] = {
+        r1: num("reddito1"),
+        r2: num("reddito2")
+      };
       updateModeUi();
       renderAll();
     }
@@ -3251,6 +3276,12 @@ const defaultExpenseItems = [
           syncPermanenza("perm1");
         } else if (e.target.id === "perm2") {
           syncPermanenza("perm2");
+        } else if (e.target.id === "reddito1" || e.target.id === "reddito2") {
+          const activeMode = document.getElementById("incomeMode")?.value || "monthly";
+          incomeValuesByMode[activeMode] = {
+            r1: num("reddito1"),
+            r2: num("reddito2")
+          };
         }
         renderAll();
       }
@@ -3306,6 +3337,10 @@ const defaultExpenseItems = [
     renderCloudHistoryPanel();
     syncPermanenza();
     incomeModeLast = document.getElementById("incomeMode").value || "monthly";
+    incomeValuesByMode[incomeModeLast] = {
+      r1: num("reddito1"),
+      r2: num("reddito2")
+    };
     updateModeUi();
     updateSpouseLabels();
     document.getElementById("nome1").addEventListener("input", () => { updateSpouseLabels(); renderAll(); });
