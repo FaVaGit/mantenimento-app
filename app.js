@@ -807,10 +807,33 @@ const defaultExpenseItems = [
       });
     }
 
-    function num(id) {
-      const raw = document.getElementById(id).value;
+    function parseFlexibleNumber(rawValue) {
+      let raw = String(rawValue ?? "").trim();
+      if (!raw) return 0;
+
+      raw = raw
+        .replace(/\s+/g, "")
+        .replace(/[\u00A0\u202F]/g, "")
+        .replace(/[^\d,.-]/g, "");
+
+      // Accept both IT and EN decimal formats (1.234,56 / 1,234.56 / 1234,56 / 1234.56).
+      if (raw.includes(",") && raw.includes(".")) {
+        if (raw.lastIndexOf(",") > raw.lastIndexOf(".")) {
+          raw = raw.replace(/\./g, "").replace(",", ".");
+        } else {
+          raw = raw.replace(/,/g, "");
+        }
+      } else if (raw.includes(",")) {
+        raw = raw.replace(",", ".");
+      }
+
       const n = Number(raw);
       return Number.isFinite(n) ? n : 0;
+    }
+
+    function num(id) {
+      const raw = document.getElementById(id).value;
+      return parseFlexibleNumber(raw);
     }
 
     function text(id) {
@@ -3335,7 +3358,7 @@ const defaultExpenseItems = [
     }
 
     function resetAll() {
-      document.querySelectorAll("input[type='number']").forEach((el) => {
+      document.querySelectorAll("input[type='number'], input[data-numeric='1']").forEach((el) => {
         if (el.id !== "perm2") {
           el.value = el.defaultValue || 0;
         }
@@ -3481,7 +3504,7 @@ const defaultExpenseItems = [
     });
 
     document.addEventListener("input", (e) => {
-      if (e.target && e.target.matches("input[type='number']")) {
+      if (e.target && e.target.matches("input[type='number'], input[data-numeric='1']")) {
         if (e.target.id === "perm1") {
           syncPermanenza("perm1");
         } else if (e.target.id === "perm2") {
