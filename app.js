@@ -28,6 +28,8 @@ const defaultExpenseItems = [
     let scenarioTransitionTimer = null;
     const SCENARIO_LAB_MAX = 3;
     const SCENARIO_LABELS = ["A", "B", "C"];
+    const EXPENSE_DETAIL_MAX_CHARS = 560;
+    const EXPENSE_DETAIL_MAX_LINES = 10;
 
     const QUOTA_MANTENIMENTO_PERC = 35;
 
@@ -228,6 +230,7 @@ const defaultExpenseItems = [
         expenseDetailBtn: "Dettaglio",
         expenseDetailTitle: "Apri dettaglio voce spesa",
         expenseDetailPlaceholder: "Scrivi qui il dettaglio di questa cifra (es. mesi, quota, riferimento).",
+        expenseDetailCharsRemaining: "Caratteri rimanenti: {count}",
         expenseRemoveTitle: "Rimuovi voce spesa",
         expenseRemoveBtn: "Rimuovi",
         expenseMinOneAlert: "Deve restare almeno una voce spesa.",
@@ -521,6 +524,7 @@ const defaultExpenseItems = [
         expenseDetailBtn: "Detail",
         expenseDetailTitle: "Open expense detail",
         expenseDetailPlaceholder: "Write details for this amount (e.g. months, share, reference).",
+        expenseDetailCharsRemaining: "Remaining characters: {count}",
         expenseRemoveTitle: "Remove expense item",
         expenseRemoveBtn: "Remove",
         expenseMinOneAlert: "At least one expense item must remain.",
@@ -692,100 +696,145 @@ const defaultExpenseItems = [
     };
     let currentLang = "it";
     let currentCurrency = "EUR";
-    const CALC_API_BASE_STORAGE_KEY = "keylock_calc_api_base";
-    const FRONTEND_VARIANT_ENVS = window.KEYLOCK_FRONTEND_VARIANT_ENVS && typeof window.KEYLOCK_FRONTEND_VARIANT_ENVS === "object"
-      ? window.KEYLOCK_FRONTEND_VARIANT_ENVS
-      : {};
-    const CALC_API_ENVS = window.KEYLOCK_CALC_API_ENVS && typeof window.KEYLOCK_CALC_API_ENVS === "object"
-      ? window.KEYLOCK_CALC_API_ENVS
-      : {};
+      const CALC_API_BASE_STORAGE_KEY = "keylock_calc_api_base";
+      const FRONTEND_VARIANT_ENVS = window.KEYLOCK_FRONTEND_VARIANT_ENVS && typeof window.KEYLOCK_FRONTEND_VARIANT_ENVS === "object"
+        ? window.KEYLOCK_FRONTEND_VARIANT_ENVS
+        : {};
+      const CALC_API_ENVS = window.KEYLOCK_CALC_API_ENVS && typeof window.KEYLOCK_CALC_API_ENVS === "object"
+        ? window.KEYLOCK_CALC_API_ENVS
+        : {};
 
-    function normalizeApiBase(rawValue) {
-      return String(rawValue || "").trim().replace(/\/+$/, "");
-    }
-
-    function normalizeFrontendVariantUrl(rawValue) {
-      return String(rawValue || "").trim();
-    }
-
-    function maybeRedirectFrontendVariant() {
-      try {
-        const params = new URLSearchParams(window.location.search || "");
-        const variant = String(params.get("frontend") || "").trim().toLowerCase();
-        if (!variant || variant === "prod" || variant === "default" || variant === "reset") return;
-
-        const targetBase = normalizeFrontendVariantUrl(FRONTEND_VARIANT_ENVS[variant] || "");
-        if (!targetBase) return;
-
-        const target = new URL(targetBase, window.location.href);
-        const current = new URL(window.location.href);
-
-        // Avoid redirect loops when already on the target frontend.
-        if (target.href === current.href) return;
-        if (target.origin === current.origin && target.pathname === current.pathname) return;
-
-        // Keep runtime API selection params when switching frontend variant.
-        ["env", "apiBase"].forEach((k) => {
-          if (params.has(k)) target.searchParams.set(k, String(params.get(k)));
-        });
-
-        window.location.replace(target.toString());
-      } catch (_) {
-        // Ignore malformed URLs and continue with default frontend.
-      }
-    }
-
-    maybeRedirectFrontendVariant();
-
-    function resolveNamedApiBase(envName) {
-      const key = String(envName || "").trim().toLowerCase();
-      if (!key) return "";
-      return normalizeApiBase(CALC_API_ENVS[key] || "");
-    }
-
-    function resolveCalculationApiBase() {
-      const configBase = normalizeApiBase(window.KEYLOCK_CALC_API_BASE || "");
-      let storedBase = "";
-
-      try {
-        storedBase = normalizeApiBase(localStorage.getItem(CALC_API_BASE_STORAGE_KEY) || "");
-      } catch (_) {
-        storedBase = "";
+      function normalizeApiBase(rawValue) {
+        return String(rawValue || "").trim().replace(/\/+$/, "");
       }
 
-      try {
-        const params = new URLSearchParams(window.location.search || "");
-        if (params.has("env")) {
-          const envName = String(params.get("env") || "").trim().toLowerCase();
-          const disable = envName === "off" || envName === "default" || envName === "reset" || envName === "prod";
-          const envBase = disable ? "" : resolveNamedApiBase(envName);
-          try {
-            if (disable || !envBase) {
-              localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
-            } else {
-              localStorage.setItem(CALC_API_BASE_STORAGE_KEY, envBase);
-            }
-          } catch (_) {}
-          return envBase;
+      function normalizeFrontendVariantUrl(rawValue) {
+        return String(rawValue || "").trim();
+      }
+
+      function maybeRedirectFrontendVariant() {
+        try {
+          const params = new URLSearchParams(window.location.search || "");
+          const variant = String(params.get("frontend") || "").trim().toLowerCase();
+          if (!variant || variant === "prod" || variant === "default" || variant === "reset") return;
+
+          const targetBase = normalizeFrontendVariantUrl(FRONTEND_VARIANT_ENVS[variant] || "");
+          if (!targetBase) return;
+
+          const target = new URL(targetBase, window.location.href);
+          const current = new URL(window.location.href);
+
+          if (target.href === current.href) return;
+          if (target.origin === current.origin && target.pathname === current.pathname) return;
+
+          ["env", "apiBase"].forEach((k) => {
+            if (params.has(k)) target.searchParams.set(k, String(params.get(k)));
+          });
+
+          window.location.replace(target.toString());
+        } catch (_) {
+          // Ignore malformed URLs and continue with default frontend.
+        }
+      }
+
+      maybeRedirectFrontendVariant();
+
+      function resolveNamedApiBase(envName) {
+        const key = String(envName || "").trim().toLowerCase();
+        if (!key) return "";
+        return normalizeApiBase(CALC_API_ENVS[key] || "");
+      }
+
+      function resolveCalculationApiBase() {
+        const configBase = normalizeApiBase(window.KEYLOCK_CALC_API_BASE || "");
+        let storedBase = "";
+
+        try {
+          storedBase = normalizeApiBase(localStorage.getItem(CALC_API_BASE_STORAGE_KEY) || "");
+        } catch (_) {
+          storedBase = "";
         }
 
-        if (params.has("apiBase")) {
-          const queryBaseRaw = String(params.get("apiBase") || "").trim();
-          const disable = queryBaseRaw === "off" || queryBaseRaw === "default" || queryBaseRaw === "reset";
-          const queryBase = disable ? "" : normalizeApiBase(queryBaseRaw);
-          try {
-            if (disable || !queryBase) {
-              localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
-            } else {
-              localStorage.setItem(CALC_API_BASE_STORAGE_KEY, queryBase);
-            }
-          } catch (_) {}
-          return queryBase;
-        }
-      } catch (_) {}
+        try {
+          const params = new URLSearchParams(window.location.search || "");
+          if (params.has("env")) {
+            const envName = String(params.get("env") || "").trim().toLowerCase();
+            const disable = envName === "off" || envName === "default" || envName === "reset" || envName === "prod";
+            const envBase = disable ? "" : resolveNamedApiBase(envName);
+            try {
+              if (disable || !envBase) {
+                localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
+              } else {
+                localStorage.setItem(CALC_API_BASE_STORAGE_KEY, envBase);
+              }
+            } catch (_) {}
+            return envBase;
+          }
 
-      return storedBase || configBase;
-    }
+          if (params.has("apiBase")) {
+            const queryBaseRaw = String(params.get("apiBase") || "").trim();
+            const disable = queryBaseRaw === "off" || queryBaseRaw === "default" || queryBaseRaw === "reset";
+            const queryBase = disable ? "" : normalizeApiBase(queryBaseRaw);
+            try {
+              if (disable || !queryBase) {
+                localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
+              } else {
+                localStorage.setItem(CALC_API_BASE_STORAGE_KEY, queryBase);
+              }
+            } catch (_) {}
+            return queryBase;
+          }
+        } catch (_) {}
+
+        return storedBase || configBase;
+      }
+
+      function getRuntimeVariantLabels() {
+        const labels = [];
+
+        try {
+          const params = new URLSearchParams(window.location.search || "");
+          const frontendVariant = String(params.get("frontend") || "").trim().toLowerCase();
+          const envVariant = String(params.get("env") || "").trim().toLowerCase();
+          const apiBaseVariant = String(params.get("apiBase") || "").trim();
+
+          if (frontendVariant === "dev" || window.location.host.includes("githack.com")) {
+            labels.push("dev-frontend");
+          }
+          if (envVariant === "dev" || !!apiBaseVariant) {
+            labels.push("dev-api");
+          }
+        } catch (_) {}
+
+        return labels;
+      }
+
+      function renderRuntimeBadge() {
+        const heroTools = document.querySelector(".hero-tools");
+        if (!heroTools) return;
+
+        const labels = getRuntimeVariantLabels();
+        let badge = document.getElementById("runtimeEnvBadge");
+
+        if (!labels.length) {
+          if (badge) badge.remove();
+          return;
+        }
+
+        if (!badge) {
+          badge = document.createElement("div");
+          badge.id = "runtimeEnvBadge";
+          badge.className = "runtime-badge";
+          heroTools.prepend(badge);
+        }
+
+        badge.innerHTML = labels.map((label) => {
+          if (label === "dev-frontend") {
+            return '<span class="runtime-badge-chip runtime-badge-chip--frontend">DEV FRONTEND</span>';
+          }
+          return '<span class="runtime-badge-chip runtime-badge-chip--api">DEV API</span>';
+        }).join("");
+      }
 
     function getRuntimeVariantLabels() {
       const labels = [];
@@ -858,8 +907,8 @@ const defaultExpenseItems = [
     }
 
     function resolveCalculationApiUrl() {
-      const calcApiBase = resolveCalculationApiBase();
-      if (calcApiBase) return `${calcApiBase}/api/calculate`;
+        const calcApiBase = resolveCalculationApiBase();
+        if (calcApiBase) return `${calcApiBase}/api/calculate`;
       return "/api/calculate";
     }
 
@@ -1108,6 +1157,9 @@ const defaultExpenseItems = [
       if (visitorTotalLabel) visitorTotalLabel.textContent = tr("footerVisitorsTotal");
       if (visitorActiveLabel) visitorActiveLabel.textContent = tr("footerVisitorsActive");
       if (visitorLoggedLabel) visitorLoggedLabel.textContent = tr("footerLoggedUsers");
+      rowsSpese.querySelectorAll("textarea.spese-detail-text").forEach((el) => {
+        updateExpenseDetailCounter(el);
+      });
       updateExtraordinaryModuleUi();
       updatePermanenceCalendarSummary();
       renderVisitorCounters();
@@ -1180,6 +1232,73 @@ const defaultExpenseItems = [
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
+    }
+
+    function getExpenseDetailMaxHeight(textarea) {
+      if (!textarea) return 0;
+      const style = window.getComputedStyle(textarea);
+      const lineHeight = Number.parseFloat(style.lineHeight) || 18;
+      const borderTop = Number.parseFloat(style.borderTopWidth) || 0;
+      const borderBottom = Number.parseFloat(style.borderBottomWidth) || 0;
+      const paddingTop = Number.parseFloat(style.paddingTop) || 0;
+      const paddingBottom = Number.parseFloat(style.paddingBottom) || 0;
+      return Math.round((lineHeight * EXPENSE_DETAIL_MAX_LINES) + paddingTop + paddingBottom + borderTop + borderBottom);
+    }
+
+    function autoResizeExpenseDetailTextarea(textarea, preferredHeight = 0) {
+      if (!textarea) return;
+      const maxHeight = getExpenseDetailMaxHeight(textarea);
+      textarea.style.height = "auto";
+      const scrollHeight = Math.max(textarea.scrollHeight, 0);
+      const targetHeight = preferredHeight > 0
+        ? Math.min(maxHeight, Math.max(scrollHeight, preferredHeight))
+        : Math.min(maxHeight, scrollHeight);
+      textarea.style.height = `${Math.max(0, targetHeight)}px`;
+      textarea.style.overflowY = scrollHeight > maxHeight ? "auto" : "hidden";
+    }
+
+    function updateExpenseDetailCounter(textarea) {
+      if (!textarea || !textarea.id) return;
+      const counter = document.getElementById(`${textarea.id}Counter`);
+      if (!counter) return;
+      const maxLen = Number(textarea.getAttribute("maxlength") || EXPENSE_DETAIL_MAX_CHARS);
+      const len = String(textarea.value || "").length;
+      const remaining = Math.max(0, maxLen - len);
+      counter.textContent = msg("expenseDetailCharsRemaining", { count: String(remaining) });
+      counter.classList.toggle("is-limit", remaining <= Math.max(20, Math.round(maxLen * 0.05)));
+    }
+
+    function updateExpenseDetailTextareaUi(textarea, preferredHeight = 0) {
+      if (!textarea) return;
+      autoResizeExpenseDetailTextarea(textarea, preferredHeight);
+      updateExpenseDetailCounter(textarea);
+    }
+
+    function collectExpenseDetailUiMeta(spouseKey, idx) {
+      const wrap = document.getElementById(`${spouseKey}dw_${idx}`);
+      const textArea = document.getElementById(`${spouseKey}d_${idx}`);
+      const inlineHeight = textArea ? Number.parseFloat(String(textArea.style.height || "0")) : 0;
+      return {
+        open: wrap ? !wrap.classList.contains("is-hidden") : false,
+        height: Number.isFinite(inlineHeight) && inlineHeight > 0 ? inlineHeight : 0
+      };
+    }
+
+    function applyExpenseDetailUiMeta(spouseKey, idx, meta) {
+      const wrap = document.getElementById(`${spouseKey}dw_${idx}`);
+      const textarea = document.getElementById(`${spouseKey}d_${idx}`);
+      const btn = rowsSpese.querySelector(`button[data-detail-target='${spouseKey}d_${idx}']`);
+      const open = !!(meta && meta.open);
+
+      if (wrap) wrap.classList.toggle("is-hidden", !open);
+      if (btn) btn.classList.toggle("is-open", open);
+
+      const preferredHeight = Number(meta && meta.height);
+      if (textarea && Number.isFinite(preferredHeight) && preferredHeight > 0) {
+        updateExpenseDetailTextareaUi(textarea, preferredHeight);
+      } else if (textarea) {
+        updateExpenseDetailTextareaUi(textarea);
+      }
     }
 
     function normalizeExpenseItem(item, fallbackIdx = 0) {
@@ -2357,7 +2476,8 @@ const defaultExpenseItems = [
                 <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c1d_${idx}" data-detail-wrap="c1dw_${idx}" title="${tr("expenseDetailTitle")}"><span class="spese-detail-label">${tr("expenseDetailBtn")}</span></button>
               </div>
               <div class="spese-detail-wrap is-hidden" id="c1dw_${idx}">
-                <textarea id="c1d_${idx}" class="spese-detail-text" rows="2" maxlength="280" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}"></textarea>
+                <textarea id="c1d_${idx}" class="spese-detail-text" rows="2" maxlength="${EXPENSE_DETAIL_MAX_CHARS}" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}" aria-describedby="c1d_${idx}Counter"></textarea>
+                <div class="spese-detail-counter" id="c1d_${idx}Counter" aria-live="polite"></div>
               </div>
               <span class="spese-partial" id="p1_${idx}" title="${tr("expensePartialTitle")}">${tr("expensePartialLabel")}: ${eurTiny(0)}</span>
             </div>
@@ -2369,7 +2489,8 @@ const defaultExpenseItems = [
                 <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c2d_${idx}" data-detail-wrap="c2dw_${idx}" title="${tr("expenseDetailTitle")}"><span class="spese-detail-label">${tr("expenseDetailBtn")}</span></button>
               </div>
               <div class="spese-detail-wrap is-hidden" id="c2dw_${idx}">
-                <textarea id="c2d_${idx}" class="spese-detail-text" rows="2" maxlength="280" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}"></textarea>
+                <textarea id="c2d_${idx}" class="spese-detail-text" rows="2" maxlength="${EXPENSE_DETAIL_MAX_CHARS}" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}" aria-describedby="c2d_${idx}Counter"></textarea>
+                <div class="spese-detail-counter" id="c2d_${idx}Counter" aria-live="polite"></div>
               </div>
               <span class="spese-partial" id="p2_${idx}" title="${tr("expensePartialTitle")}">${tr("expensePartialLabel")}: ${eurTiny(0)}</span>
             </div>
@@ -2380,6 +2501,9 @@ const defaultExpenseItems = [
         `;
         rowsSpese.appendChild(rowEl);
       });
+      rowsSpese.querySelectorAll("textarea.spese-detail-text").forEach((el) => {
+        updateExpenseDetailTextareaUi(el);
+      });
       refreshExpenseDetailButtonState();
     }
 
@@ -2388,7 +2512,9 @@ const defaultExpenseItems = [
         c1: num(`c1_${i}`),
         c2: num(`c2_${i}`),
         d1: String(document.getElementById(`c1d_${i}`)?.value || "").trim(),
-        d2: String(document.getElementById(`c2d_${i}`)?.value || "").trim()
+        d2: String(document.getElementById(`c2d_${i}`)?.value || "").trim(),
+        d1Ui: collectExpenseDetailUiMeta("c1", i),
+        d2Ui: collectExpenseDetailUiMeta("c2", i)
       }));
     }
 
@@ -2403,6 +2529,8 @@ const defaultExpenseItems = [
         if (c2) c2.value = Number.isFinite(Number(row && row.c2)) ? Number(row.c2) : 0;
         if (d1) d1.value = String(row && row.d1 ? row.d1 : "");
         if (d2) d2.value = String(row && row.d2 ? row.d2 : "");
+        applyExpenseDetailUiMeta("c1", i, row && row.d1Ui ? row.d1Ui : null);
+        applyExpenseDetailUiMeta("c2", i, row && row.d2Ui ? row.d2Ui : null);
       });
       refreshExpenseDetailButtonState();
     }
@@ -2414,6 +2542,7 @@ const defaultExpenseItems = [
         const detailEl = document.getElementById(targetId);
         const hasNote = !!(detailEl && String(detailEl.value || "").trim());
         btn.classList.toggle("has-note", hasNote);
+        btn.setAttribute("aria-label", hasNote ? `${tr("expenseDetailBtn")} ✓` : tr("expenseDetailBtn"));
       });
     }
 
@@ -2967,6 +3096,8 @@ const defaultExpenseItems = [
       const c2Spese = expenseItems.map((_, idx) => num(`c2_${idx}`));
       const c1SpeseDetails = expenseItems.map((_, idx) => String(document.getElementById(`c1d_${idx}`)?.value || "").trim());
       const c2SpeseDetails = expenseItems.map((_, idx) => String(document.getElementById(`c2d_${idx}`)?.value || "").trim());
+      const c1SpeseDetailUi = expenseItems.map((_, idx) => collectExpenseDetailUiMeta("c1", idx));
+      const c2SpeseDetailUi = expenseItems.map((_, idx) => collectExpenseDetailUiMeta("c2", idx));
       const extra1 = getExtraordinaryMonthly(1);
       const extra2 = getExtraordinaryMonthly(2);
       if (extra1 > 0) c1Spese.push(extra1);
@@ -2993,6 +3124,8 @@ const defaultExpenseItems = [
         straordAnn2: num("straordAnn2"),
         c1SpeseDetails,
         c2SpeseDetails,
+        c1SpeseDetailUi,
+        c2SpeseDetailUi,
         c1Spese,
         c2Spese
       };
@@ -3667,6 +3800,8 @@ const defaultExpenseItems = [
       const c2Spese = Array.isArray(payload.c2Spese) ? payload.c2Spese : [];
       const c1SpeseDetails = Array.isArray(payload.c1SpeseDetails) ? payload.c1SpeseDetails : [];
       const c2SpeseDetails = Array.isArray(payload.c2SpeseDetails) ? payload.c2SpeseDetails : [];
+      const c1SpeseDetailUi = Array.isArray(payload.c1SpeseDetailUi) ? payload.c1SpeseDetailUi : [];
+      const c2SpeseDetailUi = Array.isArray(payload.c2SpeseDetailUi) ? payload.c2SpeseDetailUi : [];
       expenseItems.forEach((_, i) => {
         const c1 = document.getElementById(`c1_${i}`);
         const c2 = document.getElementById(`c2_${i}`);
@@ -3676,6 +3811,8 @@ const defaultExpenseItems = [
         if (c2) c2.value = Number(c2Spese[i] || 0);
         if (d1) d1.value = String(c1SpeseDetails[i] || "");
         if (d2) d2.value = String(c2SpeseDetails[i] || "");
+        applyExpenseDetailUiMeta("c1", i, c1SpeseDetailUi[i]);
+        applyExpenseDetailUiMeta("c2", i, c2SpeseDetailUi[i]);
       });
       refreshExpenseDetailButtonState();
 
@@ -3824,18 +3961,20 @@ const defaultExpenseItems = [
       let resultDetail;
       if (isAssegno1) {
         resultHtml = `
-          <div class="spieg-line"><strong>${n1} &rarr; ${n2}</strong></div>
-          <div class="spieg-line">${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)} = <strong class="ok">${eur(m.assegnoDa1a2)}</strong></div>
+          <div class="spieg-result-flow">${n1} &rarr; ${n2}</div>
+          <div class="spieg-result-formula">${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)}</div>
+          <div class="spieg-result-amount ok">${eur(m.assegnoDa1a2)}</div>
         `;
         resultDetail = tr("spiegDetailResultTransfer");
       } else if (isAssegno2) {
         resultHtml = `
-          <div class="spieg-line"><strong>${n2} &rarr; ${n1}</strong></div>
-          <div class="spieg-line">${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)} = <strong class="ok">${eur(m.assegnoDa2a1)}</strong></div>
+          <div class="spieg-result-flow">${n2} &rarr; ${n1}</div>
+          <div class="spieg-result-formula">${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)}</div>
+          <div class="spieg-result-amount ok">${eur(m.assegnoDa2a1)}</div>
         `;
         resultDetail = tr("spiegDetailResultTransfer");
       } else {
-        resultHtml = `<span class="ok">${tr("calcNoTransferSuggested")}</span>`;
+        resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>`;
         resultDetail = tr("spiegDetailResultNoTransfer");
       }
 
@@ -3844,27 +3983,43 @@ const defaultExpenseItems = [
           <summary class="spieg-title">${tr("spiegTitle")}</summary>
           <div class="spieg-grid">
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegRedditiLabel")} ${infoTip(tr("spiegDetailIncome"))}</div>
+              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128184;</span>${tr("spiegRedditiLabel")} ${infoTip(tr("spiegDetailIncome"))}</div>
               <div class="spieg-item-body">
-                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${eur(m.disp1)}</strong> <span class="spieg-sep">|</span> <span>${n2}:</span> <strong class="spieg-value">${eur(m.disp2)}</strong></div>
-                <div class="spieg-line">${tr("pdfWeight")}: <strong class="spieg-value">${n1} ${peso1Pct}%</strong> / <strong class="spieg-value">${n2} ${peso2Pct}%</strong></div>
+                <div class="spieg-people">
+                  <div class="spieg-person spieg-person--left">
+                    <div class="spieg-person-name">${n1}</div>
+                    <div class="spieg-person-value">${eur(m.disp1)}</div>
+                    <div class="spieg-person-sub">${tr("pdfWeight")}: ${peso1Pct}%</div>
+                  </div>
+                  <div class="spieg-person spieg-person--right">
+                    <div class="spieg-person-name">${n2}</div>
+                    <div class="spieg-person-value">${eur(m.disp2)}</div>
+                    <div class="spieg-person-sub">${tr("pdfWeight")}: ${peso2Pct}%</div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegSpeseLabel")} ${infoTip(tr("spiegDetailExpense"))}</div>
+              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128221;</span>${tr("spiegSpeseLabel")} ${infoTip(tr("spiegDetailExpense"))}</div>
               <div class="spieg-item-body">
-                <div class="spieg-line"><strong class="spieg-value">${eur(m.speseTot)}</strong> &times; 35% = <strong class="spieg-value">${eur(m.fabbisognoFigli)}</strong></div>
+                <div class="spieg-equation">
+                  <span class="spieg-pill">${eur(m.speseTot)}</span>
+                  <span class="spieg-op">&times;</span>
+                  <span class="spieg-pill">35%</span>
+                  <span class="spieg-op">=</span>
+                  <span class="spieg-pill spieg-pill--result">${eur(m.fabbisognoFigli)}</span>
+                </div>
               </div>
             </div>
             <div class="spieg-item">
-              <div class="spieg-item-label">${tr("spiegPermLabel")} ${infoTip(tr("spiegDetailPerm"))}</div>
+              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128197;</span>${tr("spiegPermLabel")} ${infoTip(tr("spiegDetailPerm"))}</div>
               <div class="spieg-item-body">
-                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta1)}</strong></div>
-                <div class="spieg-line"><span>${n2}:</span> <strong class="spieg-value">${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta2)}</strong></div>
+                <div class="spieg-line spieg-line--kv"><span class="spieg-k">${n1}</span><span class="spieg-v">${m.perm1.toFixed(0)}% (${days1} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta1)}</span></div>
+                <div class="spieg-line spieg-line--kv"><span class="spieg-k">${n2}</span><span class="spieg-v">${m.perm2.toFixed(0)}% (${days2} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta2)}</span></div>
               </div>
             </div>
             <div class="spieg-item spieg-item--result">
-              <div class="spieg-item-label">${tr("spiegResultLabel")} ${infoTip(resultDetail)}</div>
+              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#127919;</span>${tr("spiegResultLabel")} ${infoTip(resultDetail)}</div>
               <div class="spieg-item-body spieg-item-body--result">${resultHtml}</div>
             </div>
           </div>
@@ -4097,7 +4252,7 @@ const defaultExpenseItems = [
         const el = document.getElementById(`${spouseKey}d_${idx}`);
         const raw = String(el && el.value ? el.value : "").trim();
         if (!raw) return "";
-        return raw;
+        return `${escapeHtml(raw)} <span class="expense-detail-meta">(${raw.length}/${EXPENSE_DETAIL_MAX_CHARS})</span>`;
       };
       const speseRowsBase = expenseItems.map((item, i) => {
         const c1 = num(`c1_${i}`);
@@ -4309,6 +4464,7 @@ const defaultExpenseItems = [
   tr:nth-child(even) td { background: #f5faf9; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .bold { font-weight: 700; }
+  .expense-detail-meta { color: #5f7873; font-size: 7pt; font-weight: 600; white-space: nowrap; }
   .total-row td { background: #ddf0ec !important; font-weight: 700; border-top: 1.5px solid #74c3b9; }
 
   /* ── TWO-COL LAYOUT ── */
@@ -4804,7 +4960,9 @@ ${scenarioLab.length ? `
         c1: num(`c1_${i}`),
         c2: num(`c2_${i}`),
         d1: String(document.getElementById(`c1d_${i}`)?.value || "").trim(),
-        d2: String(document.getElementById(`c2d_${i}`)?.value || "").trim()
+        d2: String(document.getElementById(`c2d_${i}`)?.value || "").trim(),
+        d1Ui: collectExpenseDetailUiMeta("c1", i),
+        d2Ui: collectExpenseDetailUiMeta("c2", i)
       }));
       const expenseItemsState = expenseItems.map((item) => ({ label: item.label, help: item.help }));
       const scenariosState = scenarioLab.map((scenario, idx) => ({
@@ -4888,6 +5046,8 @@ ${scenarioLab.length ? `
         if (c2) c2.value = row.c2;
         if (d1) d1.value = String(row && row.d1 ? row.d1 : "");
         if (d2) d2.value = String(row && row.d2 ? row.d2 : "");
+        applyExpenseDetailUiMeta("c1", i, row && row.d1Ui ? row.d1Ui : null);
+        applyExpenseDetailUiMeta("c2", i, row && row.d2Ui ? row.d2Ui : null);
       });
       refreshExpenseDetailButtonState();
     }
@@ -5026,7 +5186,10 @@ ${scenarioLab.length ? `
           const willOpen = wrap.classList.contains("is-hidden");
           wrap.classList.toggle("is-hidden", !willOpen);
           detailBtn.classList.toggle("is-open", willOpen);
-          if (willOpen && target) target.focus();
+          if (target) {
+            updateExpenseDetailTextareaUi(target);
+            if (willOpen) target.focus();
+          }
         }
         return;
       }
@@ -5039,6 +5202,7 @@ ${scenarioLab.length ? `
 
     rowsSpese.addEventListener("input", (e) => {
       if (e.target && e.target.matches("textarea.spese-detail-text")) {
+        updateExpenseDetailTextareaUi(e.target);
         refreshExpenseDetailButtonState();
       }
     });
