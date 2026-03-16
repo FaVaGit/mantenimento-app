@@ -4376,33 +4376,54 @@ const defaultExpenseItems = [
         ${m.incomeMode === "cu" ? `<br /><strong>${tr("calcIncomeBaseNote")}</strong> ${tr("cuNetNoteText")}` : ""}
       `;
 
-      let mainHtml = `<span class="result-main-line">${escapeHtml(tr("calcNoTransferSuggested"))}</span>`;
+      let mainHtml;
       if (m.assegnoDa1a2 > 0.005) {
+        const perChild = m.figli > 1 ? `<div class="result-transfer-child">${eur(m.assegnoDa1a2 / m.figli)}&thinsp;${escapeHtml(currentLang === "en" ? "per child" : "per figlio")}</div>` : "";
         mainHtml = `
-          <span class="result-main-flow">${escapeHtml(c1n())} &rarr; ${escapeHtml(c2n())}</span>
-          <span class="result-main-amount">${eur(m.assegnoDa1a2)} ${escapeHtml(tr("pdfPerMonth"))}</span>
+          <div class="result-transfer-dir">
+            <span class="result-chip-name">${escapeHtml(c1n())}</span>
+            <span class="result-chip-arr">&rarr;</span>
+            <span class="result-chip-name">${escapeHtml(c2n())}</span>
+          </div>
+          <div class="result-transfer-value">${eur(m.assegnoDa1a2)}<span class="result-transfer-per">&thinsp;${escapeHtml(tr("pdfPerMonth"))}</span></div>
+          ${perChild}
         `;
       } else if (m.assegnoDa2a1 > 0.005) {
+        const perChild = m.figli > 1 ? `<div class="result-transfer-child">${eur(m.assegnoDa2a1 / m.figli)}&thinsp;${escapeHtml(currentLang === "en" ? "per child" : "per figlio")}</div>` : "";
         mainHtml = `
-          <span class="result-main-flow">${escapeHtml(c2n())} &rarr; ${escapeHtml(c1n())}</span>
-          <span class="result-main-amount">${eur(m.assegnoDa2a1)} ${escapeHtml(tr("pdfPerMonth"))}</span>
+          <div class="result-transfer-dir">
+            <span class="result-chip-name">${escapeHtml(c2n())}</span>
+            <span class="result-chip-arr">&rarr;</span>
+            <span class="result-chip-name">${escapeHtml(c1n())}</span>
+          </div>
+          <div class="result-transfer-value">${eur(m.assegnoDa2a1)}<span class="result-transfer-per">&thinsp;${escapeHtml(tr("pdfPerMonth"))}</span></div>
+          ${perChild}
         `;
       } else {
         const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
+        let benefitCardsHtml = "";
         if (benefitRows.length) {
-          const benefitsHtml = benefitRows
-            .map((row) => `<li><span>${escapeHtml(row.label)}</span><strong>${eur(row.amount)}</strong></li>`)
+          const rawBenefs = Array.isArray(m.compensativeBenefits)
+            ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
+            : [];
+          const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
+          const cardsHtml = benefitRows
+            .map((row, i) => {
+              const icon = (rawBenefs[i] && typeIcons[rawBenefs[i].type]) || "\u2726";
+              return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
+            })
             .join("");
-          mainHtml = `
-            <span class="result-main-line">${escapeHtml(tr("calcNoTransferSuggested"))}</span>
+          const total = benefitRows.reduce((s, r) => s + r.amount, 0);
+          const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
+          benefitCardsHtml = `
             <div class="result-benefits-box">
-              <span class="result-main-sub">${escapeHtml(tr("calcCompBenefitsLabel"))}</span>
-              <ul class="result-benefits-list">${benefitsHtml}</ul>
+              <div class="spieg-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
+              <ul class="spieg-benefits-cards">${cardsHtml}</ul>
+              <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(total)}</strong></div>
             </div>
           `;
-        } else if (benefitsInline) {
-          mainHtml = `<span class="result-main-line">${escapeHtml(msg("calcNoTransferWithBenefits", { benefits: benefitsInline }))}</span>`;
         }
+        mainHtml = `<div class="spieg-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>${benefitCardsHtml}`;
       }
       resultMain.innerHTML = mainHtml;
 

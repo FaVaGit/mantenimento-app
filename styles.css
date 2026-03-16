@@ -2232,6 +2232,79 @@
       color: #123b38;
     }
 
+    .result-pill-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.71rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #3a6560;
+      padding-bottom: 9px;
+      margin-bottom: 9px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .result-transfer-dir {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, rgba(27, 110, 100, 0.11), rgba(27, 110, 100, 0.05));
+      border: 1.5px solid rgba(27, 110, 100, 0.24);
+      border-radius: 999px;
+      padding: 6px 16px;
+      margin-bottom: 10px;
+      max-width: 100%;
+    }
+
+    .result-chip-name {
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #124741;
+      overflow-wrap: anywhere;
+    }
+
+    .result-chip-arr {
+      font-size: 1.1rem;
+      color: #1d7d72;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .result-transfer-value {
+      display: block;
+      font-size: 2.0rem;
+      font-weight: 900;
+      color: #0b5e57;
+      line-height: 1.15;
+      letter-spacing: -0.3px;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.75);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 4px;
+    }
+
+    .result-transfer-per {
+      font-size: 0.48em;
+      font-weight: 700;
+      color: #2d7068;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    .result-transfer-child {
+      display: inline-block;
+      margin-top: 2px;
+      font-size: 0.78rem;
+      color: #3d6b63;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      background: rgba(0,0,0,0.045);
+      border-radius: 8px;
+      padding: 3px 10px;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
     .result-main-flow {
       display: block;
       font-size: 1.02rem;
@@ -2275,12 +2348,9 @@
     }
 
     .result-benefits-box {
-      border: 1px solid #bdd6cf;
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(249, 253, 252, 0.92), rgba(241, 249, 246, 0.92));
-      padding: 8px;
       display: grid;
-      gap: 8px;
+      gap: 6px;
+      margin-top: 8px;
     }
 
     .result-benefits-list {
