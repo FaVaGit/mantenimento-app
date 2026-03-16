@@ -328,10 +328,10 @@ const defaultExpenseItems = [
         scenarioColFabb: "Fabbis. figli",
         scenarioDeltaLabel: "\u0394 vs A",
         spiegTitle: "💡 Perché questo risultato?",
-        spiegRedditiLabel: "💰 Redditi (peso contributivo)",
-        spiegSpeseLabel: "👶 Spese → fabbisogno figli",
-        spiegPermLabel: "📅 Permanenza → quota diretta",
-        spiegResultLabel: "🎯 Come si forma l'assegno",
+        spiegRedditiLabel: "Redditi (peso contributivo)",
+        spiegSpeseLabel: "Spese → fabbisogno figli",
+        spiegPermLabel: "Permanenza → quota diretta",
+        spiegResultLabel: "Come si forma l'assegno",
         spiegTooltipTrigger: "Dettaglio calcolo",
         spiegDetailIncome: "Si parte dal netto disponibile di ciascun coniuge. Il peso contributivo e dato da netto coniuge / somma dei netti positivi.",
         spiegDetailExpense: "Il fabbisogno figli viene stimato come 35% del totale spese inserite (ordinarie + eventuali straordinarie mensilizzate).",
@@ -621,10 +621,10 @@ const defaultExpenseItems = [
         scenarioColFabb: "Children needs",
         scenarioDeltaLabel: "\u0394 vs A",
         spiegTitle: "💡 Why this result?",
-        spiegRedditiLabel: "💰 Income (contribution weight)",
-        spiegSpeseLabel: "👶 Expenses → children needs",
-        spiegPermLabel: "📅 Permanence → direct share",
-        spiegResultLabel: "🎯 How the support is formed",
+        spiegRedditiLabel: "Income (contribution weight)",
+        spiegSpeseLabel: "Expenses → children needs",
+        spiegPermLabel: "Permanence → direct share",
+        spiegResultLabel: "How the support is formed",
         spiegTooltipTrigger: "Calculation details",
         spiegDetailIncome: "The model starts from each spouse's available net. Contribution weight is spouse net / sum of positive nets.",
         spiegDetailExpense: "Children needs are estimated as 35% of total entered expenses (regular + any extraordinary annual costs converted to monthly).",
@@ -692,145 +692,100 @@ const defaultExpenseItems = [
     };
     let currentLang = "it";
     let currentCurrency = "EUR";
-      const CALC_API_BASE_STORAGE_KEY = "keylock_calc_api_base";
-      const FRONTEND_VARIANT_ENVS = window.KEYLOCK_FRONTEND_VARIANT_ENVS && typeof window.KEYLOCK_FRONTEND_VARIANT_ENVS === "object"
-        ? window.KEYLOCK_FRONTEND_VARIANT_ENVS
-        : {};
-      const CALC_API_ENVS = window.KEYLOCK_CALC_API_ENVS && typeof window.KEYLOCK_CALC_API_ENVS === "object"
-        ? window.KEYLOCK_CALC_API_ENVS
-        : {};
+    const CALC_API_BASE_STORAGE_KEY = "keylock_calc_api_base";
+    const FRONTEND_VARIANT_ENVS = window.KEYLOCK_FRONTEND_VARIANT_ENVS && typeof window.KEYLOCK_FRONTEND_VARIANT_ENVS === "object"
+      ? window.KEYLOCK_FRONTEND_VARIANT_ENVS
+      : {};
+    const CALC_API_ENVS = window.KEYLOCK_CALC_API_ENVS && typeof window.KEYLOCK_CALC_API_ENVS === "object"
+      ? window.KEYLOCK_CALC_API_ENVS
+      : {};
 
-      function normalizeApiBase(rawValue) {
-        return String(rawValue || "").trim().replace(/\/+$/, "");
+    function normalizeApiBase(rawValue) {
+      return String(rawValue || "").trim().replace(/\/+$/, "");
+    }
+
+    function normalizeFrontendVariantUrl(rawValue) {
+      return String(rawValue || "").trim();
+    }
+
+    function maybeRedirectFrontendVariant() {
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        const variant = String(params.get("frontend") || "").trim().toLowerCase();
+        if (!variant || variant === "prod" || variant === "default" || variant === "reset") return;
+
+        const targetBase = normalizeFrontendVariantUrl(FRONTEND_VARIANT_ENVS[variant] || "");
+        if (!targetBase) return;
+
+        const target = new URL(targetBase, window.location.href);
+        const current = new URL(window.location.href);
+
+        // Avoid redirect loops when already on the target frontend.
+        if (target.href === current.href) return;
+        if (target.origin === current.origin && target.pathname === current.pathname) return;
+
+        // Keep runtime API selection params when switching frontend variant.
+        ["env", "apiBase"].forEach((k) => {
+          if (params.has(k)) target.searchParams.set(k, String(params.get(k)));
+        });
+
+        window.location.replace(target.toString());
+      } catch (_) {
+        // Ignore malformed URLs and continue with default frontend.
+      }
+    }
+
+    maybeRedirectFrontendVariant();
+
+    function resolveNamedApiBase(envName) {
+      const key = String(envName || "").trim().toLowerCase();
+      if (!key) return "";
+      return normalizeApiBase(CALC_API_ENVS[key] || "");
+    }
+
+    function resolveCalculationApiBase() {
+      const configBase = normalizeApiBase(window.KEYLOCK_CALC_API_BASE || "");
+      let storedBase = "";
+
+      try {
+        storedBase = normalizeApiBase(localStorage.getItem(CALC_API_BASE_STORAGE_KEY) || "");
+      } catch (_) {
+        storedBase = "";
       }
 
-      function normalizeFrontendVariantUrl(rawValue) {
-        return String(rawValue || "").trim();
-      }
-
-      function maybeRedirectFrontendVariant() {
-        try {
-          const params = new URLSearchParams(window.location.search || "");
-          const variant = String(params.get("frontend") || "").trim().toLowerCase();
-          if (!variant || variant === "prod" || variant === "default" || variant === "reset") return;
-
-          const targetBase = normalizeFrontendVariantUrl(FRONTEND_VARIANT_ENVS[variant] || "");
-          if (!targetBase) return;
-
-          const target = new URL(targetBase, window.location.href);
-          const current = new URL(window.location.href);
-
-          if (target.href === current.href) return;
-          if (target.origin === current.origin && target.pathname === current.pathname) return;
-
-          ["env", "apiBase"].forEach((k) => {
-            if (params.has(k)) target.searchParams.set(k, String(params.get(k)));
-          });
-
-          window.location.replace(target.toString());
-        } catch (_) {
-          // Ignore malformed URLs and continue with default frontend.
-        }
-      }
-
-      maybeRedirectFrontendVariant();
-
-      function resolveNamedApiBase(envName) {
-        const key = String(envName || "").trim().toLowerCase();
-        if (!key) return "";
-        return normalizeApiBase(CALC_API_ENVS[key] || "");
-      }
-
-      function resolveCalculationApiBase() {
-        const configBase = normalizeApiBase(window.KEYLOCK_CALC_API_BASE || "");
-        let storedBase = "";
-
-        try {
-          storedBase = normalizeApiBase(localStorage.getItem(CALC_API_BASE_STORAGE_KEY) || "");
-        } catch (_) {
-          storedBase = "";
-        }
-
-        try {
-          const params = new URLSearchParams(window.location.search || "");
-          if (params.has("env")) {
-            const envName = String(params.get("env") || "").trim().toLowerCase();
-            const disable = envName === "off" || envName === "default" || envName === "reset" || envName === "prod";
-            const envBase = disable ? "" : resolveNamedApiBase(envName);
-            try {
-              if (disable || !envBase) {
-                localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
-              } else {
-                localStorage.setItem(CALC_API_BASE_STORAGE_KEY, envBase);
-              }
-            } catch (_) {}
-            return envBase;
-          }
-
-          if (params.has("apiBase")) {
-            const queryBaseRaw = String(params.get("apiBase") || "").trim();
-            const disable = queryBaseRaw === "off" || queryBaseRaw === "default" || queryBaseRaw === "reset";
-            const queryBase = disable ? "" : normalizeApiBase(queryBaseRaw);
-            try {
-              if (disable || !queryBase) {
-                localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
-              } else {
-                localStorage.setItem(CALC_API_BASE_STORAGE_KEY, queryBase);
-              }
-            } catch (_) {}
-            return queryBase;
-          }
-        } catch (_) {}
-
-        return storedBase || configBase;
-      }
-
-      function getRuntimeVariantLabels() {
-        const labels = [];
-
-        try {
-          const params = new URLSearchParams(window.location.search || "");
-          const frontendVariant = String(params.get("frontend") || "").trim().toLowerCase();
-          const envVariant = String(params.get("env") || "").trim().toLowerCase();
-          const apiBaseVariant = String(params.get("apiBase") || "").trim();
-
-          if (frontendVariant === "dev" || window.location.host.includes("githack.com")) {
-            labels.push("dev-frontend");
-          }
-          if (envVariant === "dev" || !!apiBaseVariant) {
-            labels.push("dev-api");
-          }
-        } catch (_) {}
-
-        return labels;
-      }
-
-      function renderRuntimeBadge() {
-        const heroTools = document.querySelector(".hero-tools");
-        if (!heroTools) return;
-
-        const labels = getRuntimeVariantLabels();
-        let badge = document.getElementById("runtimeEnvBadge");
-
-        if (!labels.length) {
-          if (badge) badge.remove();
-          return;
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        if (params.has("env")) {
+          const envName = String(params.get("env") || "").trim().toLowerCase();
+          const disable = envName === "off" || envName === "default" || envName === "reset" || envName === "prod";
+          const envBase = disable ? "" : resolveNamedApiBase(envName);
+          try {
+            if (disable || !envBase) {
+              localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
+            } else {
+              localStorage.setItem(CALC_API_BASE_STORAGE_KEY, envBase);
+            }
+          } catch (_) {}
+          return envBase;
         }
 
-        if (!badge) {
-          badge = document.createElement("div");
-          badge.id = "runtimeEnvBadge";
-          badge.className = "runtime-badge";
-          heroTools.prepend(badge);
+        if (params.has("apiBase")) {
+          const queryBaseRaw = String(params.get("apiBase") || "").trim();
+          const disable = queryBaseRaw === "off" || queryBaseRaw === "default" || queryBaseRaw === "reset";
+          const queryBase = disable ? "" : normalizeApiBase(queryBaseRaw);
+          try {
+            if (disable || !queryBase) {
+              localStorage.removeItem(CALC_API_BASE_STORAGE_KEY);
+            } else {
+              localStorage.setItem(CALC_API_BASE_STORAGE_KEY, queryBase);
+            }
+          } catch (_) {}
+          return queryBase;
         }
+      } catch (_) {}
 
-        badge.innerHTML = labels.map((label) => {
-          if (label === "dev-frontend") {
-            return '<span class="runtime-badge-chip runtime-badge-chip--frontend">DEV FRONTEND</span>';
-          }
-          return '<span class="runtime-badge-chip runtime-badge-chip--api">DEV API</span>';
-        }).join("");
-      }
+      return storedBase || configBase;
+    }
 
     function getRuntimeVariantLabels() {
       const labels = [];
@@ -903,8 +858,8 @@ const defaultExpenseItems = [
     }
 
     function resolveCalculationApiUrl() {
-        const calcApiBase = resolveCalculationApiBase();
-        if (calcApiBase) return `${calcApiBase}/api/calculate`;
+      const calcApiBase = resolveCalculationApiBase();
+      if (calcApiBase) return `${calcApiBase}/api/calculate`;
       return "/api/calculate";
     }
 
@@ -3869,20 +3824,18 @@ const defaultExpenseItems = [
       let resultDetail;
       if (isAssegno1) {
         resultHtml = `
-          <div class="spieg-result-flow">${n1} &rarr; ${n2}</div>
-          <div class="spieg-result-formula">${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)}</div>
-          <div class="spieg-result-amount ok">${eur(m.assegnoDa1a2)}</div>
+          <div class="spieg-line"><strong>${n1} &rarr; ${n2}</strong></div>
+          <div class="spieg-line">${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)} = <strong class="ok">${eur(m.assegnoDa1a2)}</strong></div>
         `;
         resultDetail = tr("spiegDetailResultTransfer");
       } else if (isAssegno2) {
         resultHtml = `
-          <div class="spieg-result-flow">${n2} &rarr; ${n1}</div>
-          <div class="spieg-result-formula">${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)}</div>
-          <div class="spieg-result-amount ok">${eur(m.assegnoDa2a1)}</div>
+          <div class="spieg-line"><strong>${n2} &rarr; ${n1}</strong></div>
+          <div class="spieg-line">${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)} = <strong class="ok">${eur(m.assegnoDa2a1)}</strong></div>
         `;
         resultDetail = tr("spiegDetailResultTransfer");
       } else {
-        resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>`;
+        resultHtml = `<span class="ok">${tr("calcNoTransferSuggested")}</span>`;
         resultDetail = tr("spiegDetailResultNoTransfer");
       }
 
@@ -3891,43 +3844,27 @@ const defaultExpenseItems = [
           <summary class="spieg-title">${tr("spiegTitle")}</summary>
           <div class="spieg-grid">
             <div class="spieg-item">
-              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128184;</span>${tr("spiegRedditiLabel")} ${infoTip(tr("spiegDetailIncome"))}</div>
+              <div class="spieg-item-label">${tr("spiegRedditiLabel")} ${infoTip(tr("spiegDetailIncome"))}</div>
               <div class="spieg-item-body">
-                <div class="spieg-people">
-                  <div class="spieg-person spieg-person--left">
-                    <div class="spieg-person-name">${n1}</div>
-                    <div class="spieg-person-value">${eur(m.disp1)}</div>
-                    <div class="spieg-person-sub">${tr("pdfWeight")}: ${peso1Pct}%</div>
-                  </div>
-                  <div class="spieg-person spieg-person--right">
-                    <div class="spieg-person-name">${n2}</div>
-                    <div class="spieg-person-value">${eur(m.disp2)}</div>
-                    <div class="spieg-person-sub">${tr("pdfWeight")}: ${peso2Pct}%</div>
-                  </div>
-                </div>
+                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${eur(m.disp1)}</strong> <span class="spieg-sep">|</span> <span>${n2}:</span> <strong class="spieg-value">${eur(m.disp2)}</strong></div>
+                <div class="spieg-line">${tr("pdfWeight")}: <strong class="spieg-value">${n1} ${peso1Pct}%</strong> / <strong class="spieg-value">${n2} ${peso2Pct}%</strong></div>
               </div>
             </div>
             <div class="spieg-item">
-              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128221;</span>${tr("spiegSpeseLabel")} ${infoTip(tr("spiegDetailExpense"))}</div>
+              <div class="spieg-item-label">${tr("spiegSpeseLabel")} ${infoTip(tr("spiegDetailExpense"))}</div>
               <div class="spieg-item-body">
-                <div class="spieg-equation">
-                  <span class="spieg-pill">${eur(m.speseTot)}</span>
-                  <span class="spieg-op">&times;</span>
-                  <span class="spieg-pill">35%</span>
-                  <span class="spieg-op">=</span>
-                  <span class="spieg-pill spieg-pill--result">${eur(m.fabbisognoFigli)}</span>
-                </div>
+                <div class="spieg-line"><strong class="spieg-value">${eur(m.speseTot)}</strong> &times; 35% = <strong class="spieg-value">${eur(m.fabbisognoFigli)}</strong></div>
               </div>
             </div>
             <div class="spieg-item">
-              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#128197;</span>${tr("spiegPermLabel")} ${infoTip(tr("spiegDetailPerm"))}</div>
+              <div class="spieg-item-label">${tr("spiegPermLabel")} ${infoTip(tr("spiegDetailPerm"))}</div>
               <div class="spieg-item-body">
-                <div class="spieg-line spieg-line--kv"><span class="spieg-k">${n1}</span><span class="spieg-v">${m.perm1.toFixed(0)}% (${days1} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta1)}</span></div>
-                <div class="spieg-line spieg-line--kv"><span class="spieg-k">${n2}</span><span class="spieg-v">${m.perm2.toFixed(0)}% (${days2} ${tr("langDaysSuffix")}) &rarr; ${eur(m.quotaDiretta2)}</span></div>
+                <div class="spieg-line"><span>${n1}:</span> <strong class="spieg-value">${m.perm1.toFixed(0)}%</strong> (${days1} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta1)}</strong></div>
+                <div class="spieg-line"><span>${n2}:</span> <strong class="spieg-value">${m.perm2.toFixed(0)}%</strong> (${days2} ${tr("langDaysSuffix")}) &rarr; <strong class="spieg-value">${eur(m.quotaDiretta2)}</strong></div>
               </div>
             </div>
             <div class="spieg-item spieg-item--result">
-              <div class="spieg-item-label"><span class="spieg-item-icon" aria-hidden="true">&#127919;</span>${tr("spiegResultLabel")} ${infoTip(resultDetail)}</div>
+              <div class="spieg-item-label">${tr("spiegResultLabel")} ${infoTip(resultDetail)}</div>
               <div class="spieg-item-body spieg-item-body--result">${resultHtml}</div>
             </div>
           </div>

@@ -19,6 +19,10 @@ const calculateRateMaxRequests = Number(process.env.CALCULATE_RATE_MAX_REQUESTS 
 const calculateRequestLog = new Map();
 const accessLogEnabled = String(process.env.ACCESS_LOG_ENABLED || (process.env.NODE_ENV === 'production' ? 'true' : 'false')).toLowerCase() === 'true';
 const accessLogSalt = String(process.env.ACCESS_LOG_SALT || 'mantenimento-app');
+const corsAllowedOrigins = String(process.env.CORS_ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
 
 const publicDir = path.join(__dirname, '..', 'frontend', 'public');
 // When DEV_SOURCE_JS=true the server always serves raw app.js (no rebuild needed).
@@ -79,6 +83,27 @@ function applyCalculateRateLimit(req, res, next) {
 
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
+app.use((req, res, next) => {
+  const origin = String(req.headers.origin || '').trim();
+  const isAllowedOrigin = origin && corsAllowedOrigins.includes(origin);
+
+  if (isAllowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,X-Request-Id');
+    res.setHeader('Access-Control-Max-Age', '600');
+  }
+
+  if (req.method === 'OPTIONS') {
+    if (isAllowedOrigin) {
+      return res.status(204).end();
+    }
+    return res.status(403).json({ ok: false, error: 'Origin not allowed.' });
+  }
+
+  return next();
+});
 app.use(express.json({ limit: '64kb' }));
 app.use((req, res, next) => {
   const startedAt = process.hrtime.bigint();

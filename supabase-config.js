@@ -13,7 +13,7 @@ window.KEYLOCK_CALC_API_ENVS = {
 };
 
 // Optional frontend variants (used by ?frontend=dev on the published app).
-// The dev URL points to the feature branch frontend preview.
+// The dev URL can point to the feature branch static preview.
 window.KEYLOCK_FRONTEND_VARIANT_ENVS = {
 	dev: "https://raw.githack.com/FaVaGit/mantenimento-app/feature/v2-scenario-lab/frontend/public/index.html"
 };
