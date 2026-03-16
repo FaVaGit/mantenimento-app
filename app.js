@@ -4193,10 +4193,30 @@ const defaultExpenseItems = [
         resultDetail = tr("spiegDetailResultTransfer");
       } else {
         const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
-        const benefitsHtml = benefitRows.length
-          ? `<div class="spieg-line" style="margin-top:6px"><strong>${tr("calcCompBenefitsLabel")}:</strong> ${benefitRows.map((row) => `${escapeHtml(row.label)} (${eur(row.amount)})`).join(" | ")}</div>`
-          : "";
-        resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>${benefitsHtml}`;
+        if (benefitRows.length) {
+          const rawBenefs = Array.isArray(m.compensativeBenefits)
+            ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
+            : [];
+          const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
+          const cardsHtml = benefitRows
+            .map((row, i) => {
+              const icon = (rawBenefs[i] && typeIcons[rawBenefs[i].type]) || "\u2726";
+              return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
+            })
+            .join("");
+          const total = benefitRows.reduce((s, r) => s + r.amount, 0);
+          const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
+          resultHtml = `
+            <div class="spieg-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>
+            <div class="spieg-benefits-section">
+              <div class="spieg-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
+              <ul class="spieg-benefits-cards">${cardsHtml}</ul>
+              <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(total)}</strong></div>
+            </div>
+          `;
+        } else {
+          resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>`;
+        }
         resultDetail = tr("spiegDetailResultNoTransfer");
       }
 
