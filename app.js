@@ -257,6 +257,33 @@ const defaultExpenseItems = [
         extraAnnHint1: "Quota annuale straordinaria stimata a carico di {spouse} (es. sanitarie non ricorrenti, scolastiche extra, attività non ordinarie).",
         extraAnnHint2: "Quota annuale straordinaria stimata a carico di {spouse} (es. sanitarie non ricorrenti, scolastiche extra, attività non ordinarie).",
         extraMonthlyEstimate: "Quota mensile stimata: {amount}",
+        firstHomeBoxTitle: "🏡 Mutuo prima casa ceduta",
+        firstHomeBoxNote: "Dichiara se esiste un mutuo sulla prima casa dei coniugi ceduta a uno dei due: il modello considera il trasferimento implicito quando la casa e assegnata al collocatario.",
+        firstHomeMortgageEnabledLabel: "Mutuo su prima casa dei coniugi",
+        firstHomeMortgageEnabledHint: "Attiva per includere il mutuo della prima casa ceduta nei benefici compensativi.",
+        firstHomeMortgageAmountLabel: "Rata mutuo mensile ({currency})",
+        firstHomeMortgageAmountHint: "Importo mensile complessivo della rata del mutuo prima casa.",
+        firstHomeAssignedToLabel: "Casa assegnata a",
+        firstHomeAssignedToHint: "Seleziona il coniuge a cui e ceduta la prima casa.",
+        firstHomeAssignedToNone: "Nessuna cessione",
+        firstHomeAssignedToSpouse: "Casa ceduta a {spouse}",
+        firstHomeSplitLabel: "Quota mutuo a carico {spouse} (%)",
+        firstHomeSplitHint: "Percentuale della rata mutuo pagata da {spouse}. La quota dell'altro coniuge e complementare a 100%.",
+        firstHomeSplitInfo: "Ripartizione mutuo: {spouse1} {p1}% · {spouse2} {p2}%",
+        calcCompBenefitsLabel: "Benefici compensativi gia allocati",
+        calcNoTransferWithBenefits: "Nessun trasferimento monetario suggerito. Benefici gia allocati: {benefits}.",
+        calcBenefitFamilyAllowance: "Assegno familiare INPS percepito da {spouse}",
+        calcBenefitPrimaryHomeMortgage: "Quota mutuo prima casa ceduta al collocatario ({payer} -> {receiver})",
+        pdfCompBenefitsSection: "Benefici compensativi gia allocati",
+        pdfCompBenefitsItem: "Beneficio",
+        pdfCompBenefitsAmount: "Valore {currency}/mese",
+        pdfCompBenefitsNone: "Nessun beneficio compensativo aggiuntivo dichiarato.",
+        pdfPrimaryHomeMortgage: "Mutuo prima casa ceduta",
+        pdfPrimaryHomeNotDeclared: "Non dichiarato",
+        pdfPrimaryHomeAssignedTo: "Assegnata a",
+        pdfPrimaryHomeMonthlyAmount: "Rata mensile",
+        pdfPrimaryHomeSplit: "Ripartizione mutuo",
+        pdfPrimaryHomeAppliedOnlyColl: "Considerato solo se casa ceduta al collocatario.",
         pdfExtraordinaryRow: "Spese straordinarie (quota mensile da annuo)",
         liveTotalIncome: "Entrate totali (reddito + assegni + INPS)",
         livePaidToOther: "Assegno mantenimento pagato all'altro coniuge",
@@ -551,6 +578,33 @@ const defaultExpenseItems = [
         extraAnnHint1: "Estimated yearly extraordinary share for {spouse} (e.g., non-recurring medical, extra school, non-ordinary activities).",
         extraAnnHint2: "Estimated yearly extraordinary share for {spouse} (e.g., non-recurring medical, extra school, non-ordinary activities).",
         extraMonthlyEstimate: "Estimated monthly share: {amount}",
+        firstHomeBoxTitle: "🏡 Assigned primary home mortgage",
+        firstHomeBoxNote: "Declare whether there is a mortgage on the spouses' primary home assigned to one spouse: the model counts the implicit transfer when the home is assigned to the custodial parent.",
+        firstHomeMortgageEnabledLabel: "Mortgage on spouses' primary home",
+        firstHomeMortgageEnabledHint: "Enable to include the assigned primary-home mortgage in compensative benefits.",
+        firstHomeMortgageAmountLabel: "Monthly mortgage payment ({currency})",
+        firstHomeMortgageAmountHint: "Total monthly amount of the primary-home mortgage payment.",
+        firstHomeAssignedToLabel: "Home assigned to",
+        firstHomeAssignedToHint: "Select which spouse receives assignment of the primary home.",
+        firstHomeAssignedToNone: "No assignment",
+        firstHomeAssignedToSpouse: "Home assigned to {spouse}",
+        firstHomeSplitLabel: "Mortgage share paid by {spouse} (%)",
+        firstHomeSplitHint: "Percentage of the monthly mortgage payment paid by {spouse}. The other spouse share is the complement to 100%.",
+        firstHomeSplitInfo: "Mortgage split: {spouse1} {p1}% · {spouse2} {p2}%",
+        calcCompBenefitsLabel: "Compensative benefits already allocated",
+        calcNoTransferWithBenefits: "No monetary transfer suggested. Already allocated benefits: {benefits}.",
+        calcBenefitFamilyAllowance: "INPS family allowance received by {spouse}",
+        calcBenefitPrimaryHomeMortgage: "Primary-home mortgage share assigned to custodial parent ({payer} -> {receiver})",
+        pdfCompBenefitsSection: "Compensative benefits already allocated",
+        pdfCompBenefitsItem: "Benefit",
+        pdfCompBenefitsAmount: "Value {currency}/month",
+        pdfCompBenefitsNone: "No additional compensative benefits declared.",
+        pdfPrimaryHomeMortgage: "Assigned primary-home mortgage",
+        pdfPrimaryHomeNotDeclared: "Not declared",
+        pdfPrimaryHomeAssignedTo: "Assigned to",
+        pdfPrimaryHomeMonthlyAmount: "Monthly payment",
+        pdfPrimaryHomeSplit: "Mortgage split",
+        pdfPrimaryHomeAppliedOnlyColl: "Counted only when the home is assigned to the custodial parent.",
         pdfExtraordinaryRow: "Extraordinary expenses (monthly share from yearly)",
         liveTotalIncome: "Total income (income + support + INPS)",
         livePaidToOther: "Support paid to the other spouse",
@@ -1069,6 +1123,16 @@ const defaultExpenseItems = [
       const permLegendC2 = document.getElementById("permLegendC2");
       const extraBoxTitle = document.getElementById("extraBoxTitle");
       const extraBoxNote = document.getElementById("extraBoxNote");
+      const firstHomeBoxTitle = document.getElementById("firstHomeBoxTitle");
+      const firstHomeBoxNote = document.getElementById("firstHomeBoxNote");
+      const lblPrimaCasaMutuoEnabled = document.getElementById("lblPrimaCasaMutuoEnabled");
+      const hintPrimaCasaMutuoEnabled = document.getElementById("hintPrimaCasaMutuoEnabled");
+      const lblPrimaCasaMutuoImporto = document.getElementById("lblPrimaCasaMutuoImporto");
+      const hintPrimaCasaMutuoImporto = document.getElementById("hintPrimaCasaMutuoImporto");
+      const lblPrimaCasaAssegnataA = document.getElementById("lblPrimaCasaAssegnataA");
+      const hintPrimaCasaAssegnataA = document.getElementById("hintPrimaCasaAssegnataA");
+      const lblPrimaCasaMutuoPerc1 = document.getElementById("lblPrimaCasaMutuoPerc1");
+      const hintPrimaCasaMutuoPerc1 = document.getElementById("hintPrimaCasaMutuoPerc1");
       const lblStraordAnn1 = document.getElementById("lblStraordAnn1");
       const lblStraordAnn2 = document.getElementById("lblStraordAnn2");
       const hintStraordAnn1 = document.getElementById("hintStraordAnn1");
@@ -1108,6 +1172,16 @@ const defaultExpenseItems = [
       if (permLegendC2) permLegendC2.textContent = c2n();
       if (extraBoxTitle) extraBoxTitle.textContent = tr("extraBoxTitle");
       if (extraBoxNote) extraBoxNote.textContent = tr("extraBoxNote");
+      if (firstHomeBoxTitle) firstHomeBoxTitle.textContent = tr("firstHomeBoxTitle");
+      if (firstHomeBoxNote) firstHomeBoxNote.textContent = tr("firstHomeBoxNote");
+      if (lblPrimaCasaMutuoEnabled) lblPrimaCasaMutuoEnabled.textContent = tr("firstHomeMortgageEnabledLabel");
+      if (hintPrimaCasaMutuoEnabled) hintPrimaCasaMutuoEnabled.title = tr("firstHomeMortgageEnabledHint");
+      if (lblPrimaCasaMutuoImporto) lblPrimaCasaMutuoImporto.textContent = msg("firstHomeMortgageAmountLabel", { currency: currentCurrency });
+      if (hintPrimaCasaMutuoImporto) hintPrimaCasaMutuoImporto.title = tr("firstHomeMortgageAmountHint");
+      if (lblPrimaCasaAssegnataA) lblPrimaCasaAssegnataA.textContent = tr("firstHomeAssignedToLabel");
+      if (hintPrimaCasaAssegnataA) hintPrimaCasaAssegnataA.title = tr("firstHomeAssignedToHint");
+      if (lblPrimaCasaMutuoPerc1) lblPrimaCasaMutuoPerc1.textContent = msg("firstHomeSplitLabel", { spouse: c1n() });
+      if (hintPrimaCasaMutuoPerc1) hintPrimaCasaMutuoPerc1.title = msg("firstHomeSplitHint", { spouse: c1n() });
       if (lblStraordAnn1) lblStraordAnn1.textContent = msg("extraAnnLabel1", { spouse: c1n(), currency: currentCurrency });
       if (lblStraordAnn2) lblStraordAnn2.textContent = msg("extraAnnLabel2", { spouse: c2n(), currency: currentCurrency });
       if (hintStraordAnn1) hintStraordAnn1.title = msg("extraAnnHint1", { spouse: c1n() });
@@ -1160,6 +1234,7 @@ const defaultExpenseItems = [
       rowsSpese.querySelectorAll("textarea.spese-detail-text").forEach((el) => {
         updateExpenseDetailCounter(el);
       });
+      updateFirstHomeMortgageUi();
       updateExtraordinaryModuleUi();
       updatePermanenceCalendarSummary();
       renderVisitorCounters();
@@ -3100,6 +3175,7 @@ const defaultExpenseItems = [
       const c2SpeseDetailUi = expenseItems.map((_, idx) => collectExpenseDetailUiMeta("c2", idx));
       const extra1 = getExtraordinaryMonthly(1);
       const extra2 = getExtraordinaryMonthly(2);
+      const firstHome = getFirstHomeMortgageInput();
       if (extra1 > 0) c1Spese.push(extra1);
       if (extra2 > 0) c2Spese.push(extra2);
 
@@ -3120,6 +3196,10 @@ const defaultExpenseItems = [
         aPag2: num("assegnoPagato2"),
         aFam1: num("assegnoFam1"),
         aFam2: num("assegnoFam2"),
+        primaCasaMutuoEnabled: firstHome.enabled ? 1 : 0,
+        primaCasaMutuoImporto: firstHome.amount,
+        primaCasaAssegnataA: firstHome.assignedTo,
+        primaCasaMutuoPerc1: firstHome.share1,
         straordAnn1: num("straordAnn1"),
         straordAnn2: num("straordAnn2"),
         c1SpeseDetails,
@@ -3156,6 +3236,14 @@ const defaultExpenseItems = [
       const aPag2 = Number(payload.aPag2 || 0);
       const aFam1 = Number(payload.aFam1 || 0);
       const aFam2 = Number(payload.aFam2 || 0);
+      const primaCasaMutuoEnabled = Number(payload.primaCasaMutuoEnabled || 0) > 0;
+      const primaCasaMutuoImporto = Math.max(0, Number(payload.primaCasaMutuoImporto || 0));
+      const primaCasaAssegnataA = (String(payload.primaCasaAssegnataA || "") === "1" || String(payload.primaCasaAssegnataA || "") === "2")
+        ? String(payload.primaCasaAssegnataA)
+        : "";
+      const rawMutuoPerc1 = payload.primaCasaMutuoPerc1 === undefined ? 50 : payload.primaCasaMutuoPerc1;
+      const primaCasaMutuoPerc1 = Math.min(100, Math.max(0, Number(rawMutuoPerc1 || 0)));
+      const primaCasaMutuoPerc2 = 100 - primaCasaMutuoPerc1;
 
       const match12 = Math.min(aPag1, aPerc2);
       const match21 = Math.min(aPag2, aPerc1);
@@ -3204,6 +3292,33 @@ const defaultExpenseItems = [
         assegnoDa2a1 = nonCollocatario === 2 ? contributoIndiretto : 0;
       }
 
+      const assegnoBaseDa1a2 = assegnoDa1a2;
+      const assegnoBaseDa2a1 = assegnoDa2a1;
+
+      const primaCasaConsidered = primaCasaMutuoEnabled && primaCasaMutuoImporto > 0
+        && primaCasaAssegnataA !== ""
+        && Number(primaCasaAssegnataA) === collocatario;
+      let primaCasaTransfer1to2 = 0;
+      let primaCasaTransfer2to1 = 0;
+      if (primaCasaConsidered) {
+        const quotaMutuo1 = primaCasaMutuoImporto * (primaCasaMutuoPerc1 / 100);
+        const quotaMutuo2 = primaCasaMutuoImporto - quotaMutuo1;
+        if (primaCasaAssegnataA === "1") {
+          primaCasaTransfer2to1 = Math.max(0, quotaMutuo2);
+        } else if (primaCasaAssegnataA === "2") {
+          primaCasaTransfer1to2 = Math.max(0, quotaMutuo1);
+        }
+      }
+
+      assegnoDa1a2 = Math.max(0, assegnoDa1a2 - primaCasaTransfer1to2);
+      assegnoDa2a1 = Math.max(0, assegnoDa2a1 - primaCasaTransfer2to1);
+
+      const compensativeBenefits = [];
+      if (aFam1 > 0.005) compensativeBenefits.push({ type: "family", to: 1, amount: aFam1 });
+      if (aFam2 > 0.005) compensativeBenefits.push({ type: "family", to: 2, amount: aFam2 });
+      if (primaCasaTransfer1to2 > 0.005) compensativeBenefits.push({ type: "primary-home-mortgage", from: 1, to: 2, amount: primaCasaTransfer1to2 });
+      if (primaCasaTransfer2to1 > 0.005) compensativeBenefits.push({ type: "primary-home-mortgage", from: 2, to: 1, amount: primaCasaTransfer2to1 });
+
       const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
       const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
 
@@ -3218,6 +3333,11 @@ const defaultExpenseItems = [
         fabbisognoFigli, quotaTeorica1, quotaTeorica2,
         quotaDiretta1, quotaDiretta2,
         saldo1, saldo2,
+        assegnoBaseDa1a2, assegnoBaseDa2a1,
+        primaCasaMutuoEnabled, primaCasaMutuoImporto, primaCasaAssegnataA,
+        primaCasaMutuoPerc1, primaCasaMutuoPerc2,
+        primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,
+        compensativeBenefits,
         assegnoDa1a2, assegnoDa2a1,
         post1, post2
       };
@@ -3300,6 +3420,7 @@ const defaultExpenseItems = [
       if (lblStraordAnn2) lblStraordAnn2.textContent = msg("extraAnnLabel2", { spouse: c2n(), currency: currentCurrency });
       if (hintStraordAnn1) hintStraordAnn1.title = msg("extraAnnHint1", { spouse: c1n() });
       if (hintStraordAnn2) hintStraordAnn2.title = msg("extraAnnHint2", { spouse: c2n() });
+      updateFirstHomeMortgageUi();
       updateExtraordinaryModuleUi();
       updatePermanenceCalendarSummary();
     }
@@ -3307,6 +3428,56 @@ const defaultExpenseItems = [
     function getExtraordinaryMonthly(spouseIndex) {
       const annual = num(`straordAnn${spouseIndex}`);
       return annual > 0 ? annual / 12 : 0;
+    }
+
+    function getFirstHomeMortgageInput() {
+      const enabled = !!document.getElementById("primaCasaMutuoEnabled")?.checked;
+      const amount = Math.max(0, num("primaCasaMutuoImporto"));
+      const assignedToRaw = String(document.getElementById("primaCasaAssegnataA")?.value || "").trim();
+      const assignedTo = (assignedToRaw === "1" || assignedToRaw === "2") ? assignedToRaw : "";
+      const share1 = Math.min(100, Math.max(0, num("primaCasaMutuoPerc1")));
+      const share2 = 100 - share1;
+      return { enabled, amount, assignedTo, share1, share2 };
+    }
+
+    function updateFirstHomeMortgageUi() {
+      const enabledEl = document.getElementById("primaCasaMutuoEnabled");
+      const amountEl = document.getElementById("primaCasaMutuoImporto");
+      const assignedEl = document.getElementById("primaCasaAssegnataA");
+      const shareEl = document.getElementById("primaCasaMutuoPerc1");
+      const splitInfoEl = document.getElementById("primaCasaMutuoSplitInfo");
+      const splitLabelEl = document.getElementById("lblPrimaCasaMutuoPerc1");
+      const splitHintEl = document.getElementById("hintPrimaCasaMutuoPerc1");
+      if (!enabledEl || !amountEl || !assignedEl || !shareEl) return;
+
+      const isEnabled = !!enabledEl.checked;
+      amountEl.disabled = !isEnabled;
+      assignedEl.disabled = !isEnabled;
+      shareEl.disabled = !isEnabled;
+
+      const normalizedShare1 = Math.min(100, Math.max(0, num("primaCasaMutuoPerc1")));
+      if (Math.abs(normalizedShare1 - Number(shareEl.value || 0)) > 0.0001) {
+        shareEl.value = normalizedShare1.toFixed(0);
+      }
+
+      const share2 = 100 - normalizedShare1;
+      if (splitLabelEl) splitLabelEl.textContent = msg("firstHomeSplitLabel", { spouse: c1n() });
+      if (splitHintEl) splitHintEl.title = msg("firstHomeSplitHint", { spouse: c1n() });
+      if (splitInfoEl) {
+        splitInfoEl.textContent = msg("firstHomeSplitInfo", {
+          spouse1: c1n(),
+          spouse2: c2n(),
+          p1: normalizedShare1.toFixed(0),
+          p2: share2.toFixed(0)
+        });
+      }
+
+      const noneOpt = assignedEl.querySelector("option[value='']");
+      const spouse1Opt = assignedEl.querySelector("option[value='1']");
+      const spouse2Opt = assignedEl.querySelector("option[value='2']");
+      if (noneOpt) noneOpt.textContent = tr("firstHomeAssignedToNone");
+      if (spouse1Opt) spouse1Opt.textContent = msg("firstHomeAssignedToSpouse", { spouse: c1n() });
+      if (spouse2Opt) spouse2Opt.textContent = msg("firstHomeAssignedToSpouse", { spouse: c2n() });
     }
 
     function updateExtraordinaryModuleUi() {
@@ -3768,6 +3939,11 @@ const defaultExpenseItems = [
         if (!el) return;
         el.value = value;
       };
+      const setChecked = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.checked = !!value;
+      };
 
       setVal("nome1", payload._nome1 || c1n());
       setVal("nome2", payload._nome2 || c2n());
@@ -3793,6 +3969,10 @@ const defaultExpenseItems = [
       setVal("assegnoPercepito2", Number(payload.aPerc2 || 0));
       setVal("assegnoPagato2", Number(payload.aPag2 || 0));
       setVal("assegnoFam2", Number(payload.aFam2 || 0));
+      setChecked("primaCasaMutuoEnabled", Number(payload.primaCasaMutuoEnabled || 0) > 0);
+      setVal("primaCasaMutuoImporto", Number(payload.primaCasaMutuoImporto || 0));
+      setVal("primaCasaAssegnataA", (String(payload.primaCasaAssegnataA || "") === "1" || String(payload.primaCasaAssegnataA || "") === "2") ? String(payload.primaCasaAssegnataA) : "");
+      setVal("primaCasaMutuoPerc1", Math.min(100, Math.max(0, Number((payload.primaCasaMutuoPerc1 === undefined ? 50 : payload.primaCasaMutuoPerc1) || 0))));
       setVal("straordAnn1", Number(payload.straordAnn1 || 0));
       setVal("straordAnn2", Number(payload.straordAnn2 || 0));
 
@@ -3823,6 +4003,7 @@ const defaultExpenseItems = [
       };
 
       updateSpouseLabels();
+      updateFirstHomeMortgageUi();
       if (payload._permanenceCalendar && typeof payload._permanenceCalendar === "object") {
         importPermanenceCalendarState(payload._permanenceCalendar);
         syncPermanenza("calendar");
@@ -3947,6 +4128,22 @@ const defaultExpenseItems = [
       const peso2Pct = (m.peso2 * 100).toFixed(1);
       const days1 = ((m.perm1 / 100) * 30).toFixed(1);
       const days2 = ((m.perm2 / 100) * 30).toFixed(1);
+      const compBenefits = getCompensativeBenefitRows(m, c1Name, c2Name);
+      const compBenefitsRowsHtml = compBenefits.length
+        ? compBenefits.map((row) => `<tr><td>${escapeHtml(row.label)}</td><td class="num">${eur(row.amount)}</td></tr>`).join("")
+        : `<tr><td colspan="2">${tr("pdfCompBenefitsNone")}</td></tr>`;
+      const primaryHomeAssignedLabel = m.primaCasaAssegnataA === "1"
+        ? c1NameEsc
+        : m.primaCasaAssegnataA === "2"
+          ? c2NameEsc
+          : tr("pdfPrimaryHomeNotDeclared");
+      const primaryHomeSummaryRows = m.primaCasaMutuoEnabled
+        ? `
+        <tr><td>${tr("pdfPrimaryHomeAssignedTo")}</td><td>${primaryHomeAssignedLabel}</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeMonthlyAmount")}</td><td>${eur(m.primaCasaMutuoImporto || 0)}</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeSplit")}</td><td>${c1NameEsc} ${(m.primaCasaMutuoPerc1 || 0).toFixed(0)}% · ${c2NameEsc} ${(m.primaCasaMutuoPerc2 || 0).toFixed(0)}%</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeAppliedOnlyColl")}</td><td>${m.primaCasaConsidered ? "OK" : tr("pdfPrimaryHomeNotDeclared")}</td></tr>`
+        : `<tr><td>${tr("pdfPrimaryHomeMortgage")}</td><td>${tr("pdfPrimaryHomeNotDeclared")}</td></tr>`;
       const isAssegno1 = m.assegnoDa1a2 > 0.005;
       const isAssegno2 = m.assegnoDa2a1 > 0.005;
       const n1 = escapeHtml(c1n());
@@ -3974,7 +4171,11 @@ const defaultExpenseItems = [
         `;
         resultDetail = tr("spiegDetailResultTransfer");
       } else {
-        resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>`;
+        const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
+        const benefitsHtml = benefitRows.length
+          ? `<div class="spieg-line" style="margin-top:6px"><strong>${tr("calcCompBenefitsLabel")}:</strong> ${benefitRows.map((row) => `${escapeHtml(row.label)} (${eur(row.amount)})`).join(" | ")}</div>`
+          : "";
+        resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>${benefitsHtml}`;
         resultDetail = tr("spiegDetailResultNoTransfer");
       }
 
@@ -4039,6 +4240,31 @@ const defaultExpenseItems = [
       return tr("calcModeGenovaName");
     }
 
+    function getCompensativeBenefitRows(m, name1 = c1n(), name2 = c2n()) {
+      const rows = Array.isArray(m && m.compensativeBenefits) ? m.compensativeBenefits : [];
+      return rows
+        .filter((row) => row && Number(row.amount || 0) > 0.005)
+        .map((row) => {
+          const amount = Number(row.amount || 0);
+          if (row.type === "family") {
+            const spouse = Number(row.to) === 2 ? name2 : name1;
+            return { label: msg("calcBenefitFamilyAllowance", { spouse }), amount };
+          }
+          if (row.type === "primary-home-mortgage") {
+            const payer = Number(row.from) === 2 ? name2 : name1;
+            const receiver = Number(row.to) === 2 ? name2 : name1;
+            return { label: msg("calcBenefitPrimaryHomeMortgage", { payer, receiver }), amount };
+          }
+          return { label: tr("calcCompBenefitsLabel"), amount };
+        });
+    }
+
+    function formatCompensativeBenefitsInline(m, name1 = c1n(), name2 = c2n()) {
+      return getCompensativeBenefitRows(m, name1, name2)
+        .map((row) => `${row.label}: ${eur(row.amount)}`)
+        .join(" | ");
+    }
+
     function calculate(model = null) {
       const m = model || computeModel();
       const formulaNote = document.getElementById("formulaNote");
@@ -4050,6 +4276,7 @@ const defaultExpenseItems = [
       const normProfileName = escapeHtml(getSelectedNormProfileLabel());
       const negotiationPayerName = m.assegnoDa1a2 > 0.005 ? c1n() : (m.assegnoDa2a1 > 0.005 ? c2n() : c1n());
       const negotiationReceiverName = m.assegnoDa1a2 > 0.005 ? c2n() : (m.assegnoDa2a1 > 0.005 ? c1n() : c2n());
+      const benefitsInline = formatCompensativeBenefitsInline(m, c1n(), c2n());
 
       let modeSpecific = "";
       if (m.mode === "simple") {
@@ -4113,6 +4340,10 @@ const defaultExpenseItems = [
         mainText = `${c1n()} \u2192 ${c2n()}: ${eur(m.assegnoDa1a2)} ${tr("pdfPerMonth")}`;
       } else if (m.assegnoDa2a1 > 0.005) {
         mainText = `${c2n()} \u2192 ${c1n()}: ${eur(m.assegnoDa2a1)} ${tr("pdfPerMonth")}`;
+      } else {
+        if (benefitsInline) {
+          mainText = msg("calcNoTransferWithBenefits", { benefits: benefitsInline });
+        }
       }
       resultMain.textContent = mainText;
 
@@ -4131,6 +4362,10 @@ const defaultExpenseItems = [
         [`${tr("pdfPostSupport")} ${c2n()}`, eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
         [tr("pdfAmountPerChild"), eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
       ];
+
+      if (benefitsInline) {
+        items.push([tr("calcCompBenefitsLabel"), benefitsInline, "warn"]);
+      }
 
       if (m.incomeMode === "cu") {
         const ratio1 = m.r1Raw > 0 ? ((m.r1 * 12 / m.r1Raw) * 100) : 0;
@@ -4243,6 +4478,11 @@ const defaultExpenseItems = [
           <div class="pdf-explain-flow">${c2NameEsc} &rarr; ${c1NameEsc}</div>
           <div class="pdf-explain-formula">${c2NameEsc}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)}</div>
           <div class="pdf-explain-amount">${eur(m.assegnoDa2a1)}</div>
+        `;
+      } else if (compBenefits.length) {
+        explainResultHtml = `
+          <div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>
+          <div class="pdf-explain-formula"><strong>${tr("calcCompBenefitsLabel")}:</strong> ${compBenefits.map((row) => `${escapeHtml(row.label)} (${eur(row.amount)})`).join(" | ")}</div>
         `;
       }
 
@@ -4696,6 +4936,7 @@ const defaultExpenseItems = [
         <tr><td>${tr("pdfChildrenCount")}</td><td>${m.figli}</td></tr>
         <tr><td>${tr("pdfPermanence")} ${c1n()}</td><td>${m.perm1.toFixed(0)}%</td></tr>
         <tr><td>${tr("pdfPermanence")} ${c2n()}</td><td>${m.perm2.toFixed(0)}%</td></tr>
+        ${primaryHomeSummaryRows}
       </tbody>
     </table>
     <table class="data-table">
@@ -4770,6 +5011,21 @@ const defaultExpenseItems = [
         <span class="bal-val ${m.post2 >= 0 ? 'green' : 'red'}">${eur(m.post2)}</span></div>
     </div>
   </div>
+</div>
+
+<div class="section">
+  <div class="section-title">${tr("pdfCompBenefitsSection")}</div>
+  <table>
+    <thead>
+      <tr>
+        <th>${tr("pdfCompBenefitsItem")}</th>
+        <th class="num">${msg("pdfCompBenefitsAmount", { currency: currentCurrency })}</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${compBenefitsRowsHtml}
+    </tbody>
+  </table>
 </div>
 
 <!-- KPI -->
@@ -4953,6 +5209,10 @@ ${scenarioLab.length ? `
         assegnoPercepito2: num("assegnoPercepito2"),
         assegnoPagato2: num("assegnoPagato2"),
         assegnoFam2: num("assegnoFam2"),
+        primaCasaMutuoEnabled: document.getElementById("primaCasaMutuoEnabled")?.checked ? 1 : 0,
+        primaCasaMutuoImporto: num("primaCasaMutuoImporto"),
+        primaCasaAssegnataA: String(document.getElementById("primaCasaAssegnataA")?.value || ""),
+        primaCasaMutuoPerc1: num("primaCasaMutuoPerc1"),
         straordAnn1: num("straordAnn1"),
         straordAnn2: num("straordAnn2")
       };
@@ -4993,7 +5253,12 @@ ${scenarioLab.length ? `
       if (!state || !state.base || !state.spese) return;
       Object.entries(state.base).forEach(([k, v]) => {
         const el = document.getElementById(k);
-        if (el) el.value = v;
+        if (!el) return;
+        if (el.type === "checkbox") {
+          el.checked = Number(v || 0) > 0;
+        } else {
+          el.value = v;
+        }
       });
       if (Array.isArray(state.expenseItems) && state.expenseItems.length) {
         expenseItems = state.expenseItems.map((item, idx) => normalizeExpenseItem(item, idx));
@@ -5034,6 +5299,7 @@ ${scenarioLab.length ? `
       applyStaticTranslations();
       applyUiViewStateToDom();
       importPermanenceCalendarState(state.permanenceCalendar);
+      updateFirstHomeMortgageUi();
       updateSpouseLabels();
       buildExpenseRows();
       syncPermanenza("calendar");
@@ -5058,6 +5324,10 @@ ${scenarioLab.length ? `
           el.value = el.defaultValue || 0;
         }
       });
+      const firstHomeEnabled = document.getElementById("primaCasaMutuoEnabled");
+      const firstHomeAssigned = document.getElementById("primaCasaAssegnataA");
+      if (firstHomeEnabled) firstHomeEnabled.checked = !!firstHomeEnabled.defaultChecked;
+      if (firstHomeAssigned) firstHomeAssigned.value = "";
       permanenceCalendarState.byMonth = {};
       selectedScenarioIdx = -1;
       uiViewState.spiegOpen = true;
@@ -5071,6 +5341,7 @@ ${scenarioLab.length ? `
       renderPermanenceCalendar(monthValue);
       applyPermanenceFromCalendar(monthValue, { silentRender: true });
       applyUiViewStateToDom();
+      updateFirstHomeMortgageUi();
       syncPermanenza();
       renderAll();
     }
@@ -5334,6 +5605,9 @@ ${scenarioLab.length ? `
         }
         updateModeUi();
         renderAll();
+      } else if (e.target && (e.target.id === "primaCasaMutuoEnabled" || e.target.id === "primaCasaAssegnataA")) {
+        updateFirstHomeMortgageUi();
+        renderAll();
       }
     });
 
@@ -5377,6 +5651,7 @@ ${scenarioLab.length ? `
     updateAuthUi();
     renderCloudHistoryPanel();
     applyUiViewStateToDom();
+    updateFirstHomeMortgageUi();
     syncPermanenza();
     incomeModeLast = document.getElementById("incomeMode").value || "monthly";
     incomeValuesByMode[incomeModeLast] = {

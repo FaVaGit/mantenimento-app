@@ -32,6 +32,12 @@ function calculateModel(input) {
   const aPag2 = toNumber(input.aPag2);
   const aFam1 = toNumber(input.aFam1);
   const aFam2 = toNumber(input.aFam2);
+  const primaCasaMutuoEnabled = toNumber(input.primaCasaMutuoEnabled) > 0;
+  const primaCasaMutuoImporto = Math.max(0, toNumber(input.primaCasaMutuoImporto));
+  const primaCasaAssegnataA = String(input.primaCasaAssegnataA || '');
+  const rawMutuoPerc1 = input.primaCasaMutuoPerc1 === undefined ? 50 : input.primaCasaMutuoPerc1;
+  const primaCasaMutuoPerc1 = clamp(toNumber(rawMutuoPerc1), 0, 100);
+  const primaCasaMutuoPerc2 = 100 - primaCasaMutuoPerc1;
 
   const match12 = Math.min(aPag1, aPerc2);
   const match21 = Math.min(aPag2, aPerc1);
@@ -85,6 +91,35 @@ function calculateModel(input) {
     assegnoDa2a1 = nonCollocatario === 2 ? contributoIndiretto : 0;
   }
 
+  const assegnoBaseDa1a2 = assegnoDa1a2;
+  const assegnoBaseDa2a1 = assegnoDa2a1;
+
+  const assigned = primaCasaAssegnataA === '1' || primaCasaAssegnataA === '2' ? primaCasaAssegnataA : '';
+  const primaCasaConsidered = primaCasaMutuoEnabled
+    && primaCasaMutuoImporto > 0
+    && assigned !== ''
+    && Number(assigned) === collocatario;
+  let primaCasaTransfer1to2 = 0;
+  let primaCasaTransfer2to1 = 0;
+  if (primaCasaConsidered) {
+    const quotaMutuo1 = primaCasaMutuoImporto * (primaCasaMutuoPerc1 / 100);
+    const quotaMutuo2 = primaCasaMutuoImporto - quotaMutuo1;
+    if (assigned === '1') {
+      primaCasaTransfer2to1 = Math.max(0, quotaMutuo2);
+    } else if (assigned === '2') {
+      primaCasaTransfer1to2 = Math.max(0, quotaMutuo1);
+    }
+  }
+
+  assegnoDa1a2 = Math.max(0, assegnoDa1a2 - primaCasaTransfer1to2);
+  assegnoDa2a1 = Math.max(0, assegnoDa2a1 - primaCasaTransfer2to1);
+
+  const compensativeBenefits = [];
+  if (aFam1 > 0.005) compensativeBenefits.push({ type: 'family', to: 1, amount: aFam1 });
+  if (aFam2 > 0.005) compensativeBenefits.push({ type: 'family', to: 2, amount: aFam2 });
+  if (primaCasaTransfer1to2 > 0.005) compensativeBenefits.push({ type: 'primary-home-mortgage', from: 1, to: 2, amount: primaCasaTransfer1to2 });
+  if (primaCasaTransfer2to1 > 0.005) compensativeBenefits.push({ type: 'primary-home-mortgage', from: 2, to: 1, amount: primaCasaTransfer2to1 });
+
   const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
   const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
 
@@ -99,6 +134,12 @@ function calculateModel(input) {
     fabbisognoFigli, quotaTeorica1, quotaTeorica2,
     quotaDiretta1, quotaDiretta2,
     saldo1, saldo2,
+    assegnoBaseDa1a2, assegnoBaseDa2a1,
+    primaCasaMutuoEnabled, primaCasaMutuoImporto,
+    primaCasaAssegnataA: assigned,
+    primaCasaMutuoPerc1, primaCasaMutuoPerc2,
+    primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,
+    compensativeBenefits,
     assegnoDa1a2, assegnoDa2a1,
     post1, post2
   };

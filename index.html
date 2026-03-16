@@ -347,6 +347,42 @@
             </div>
           </div>
 
+          <div class="extra-box" id="firstHomeBox">
+            <div class="extra-box-title" id="firstHomeBoxTitle">Mutuo prima casa ceduta</div>
+            <div class="extra-box-note" id="firstHomeBoxNote">Dichiara se esiste un mutuo sulla prima casa dei coniugi ceduta a uno dei due: il modello considera il trasferimento implicito quando la casa e assegnata al collocatario.</div>
+            <div class="extra-grid">
+              <div class="field">
+                <label for="primaCasaMutuoEnabled" class="label-row"><span id="lblPrimaCasaMutuoEnabled">Mutuo su prima casa dei coniugi</span>
+                  <span class="hint" id="hintPrimaCasaMutuoEnabled" title="Attiva per includere il mutuo della prima casa ceduta nei benefici compensativi.">i</span>
+                </label>
+                <input id="primaCasaMutuoEnabled" type="checkbox" />
+              </div>
+              <div class="field">
+                <label for="primaCasaMutuoImporto" class="label-row"><span id="lblPrimaCasaMutuoImporto">Rata mutuo mensile ({currency})</span>
+                  <span class="hint" id="hintPrimaCasaMutuoImporto" title="Importo mensile complessivo della rata del mutuo prima casa.">i</span>
+                </label>
+                <input id="primaCasaMutuoImporto" type="number" min="0" step="50" value="0" />
+              </div>
+              <div class="field">
+                <label for="primaCasaAssegnataA" class="label-row"><span id="lblPrimaCasaAssegnataA">Casa assegnata a</span>
+                  <span class="hint" id="hintPrimaCasaAssegnataA" title="Seleziona il coniuge a cui e ceduta la prima casa.">i</span>
+                </label>
+                <select id="primaCasaAssegnataA">
+                  <option value="">Nessuna cessione</option>
+                  <option value="1">Coniuge 1</option>
+                  <option value="2">Coniuge 2</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="primaCasaMutuoPerc1" class="label-row"><span id="lblPrimaCasaMutuoPerc1">Quota mutuo a carico Coniuge 1 (%)</span>
+                  <span class="hint" id="hintPrimaCasaMutuoPerc1" title="Percentuale della rata mutuo pagata da Coniuge 1. La quota di Coniuge 2 e complementare a 100%.">i</span>
+                </label>
+                <input id="primaCasaMutuoPerc1" type="number" min="0" max="100" step="1" value="50" />
+                <div class="extra-monthly" id="primaCasaMutuoSplitInfo">Ripartizione mutuo: Coniuge 1 50% · Coniuge 2 50%</div>
+              </div>
+            </div>
+          </div>
+
           <div class="extra-box" id="extraBox">
             <div class="extra-box-title" id="extraBoxTitle">Spese straordinarie (base)</div>
             <div class="extra-box-note" id="extraBoxNote">Inserisci i costi straordinari annuali stimati: il sistema li converte in quota mensile da includere nel modello.</div>
@@ -527,6 +563,6 @@
   <script src="supabase.min.js"></script>
   <script src="fabric.min.js"></script>
   <script src="html2pdf.bundle.min.js"></script>
-    <script src="app.js?v=2.1.1"></script>
+    <script src="app.js?v=2.1.3"></script>
 </body>
 </html>
