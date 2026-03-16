@@ -4371,8 +4371,10 @@ const defaultExpenseItems = [
             .join("");
           mainHtml = `
             <span class="result-main-line">${escapeHtml(tr("calcNoTransferSuggested"))}</span>
-            <span class="result-main-sub">${escapeHtml(tr("calcCompBenefitsLabel"))}</span>
-            <ul class="result-benefits-list">${benefitsHtml}</ul>
+            <div class="result-benefits-box">
+              <span class="result-main-sub">${escapeHtml(tr("calcCompBenefitsLabel"))}</span>
+              <ul class="result-benefits-list">${benefitsHtml}</ul>
+            </div>
           `;
         } else if (benefitsInline) {
           mainHtml = `<span class="result-main-line">${escapeHtml(msg("calcNoTransferWithBenefits", { benefits: benefitsInline }))}</span>`;

@@ -2155,7 +2155,16 @@
       border: 1px solid #bfd6d0;
       border-radius: 999px;
       padding: 3px 9px;
-      margin-bottom: 8px;
+      margin-bottom: 0;
+    }
+
+    .result-benefits-box {
+      border: 1px solid #bdd6cf;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(249, 253, 252, 0.92), rgba(241, 249, 246, 0.92));
+      padding: 8px;
+      display: grid;
+      gap: 8px;
     }
 
     .result-benefits-list {
