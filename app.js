@@ -4260,8 +4260,8 @@ const defaultExpenseItems = [
         const d1 = formatExpenseDetail(i, "c1");
         const d2 = formatExpenseDetail(i, "c2");
         const details = [
-          d1 ? `${escapeHtml(c1n())}: ${escapeHtml(d1)}` : "",
-          d2 ? `${escapeHtml(c2n())}: ${escapeHtml(d2)}` : ""
+          d1 ? `${escapeHtml(c1n())}: ${d1}` : "",
+          d2 ? `${escapeHtml(c2n())}: ${d2}` : ""
         ].filter(Boolean).join("<br>");
         return `<tr>
           <td>${item.label}</td>
