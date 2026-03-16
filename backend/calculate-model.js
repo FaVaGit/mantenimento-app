@@ -38,6 +38,8 @@ function calculateModel(input) {
   const rawMutuoPerc1 = input.primaCasaMutuoPerc1 === undefined ? 50 : input.primaCasaMutuoPerc1;
   const primaCasaMutuoPerc1 = clamp(toNumber(rawMutuoPerc1), 0, 100);
   const primaCasaMutuoPerc2 = 100 - primaCasaMutuoPerc1;
+  const quotaMutuoSpese1 = primaCasaMutuoEnabled ? (primaCasaMutuoImporto * (primaCasaMutuoPerc1 / 100)) : 0;
+  const quotaMutuoSpese2 = primaCasaMutuoEnabled ? (primaCasaMutuoImporto - quotaMutuoSpese1) : 0;
 
   const match12 = Math.min(aPag1, aPerc2);
   const match21 = Math.min(aPag2, aPerc1);
@@ -46,8 +48,10 @@ function calculateModel(input) {
 
   const c1Spese = Array.isArray(input.c1Spese) ? input.c1Spese : [];
   const c2Spese = Array.isArray(input.c2Spese) ? input.c2Spese : [];
-  const spese1 = c1Spese.reduce((acc, n) => acc + toNumber(n), 0);
-  const spese2 = c2Spese.reduce((acc, n) => acc + toNumber(n), 0);
+  const speseBase1 = c1Spese.reduce((acc, n) => acc + toNumber(n), 0);
+  const speseBase2 = c2Spese.reduce((acc, n) => acc + toNumber(n), 0);
+  const spese1 = speseBase1 + quotaMutuoSpese1;
+  const spese2 = speseBase2 + quotaMutuoSpese2;
   const speseTot = spese1 + spese2;
 
   const disp1 = r1 + aPerc1 + aFam1 - aPag1 - spese1;
@@ -102,12 +106,10 @@ function calculateModel(input) {
   let primaCasaTransfer1to2 = 0;
   let primaCasaTransfer2to1 = 0;
   if (primaCasaConsidered) {
-    const quotaMutuo1 = primaCasaMutuoImporto * (primaCasaMutuoPerc1 / 100);
-    const quotaMutuo2 = primaCasaMutuoImporto - quotaMutuo1;
     if (assigned === '1') {
-      primaCasaTransfer2to1 = Math.max(0, quotaMutuo2);
+      primaCasaTransfer2to1 = Math.max(0, quotaMutuoSpese2);
     } else if (assigned === '2') {
-      primaCasaTransfer1to2 = Math.max(0, quotaMutuo1);
+      primaCasaTransfer1to2 = Math.max(0, quotaMutuoSpese1);
     }
   }
 
@@ -127,6 +129,7 @@ function calculateModel(input) {
     r1, r2, r1Raw, r2Raw, incomeMode, figli, perm1, perm2,
     aPerc1, aPag1, aPerc2, aPag2, aFam1, aFam2,
     match12, match21, esternoPag1, esternoPag2,
+    speseBase1, speseBase2, quotaMutuoSpese1, quotaMutuoSpese2,
     spese1, spese2, speseTot,
     disp1, disp2, peso1, peso2,
     mode, simplePerc,

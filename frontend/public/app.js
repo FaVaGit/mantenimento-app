@@ -1,6 +1,5 @@
 const defaultExpenseItems = [
       { label: "🏠 Affitto", help: "Canone mensile di locazione dell'abitazione." },
-      { label: "🏦 Mutuo casa", help: "Rata mensile del mutuo abitazione." },
       { label: "🏡 Casa (valore locativo)", help: "Valore locativo teorico della casa in uso, se rilevante." },
       { label: "💡 Utenze", help: "Luce, gas, acqua, internet e altre utenze domestiche." },
       { label: "🛒 Cibo/Alimenti", help: "Spesa alimentare mensile imputabile al nucleo familiare." },
@@ -3244,14 +3243,18 @@ const defaultExpenseItems = [
       const rawMutuoPerc1 = payload.primaCasaMutuoPerc1 === undefined ? 50 : payload.primaCasaMutuoPerc1;
       const primaCasaMutuoPerc1 = Math.min(100, Math.max(0, Number(rawMutuoPerc1 || 0)));
       const primaCasaMutuoPerc2 = 100 - primaCasaMutuoPerc1;
+      const quotaMutuoSpese1 = primaCasaMutuoEnabled ? (primaCasaMutuoImporto * (primaCasaMutuoPerc1 / 100)) : 0;
+      const quotaMutuoSpese2 = primaCasaMutuoEnabled ? (primaCasaMutuoImporto - quotaMutuoSpese1) : 0;
 
       const match12 = Math.min(aPag1, aPerc2);
       const match21 = Math.min(aPag2, aPerc1);
       const esternoPag1 = Math.max(0, aPag1 - match12);
       const esternoPag2 = Math.max(0, aPag2 - match21);
 
-      const spese1 = (payload.c1Spese || []).reduce((acc, v) => acc + Number(v || 0), 0);
-      const spese2 = (payload.c2Spese || []).reduce((acc, v) => acc + Number(v || 0), 0);
+      const speseBase1 = (payload.c1Spese || []).reduce((acc, v) => acc + Number(v || 0), 0);
+      const speseBase2 = (payload.c2Spese || []).reduce((acc, v) => acc + Number(v || 0), 0);
+      const spese1 = speseBase1 + quotaMutuoSpese1;
+      const spese2 = speseBase2 + quotaMutuoSpese2;
       const speseTot = spese1 + spese2;
 
       const disp1 = r1 + aPerc1 + aFam1 - aPag1 - spese1;
@@ -3301,12 +3304,10 @@ const defaultExpenseItems = [
       let primaCasaTransfer1to2 = 0;
       let primaCasaTransfer2to1 = 0;
       if (primaCasaConsidered) {
-        const quotaMutuo1 = primaCasaMutuoImporto * (primaCasaMutuoPerc1 / 100);
-        const quotaMutuo2 = primaCasaMutuoImporto - quotaMutuo1;
         if (primaCasaAssegnataA === "1") {
-          primaCasaTransfer2to1 = Math.max(0, quotaMutuo2);
+          primaCasaTransfer2to1 = Math.max(0, quotaMutuoSpese2);
         } else if (primaCasaAssegnataA === "2") {
-          primaCasaTransfer1to2 = Math.max(0, quotaMutuo1);
+          primaCasaTransfer1to2 = Math.max(0, quotaMutuoSpese1);
         }
       }
 
@@ -3326,6 +3327,7 @@ const defaultExpenseItems = [
         r1, r2, r1Raw, r2Raw, incomeMode, figli, perm1, perm2,
         aPerc1, aPag1, aPerc2, aPag2, aFam1, aFam2,
         match12, match21, esternoPag1, esternoPag2,
+        speseBase1, speseBase2, quotaMutuoSpese1, quotaMutuoSpese2,
         spese1, spese2, speseTot,
         disp1, disp2, peso1, peso2,
         mode, simplePerc,
@@ -3446,6 +3448,12 @@ const defaultExpenseItems = [
       const assignedEl = document.getElementById("primaCasaAssegnataA");
       const shareEl = document.getElementById("primaCasaMutuoPerc1");
       const splitInfoEl = document.getElementById("primaCasaMutuoSplitInfo");
+      const splitCenterEl = document.getElementById("primaCasaSplitCenter");
+      const splitLeftNameEl = document.getElementById("primaCasaSplitLeftName");
+      const splitRightNameEl = document.getElementById("primaCasaSplitRightName");
+      const splitLeftAmountEl = document.getElementById("primaCasaSplitLeftAmount");
+      const splitRightAmountEl = document.getElementById("primaCasaSplitRightAmount");
+      const splitWrapEl = document.getElementById("primaCasaMutuoSliderWrap");
       const splitLabelEl = document.getElementById("lblPrimaCasaMutuoPerc1");
       const splitHintEl = document.getElementById("hintPrimaCasaMutuoPerc1");
       if (!enabledEl || !amountEl || !assignedEl || !shareEl) return;
@@ -3454,6 +3462,7 @@ const defaultExpenseItems = [
       amountEl.disabled = !isEnabled;
       assignedEl.disabled = !isEnabled;
       shareEl.disabled = !isEnabled;
+      if (splitWrapEl) splitWrapEl.classList.toggle("is-disabled", !isEnabled);
 
       const normalizedShare1 = Math.min(100, Math.max(0, num("primaCasaMutuoPerc1")));
       if (Math.abs(normalizedShare1 - Number(shareEl.value || 0)) > 0.0001) {
@@ -3461,6 +3470,9 @@ const defaultExpenseItems = [
       }
 
       const share2 = 100 - normalizedShare1;
+      const amount = Math.max(0, num("primaCasaMutuoImporto"));
+      const quota1 = amount * (normalizedShare1 / 100);
+      const quota2 = amount - quota1;
       if (splitLabelEl) splitLabelEl.textContent = msg("firstHomeSplitLabel", { spouse: c1n() });
       if (splitHintEl) splitHintEl.title = msg("firstHomeSplitHint", { spouse: c1n() });
       if (splitInfoEl) {
@@ -3471,6 +3483,11 @@ const defaultExpenseItems = [
           p2: share2.toFixed(0)
         });
       }
+      if (splitCenterEl) splitCenterEl.textContent = `${normalizedShare1.toFixed(0)}% / ${share2.toFixed(0)}%`;
+      if (splitLeftNameEl) splitLeftNameEl.textContent = c1n();
+      if (splitRightNameEl) splitRightNameEl.textContent = c2n();
+      if (splitLeftAmountEl) splitLeftAmountEl.textContent = eur(quota1);
+      if (splitRightAmountEl) splitRightAmountEl.textContent = eur(quota2);
 
       const noneOpt = assignedEl.querySelector("option[value='']");
       const spouse1Opt = assignedEl.querySelector("option[value='1']");
@@ -4335,17 +4352,33 @@ const defaultExpenseItems = [
         ${m.incomeMode === "cu" ? `<br /><strong>${tr("calcIncomeBaseNote")}</strong> ${tr("cuNetNoteText")}` : ""}
       `;
 
-      let mainText = tr("calcNoTransferSuggested");
+      let mainHtml = `<span class="result-main-line">${escapeHtml(tr("calcNoTransferSuggested"))}</span>`;
       if (m.assegnoDa1a2 > 0.005) {
-        mainText = `${c1n()} \u2192 ${c2n()}: ${eur(m.assegnoDa1a2)} ${tr("pdfPerMonth")}`;
+        mainHtml = `
+          <span class="result-main-flow">${escapeHtml(c1n())} &rarr; ${escapeHtml(c2n())}</span>
+          <span class="result-main-amount">${eur(m.assegnoDa1a2)} ${escapeHtml(tr("pdfPerMonth"))}</span>
+        `;
       } else if (m.assegnoDa2a1 > 0.005) {
-        mainText = `${c2n()} \u2192 ${c1n()}: ${eur(m.assegnoDa2a1)} ${tr("pdfPerMonth")}`;
+        mainHtml = `
+          <span class="result-main-flow">${escapeHtml(c2n())} &rarr; ${escapeHtml(c1n())}</span>
+          <span class="result-main-amount">${eur(m.assegnoDa2a1)} ${escapeHtml(tr("pdfPerMonth"))}</span>
+        `;
       } else {
-        if (benefitsInline) {
-          mainText = msg("calcNoTransferWithBenefits", { benefits: benefitsInline });
+        const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
+        if (benefitRows.length) {
+          const benefitsHtml = benefitRows
+            .map((row) => `<li><span>${escapeHtml(row.label)}</span><strong>${eur(row.amount)}</strong></li>`)
+            .join("");
+          mainHtml = `
+            <span class="result-main-line">${escapeHtml(tr("calcNoTransferSuggested"))}</span>
+            <span class="result-main-sub">${escapeHtml(tr("calcCompBenefitsLabel"))}</span>
+            <ul class="result-benefits-list">${benefitsHtml}</ul>
+          `;
+        } else if (benefitsInline) {
+          mainHtml = `<span class="result-main-line">${escapeHtml(msg("calcNoTransferWithBenefits", { benefits: benefitsInline }))}</span>`;
         }
       }
-      resultMain.textContent = mainText;
+      resultMain.innerHTML = mainHtml;
 
       kpi.innerHTML = "";
 
@@ -4520,7 +4553,16 @@ const defaultExpenseItems = [
           <td class="expense-detail-cell">–</td>
         </tr>`
         : "";
-      const speseRows = speseRowsBase + extraSpeseRow;
+      const firstHomeExpenseRow = (m.quotaMutuoSpese1 > 0.005 || m.quotaMutuoSpese2 > 0.005)
+        ? `<tr>
+          <td>${tr("pdfPrimaryHomeMortgage")}</td>
+          <td class="num">${m.quotaMutuoSpese1 > 0.005 ? eur(m.quotaMutuoSpese1) : "–"}</td>
+          <td class="num">${m.quotaMutuoSpese2 > 0.005 ? eur(m.quotaMutuoSpese2) : "–"}</td>
+          <td class="num bold">${eur((m.quotaMutuoSpese1 || 0) + (m.quotaMutuoSpese2 || 0))}</td>
+          <td class="expense-detail-cell">${tr("firstHomeAssignedToLabel")}: ${primaryHomeAssignedLabel}</td>
+        </tr>`
+        : "";
+      const speseRows = speseRowsBase + firstHomeExpenseRow + extraSpeseRow;
 
       const scenarioMetrics = [
         { label: tr("scenarioColMode"), val: (sm) => getModeName(sm.mode, sm.simplePerc), fmt: (v) => escapeHtml(v), numeric: false },
@@ -5319,7 +5361,7 @@ ${scenarioLab.length ? `
     }
 
     function resetAll() {
-      document.querySelectorAll("input[type='number'], input[data-numeric='1']").forEach((el) => {
+      document.querySelectorAll("input[type='number'], input[type='range'], input[data-numeric='1']").forEach((el) => {
         if (el.id !== "perm2") {
           el.value = el.defaultValue || 0;
         }
@@ -5580,11 +5622,13 @@ ${scenarioLab.length ? `
     }
 
     document.addEventListener("input", (e) => {
-      if (e.target && e.target.matches("input[type='number'], input[data-numeric='1']")) {
+      if (e.target && e.target.matches("input[type='number'], input[type='range'], input[data-numeric='1']")) {
         if (e.target.id === "perm1") {
           syncPermanenza("perm1");
         } else if (e.target.id === "perm2") {
           syncPermanenza("perm2");
+        } else if (e.target.id === "primaCasaMutuoPerc1" || e.target.id === "primaCasaMutuoImporto") {
+          updateFirstHomeMortgageUi();
         } else if (e.target.id === "reddito1" || e.target.id === "reddito2") {
           const activeMode = document.getElementById("incomeMode")?.value || "monthly";
           incomeValuesByMode[activeMode] = {
