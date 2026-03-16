@@ -4140,6 +4140,10 @@ const defaultExpenseItems = [
     function renderSpiegabilita(m) {
       const panel = document.getElementById("spiegPanel");
       if (!panel) return;
+      const c1Name = c1n();
+      const c2Name = c2n();
+      const c1NameEsc = escapeHtml(c1Name);
+      const c2NameEsc = escapeHtml(c2Name);
 
       const peso1Pct = (m.peso1 * 100).toFixed(1);
       const peso2Pct = (m.peso2 * 100).toFixed(1);

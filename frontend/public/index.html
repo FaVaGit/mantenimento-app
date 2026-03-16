@@ -347,7 +347,7 @@
             </div>
           </div>
 
-          <div class="extra-box" id="firstHomeBox">
+          <div class="extra-box extra-box-first-home" id="firstHomeBox">
             <div class="extra-box-title" id="firstHomeBoxTitle">Mutuo prima casa ceduta</div>
             <div class="extra-box-note" id="firstHomeBoxNote">Dichiara se esiste un mutuo sulla prima casa dei coniugi ceduta a uno dei due: il modello considera il trasferimento implicito quando la casa e assegnata al collocatario.</div>
             <div class="extra-grid">
@@ -374,16 +374,13 @@
                 </select>
               </div>
               <div class="field">
-                <label for="primaCasaMutuoPerc1" class="label-row"><span id="lblPrimaCasaMutuoPerc1">Quota mutuo a carico Coniuge 1 (%)</span>
-                  <span class="hint" id="hintPrimaCasaMutuoPerc1" title="Percentuale della rata mutuo pagata da Coniuge 1. La quota di Coniuge 2 e complementare a 100%.">i</span>
-                </label>
                 <div class="mortgage-split-slider" id="primaCasaMutuoSliderWrap">
                   <div class="mortgage-split-side mortgage-split-side-left" id="primaCasaSplitLeft">
                     <div class="mortgage-split-name" id="primaCasaSplitLeftName">Coniuge 1</div>
                     <div class="mortgage-split-amount" id="primaCasaSplitLeftAmount">0 EUR</div>
                   </div>
                   <div class="mortgage-split-range-wrap">
-                    <input id="primaCasaMutuoPerc1" type="range" min="0" max="100" step="1" value="50" />
+                    <input id="primaCasaMutuoPerc1" type="range" min="0" max="100" step="1" value="50" aria-label="Ripartizione quota mutuo" />
                     <div class="mortgage-split-center" id="primaCasaSplitCenter">50% / 50%</div>
                   </div>
                   <div class="mortgage-split-side mortgage-split-side-right" id="primaCasaSplitRight">
@@ -586,7 +583,7 @@
   <script src="supabase.min.js"></script>
   <script src="fabric.min.js"></script>
   <script src="html2pdf.bundle.min.js"></script>
-    <script src="app.js?v=2.1.5"></script>
+    <script src="app.js?v=2.1.6"></script>
 </body>
 </html>
 

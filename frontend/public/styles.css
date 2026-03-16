@@ -851,18 +851,22 @@
       color: #184a44;
     }
 
+    .extra-box-first-home .extra-grid {
+      gap: 8px 10px;
+    }
+
     .mortgage-split-slider {
-      margin-top: 6px;
+      margin-top: 2px;
       border: 1px solid #b9d6cf;
-      border-radius: 14px;
+      border-radius: 12px;
       background:
         radial-gradient(120% 160% at 0% 0%, rgba(229, 247, 242, 0.8), transparent 58%),
         radial-gradient(120% 160% at 100% 0%, rgba(255, 241, 214, 0.8), transparent 58%),
         linear-gradient(180deg, #fafdfc, #eef7f5);
-      padding: 10px;
+      padding: 8px;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(180px, 2fr) minmax(0, 1fr);
-      gap: 8px;
+      gap: 6px;
       align-items: center;
       transition: opacity 0.2s ease;
     }
@@ -873,10 +877,10 @@
 
     .mortgage-split-side {
       border: 1px solid #c6ded8;
-      border-radius: 11px;
-      padding: 8px;
+      border-radius: 10px;
+      padding: 7px;
       background: rgba(255, 255, 255, 0.84);
-      min-height: 66px;
+      min-height: 58px;
       display: grid;
       align-content: center;
       gap: 2px;
@@ -892,14 +896,14 @@
     }
 
     .mortgage-split-name {
-      font-size: 0.76rem;
+      font-size: 0.72rem;
       font-weight: 800;
       color: #2a4a46;
       overflow-wrap: anywhere;
     }
 
     .mortgage-split-amount {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 900;
       color: #124f48;
       letter-spacing: 0.2px;
@@ -907,7 +911,7 @@
 
     .mortgage-split-range-wrap {
       position: relative;
-      padding: 20px 0 10px;
+      padding: 14px 0 6px;
     }
 
     .mortgage-split-range-wrap input[type="range"] {
@@ -945,17 +949,22 @@
 
     .mortgage-split-center {
       position: absolute;
-      top: -2px;
+      top: -1px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 0.74rem;
+      font-size: 0.7rem;
       font-weight: 900;
       color: #114c45;
       background: #ffffff;
       border: 1px solid #b8d5ce;
       border-radius: 999px;
-      padding: 2px 8px;
+      padding: 1px 7px;
       white-space: nowrap;
+    }
+
+    #primaCasaMutuoSplitInfo {
+      margin-top: 3px;
+      font-size: 0.77rem;
     }
     
     .label-row {
