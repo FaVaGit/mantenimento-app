@@ -1388,6 +1388,37 @@
       border: 1px solid #c6cdc3;
     }
 
+    /* ── Feature gate ─────────────────────────────────────────────── */
+    .gate-locked {
+      position: relative;
+      opacity: 0.62;
+      cursor: pointer;
+    }
+
+    .gate-locked::after {
+      content: "\uD83D\uDD12";
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      font-size: 0.65rem;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .gate-locked:hover {
+      opacity: 0.85;
+    }
+
+    @keyframes gate-flash-anim {
+      0%   { outline: 2px solid transparent; }
+      30%  { outline: 2px solid #d04a2f; box-shadow: 0 0 0 3px rgba(208,74,47,0.22); }
+      100% { outline: 2px solid transparent; }
+    }
+
+    .gate-flash {
+      animation: gate-flash-anim 0.65s ease forwards;
+    }
+
     /* ── Scenario Lab ─────────────────────────────────────────────── */
     .scenario-lab-card {
       margin-top: 14px;
@@ -1725,8 +1756,8 @@
 
     .spieg-benefit-card {
       display: grid;
-      grid-template-columns: 28px 1fr auto;
-      align-items: center;
+      grid-template-columns: 28px minmax(0, 1fr) auto;
+      align-items: start;
       gap: 8px;
       padding: 8px 10px;
       border-radius: 10px;
@@ -1754,6 +1785,8 @@
       font-weight: 600;
       color: #1f4642;
       word-break: break-word;
+      min-width: 0;
+      padding-top: 5px;
     }
 
     .spieg-benefit-amount {
@@ -2209,7 +2242,6 @@
       box-shadow: 0 12px 26px rgba(17, 70, 64, 0.16);
       margin-bottom: 10px;
       position: relative;
-      overflow: hidden;
     }
 
     .result-pill::after {

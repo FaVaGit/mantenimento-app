@@ -26,7 +26,9 @@ const defaultExpenseItems = [
     let selectedScenarioIdx = -1;
     let scenarioTransitionTimer = null;
     const SCENARIO_LAB_MAX = 3;
-    const SCENARIO_LABELS = ["A", "B", "C"];
+    const SCENARIO_LAB_MAX_FREE = 3;
+    const SCENARIO_LAB_MAX_DONOR = 6;
+    const SCENARIO_LABELS = ["A", "B", "C", "D", "E", "F"];
     const EXPENSE_DETAIL_MAX_CHARS = 560;
     const EXPENSE_DETAIL_MAX_LINES = 10;
 
@@ -134,6 +136,11 @@ const defaultExpenseItems = [
         authUserFallback: "utente",
         authLogoutDone: "Logout eseguito.",
         authLoginRequired: "Effettua prima il login.",
+        gateNeedsAuth: "Funzionalità riservata agli utenti registrati. Accedi o registrati per continuare.",
+        gateNeedsAuthTitle: "Accesso richiesto",
+        gateNeedsDonor: "Funzionalità Premium riservata ai donatori. Supporta il progetto per sbloccarla.",
+        gateNeedsDonorTitle: "Funzionalità Premium",
+        gateDonorBadge: "Premium",
         authSaveFailed: "Salvataggio profilo fallito: {message}",
         authCloudSaved: "Profilo cloud salvato. Versioni storiche: {count}.",
         authLoadFailed: "Caricamento profilo fallito: {message}",
@@ -455,6 +462,11 @@ const defaultExpenseItems = [
         authUserFallback: "user",
         authLogoutDone: "Logout completed.",
         authLoginRequired: "Please login first.",
+        gateNeedsAuth: "This feature is for registered users only. Log in or sign up to continue.",
+        gateNeedsAuthTitle: "Login required",
+        gateNeedsDonor: "Premium feature for donors. Support the project to unlock it.",
+        gateNeedsDonorTitle: "Premium feature",
+        gateDonorBadge: "Premium",
         authSaveFailed: "Cloud profile save failed: {message}",
         authCloudSaved: "Cloud profile saved. History versions: {count}.",
         authLoadFailed: "Cloud profile load failed: {message}",
@@ -710,7 +722,8 @@ const defaultExpenseItems = [
     const authSession = {
       username: null,
       userId: null,
-      keyBits: null
+      keyBits: null,
+      isDonor: false
     };
     const authUiState = {
       mode: "login",
@@ -1642,6 +1655,7 @@ const defaultExpenseItems = [
       authSession.username = username;
       authSession.userId = user.id;
       authSession.keyBits = await deriveSessionKeyBits(password, user.id);
+      authSession.isDonor = localStorage.getItem(`m_donor_${user.id}`) === "1";
       updateAuthUi();
       return msg("authLoginAs", { username });
     }
@@ -1766,6 +1780,50 @@ const defaultExpenseItems = [
       el.textContent = message;
     }
 
+    function isLoggedIn() { return !!authSession.username; }
+    function isDonorUser() { return !!authSession.isDonor; }
+
+    function getScenarioMaxForUser() {
+      if (!isLoggedIn()) return 0;
+      return isDonorUser() ? SCENARIO_LAB_MAX_DONOR : SCENARIO_LAB_MAX_FREE;
+    }
+
+    function showAuthGateMessage(triggerEl) {
+      setAuthMenuOpen(true);
+      setAuthStatus(tr("gateNeedsAuth"), true);
+      if (triggerEl) {
+        triggerEl.classList.add("gate-flash");
+        setTimeout(() => triggerEl.classList.remove("gate-flash"), 700);
+      }
+    }
+
+    function showDonorGateMessage(triggerEl) {
+      setAuthMenuOpen(true);
+      setAuthStatus(tr("gateNeedsDonor"), true);
+      if (triggerEl) {
+        triggerEl.classList.add("gate-flash");
+        setTimeout(() => triggerEl.classList.remove("gate-flash"), 700);
+      }
+      const donateBanner = document.querySelector(".donate-banner");
+      if (donateBanner) setTimeout(() => donateBanner.scrollIntoView({ behavior: "smooth", block: "center" }), 200);
+    }
+
+    function applyFeatureGates() {
+      const logged = isLoggedIn();
+      const donor = isDonorUser();
+      const authGatedIds = ["btnPdf", "btnExportJson", "btnImportJson", "btnSaveScenario"];
+      authGatedIds.forEach((id) => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.classList.toggle("gate-locked", !logged);
+        btn.classList.toggle("gate-donor", logged && !donor && id === "btnSaveScenario" && false); // donor gate placeholder
+      });
+      const authMenuBtn = document.getElementById("btnAuthMenu");
+      if (authMenuBtn) {
+        authMenuBtn.classList.toggle("has-donor-badge", logged && donor);
+      }
+    }
+
     function updateAuthModeUi() {
       const isSignup = authUiState.mode === "signup";
       const loginModeBtn = document.getElementById("btnAuthModeLogin");
@@ -1809,7 +1867,8 @@ const defaultExpenseItems = [
       if (sessionActions) sessionActions.classList.toggle("is-hidden", !logged);
       if (toggleBtn) {
         toggleBtn.classList.toggle("logged", logged);
-        toggleBtn.querySelector("span").textContent = logged ? `${tr("authUserPrefix")}: ${authSession.username}` : tr("authLogin");
+        const badge = logged && authSession.isDonor ? ` ✦` : "";
+        toggleBtn.querySelector("span").textContent = logged ? `${tr("authUserPrefix")}: ${authSession.username}${badge}` : tr("authLogin");
       }
 
       if (logged) {
@@ -1833,6 +1892,7 @@ const defaultExpenseItems = [
         setAuthStatus(tr("authNotAuthenticated"), false);
       }
 
+      applyFeatureGates();
       void syncPresenceTrackState();
     }
 
@@ -2377,6 +2437,7 @@ const defaultExpenseItems = [
       authSession.username = null;
       authSession.userId = null;
       authSession.keyBits = null;
+      authSession.isDonor = false;
       cloudProfileSession.loaded = null;
       cloudProfileSession.history = [];
       updateAuthUi();
@@ -3930,7 +3991,7 @@ const defaultExpenseItems = [
     }
 
     function saveCurrentScenario() {
-      if (scenarioLab.length >= SCENARIO_LAB_MAX) {
+      if (scenarioLab.length >= getScenarioMaxForUser()) {
         alert(tr("scenarioLabMaxReached"));
         return;
       }
@@ -5438,10 +5499,12 @@ ${scenarioLab.length ? `
     document.getElementById("btnReset").addEventListener("click", resetAll);
 
     document.getElementById("btnExportJson").addEventListener("click", async () => {
+      if (!isLoggedIn()) { showAuthGateMessage(document.getElementById("btnExportJson")); return; }
       await exportJson();
     });
 
     document.getElementById("btnImportJson").addEventListener("click", () => {
+      if (!isLoggedIn()) { showAuthGateMessage(document.getElementById("btnImportJson")); return; }
       document.getElementById("fileJson").click();
     });
 
@@ -5454,10 +5517,12 @@ ${scenarioLab.length ? `
     });
 
     document.getElementById("btnPdf").addEventListener("click", () => {
+      if (!isLoggedIn()) { showAuthGateMessage(document.getElementById("btnPdf")); return; }
       exportPdfDirect();
     });
 
     document.getElementById("btnSaveScenario").addEventListener("click", () => {
+      if (!isLoggedIn()) { showAuthGateMessage(document.getElementById("btnSaveScenario")); return; }
       saveCurrentScenario();
     });
 
