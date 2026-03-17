@@ -4820,7 +4820,7 @@ const defaultExpenseItems = [
         const el = document.getElementById(`${spouseKey}d_${idx}`);
         const raw = String(el && el.value ? el.value : "").trim();
         if (!raw) return "";
-        return `${escapeHtml(raw)} <span class="expense-detail-meta">(${raw.length}/${EXPENSE_DETAIL_MAX_CHARS})</span>`;
+        return `${escapeHtml(raw)}`;
       };
       const speseRowsBase = expenseItems.map((item, i) => {
         const c1 = num(`c1_${i}`);
@@ -4956,6 +4956,48 @@ const defaultExpenseItems = [
       const scenarioSectionClass = scenarioLab.length >= 3
         ? "section scenario-section compact-3"
         : "section scenario-section";
+      const scenarioSavedTitle = currentLang === "en" ? "Saved scenarios overview" : "Quadro scenari salvati";
+      const scenarioActiveLabel = currentLang === "en" ? "selected" : "selezionato";
+      const scenarioSupportLabel = currentLang === "en" ? "Support" : "Assegno";
+      const scenarioNeedsLabel = currentLang === "en" ? "Children needs" : "Fabbisogno figli";
+      const scenarioPostLabel = currentLang === "en" ? "Post-support" : "Post-assegno";
+      const scenarioCardsHtml = scenarioLab.length
+        ? `<div class="scenario-mini-grid">${scenarioLab.map((scenario, idx) => {
+            const sm = scenario.model || computeModelLocal(scenario.payload || {});
+            const s1 = escapeHtml(String((scenario.payload && scenario.payload._nome1) || c1Name || tr("spouse1Default")));
+            const s2 = escapeHtml(String((scenario.payload && scenario.payload._nome2) || c2Name || tr("spouse2Default")));
+            const modeTxt = escapeHtml(getModeName(sm.mode, sm.simplePerc));
+            const support = eur(Math.max(sm.assegnoDa1a2 || 0, sm.assegnoDa2a1 || 0));
+            const selectedChip = idx === selectedScenarioIdx ? `<span class="scenario-mini-selected">${escapeHtml(scenarioActiveLabel)}</span>` : "";
+            return `<div class="scenario-mini-card">
+              <div class="scenario-mini-head"><span class="scenario-chip">Sc ${escapeHtml(scenario.label || SCENARIO_LABELS[idx] || String(idx + 1))}</span>${selectedChip}</div>
+              <div class="scenario-mini-meta">${s1} / ${s2}</div>
+              <div class="scenario-mini-mode">${modeTxt}</div>
+              <div class="scenario-mini-row"><span>${escapeHtml(scenarioSupportLabel)}</span><strong>${support}</strong></div>
+              <div class="scenario-mini-row"><span>${escapeHtml(scenarioNeedsLabel)}</span><strong>${eur(sm.fabbisognoFigli || 0)}</strong></div>
+              <div class="scenario-mini-row"><span>${escapeHtml(scenarioPostLabel)} ${s1}</span><strong>${eur(sm.post1 || 0)}</strong></div>
+              <div class="scenario-mini-row"><span>${escapeHtml(scenarioPostLabel)} ${s2}</span><strong>${eur(sm.post2 || 0)}</strong></div>
+            </div>`;
+          }).join("")}</div>`
+        : "";
+      const separationSectionHtml = m.speseConvivenza > 0
+        ? `
+<div class="section">
+  <div class="section-title">${tr("sepCostPanelTitle")}</div>
+  <table>
+    <tbody>
+      <tr><td>${tr("sepCostNetTogether")}</td><td class="num"><strong>${eur(m.nettoInsiemeCombinato || 0)}</strong></td></tr>
+      <tr><td>${tr("sepCostNetSeparated")}</td><td class="num"><strong>${eur(m.nettoSeparatoTotale || 0)}</strong></td></tr>
+      ${m.separationAdjustmentHousingUtilities > 0 ? `<tr><td>${tr("sepCostHousingUtilityAdj")}</td><td class="num">${eur(m.separationAdjustmentHousingUtilities)}</td></tr>` : ""}
+      <tr><td>${tr("sepCostDuplication")}</td><td class="num"><strong>${eur(m.costoSeparazioneMensile || 0)}</strong></td></tr>
+      <tr><td>${tr("sepCostLossMonthly")}</td><td class="num"><strong>${eur(m.perditaMensile || 0)}</strong></td></tr>
+      <tr><td>${tr("sepCostLossAnnually")}</td><td class="num"><strong>${eur(m.perditaAnnua || 0)}</strong></td></tr>
+      <tr><td>${msg("sepCostLossSpouse", { spouse: c1NameEsc })}</td><td class="num">${eur(m.perditaSpouse1 || 0)}</td></tr>
+      <tr><td>${msg("sepCostLossSpouse", { spouse: c2NameEsc })}</td><td class="num">${eur(m.perditaSpouse2 || 0)}</td></tr>
+    </tbody>
+  </table>
+</div>`
+        : "";
 
       const html = `<!DOCTYPE html>
 <html lang="${pdfLang}">
@@ -5082,6 +5124,14 @@ const defaultExpenseItems = [
 
   /* ── SCENARIO LAB ── */
   .scenario-compare-wrap { overflow-x: auto; }
+  .scenario-mini-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-bottom: 10px; }
+  .scenario-mini-card { border: 1px solid #c6ddd8; border-radius: 8px; background: #f7fcfb; padding: 7px 8px; }
+  .scenario-mini-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+  .scenario-mini-selected { font-size: 6.7pt; color: #0f6a61; font-weight: 700; border: 1px solid #a9d4c0; border-radius: 999px; padding: 0 6px; background: #eaf7f1; }
+  .scenario-mini-meta { font-size: 7.1pt; color: #4c6964; margin-bottom: 2px; }
+  .scenario-mini-mode { font-size: 7.2pt; font-weight: 700; color: #183d39; margin-bottom: 5px; }
+  .scenario-mini-row { display: flex; justify-content: space-between; gap: 8px; font-size: 7.4pt; padding: 1px 0; }
+  .scenario-mini-row strong { font-variant-numeric: tabular-nums; }
   .scenario-compare-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
   .scenario-compare-table th, .scenario-compare-table td { border: 1px solid #c6ddd8; padding: 5px 8px; }
   .scenario-compare-table thead th { background: linear-gradient(90deg,#f0f7f5,#e6f1ee); color: #183d39; font-weight: 700; }
@@ -5385,6 +5435,8 @@ const defaultExpenseItems = [
   </div>
 </div>
 
+${separationSectionHtml}
+
 <div class="section">
   <div class="section-title">${tr("spiegTitle")}</div>
   <div class="pdf-explain-grid">
@@ -5419,6 +5471,8 @@ const defaultExpenseItems = [
 ${scenarioLab.length ? `
 <div class="${scenarioSectionClass}">
   <div class="section-title">${tr("pdfScenarioSection")}</div>
+  <div style="font-size:8pt;font-weight:700;color:#1a4e49;margin-bottom:6px;">${escapeHtml(scenarioSavedTitle)}</div>
+  ${scenarioCardsHtml}
   ${scenarioPdfTable}
 </div>
 ` : ""}
