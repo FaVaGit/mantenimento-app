@@ -88,7 +88,7 @@
     ]
   }
   </script>
-    <link rel="stylesheet" href="styles.css?v=2.4.5" />
+    <link rel="stylesheet" href="styles.css?v=2.4.6" />
 </head>
 <body>
   <div class="wrap">
@@ -380,9 +380,9 @@
                 </label>
                 <input id="primaCasaMutuoImporto" type="number" min="0" step="50" value="0" />
               </div>
-              <div class="field">
-                <label for="primaCasaMutuoPerc1" class="label-row"><span id="lblPrimaCasaMutuoPerc1">Quota mutuo a carico Coniuge 1 (%)</span>
-                  <span class="hint" id="hintPrimaCasaMutuoPerc1" title="Percentuale della rata mutuo pagata da Coniuge 1. La quota dell'altro coniuge e complementare a 100%.">i</span>
+              <div class="field first-home-split-field">
+                <label for="primaCasaMutuoPerc1" class="label-row"><span id="lblPrimaCasaMutuoPerc1">Quota mutuo a carico</span>
+                  <span class="hint" id="hintPrimaCasaMutuoPerc1" title="Percentuale della rata mutuo pagata da ciascun Coniuge.">i</span>
                 </label>
                 <div class="mortgage-split-slider" id="primaCasaMutuoSliderWrap">
                   <div class="mortgage-split-side mortgage-split-side-left" id="primaCasaSplitLeft">
@@ -390,7 +390,11 @@
                     <div class="mortgage-split-amount" id="primaCasaSplitLeftAmount">0 EUR</div>
                   </div>
                   <div class="mortgage-split-range-wrap">
-                    <input id="primaCasaMutuoPerc1" type="range" min="0" max="100" step="1" value="50" aria-label="Ripartizione quota mutuo" />
+                    <div class="mortgage-split-range-controls">
+                      <button id="primaCasaMutuoShiftLeft" class="mortgage-split-nudge" type="button" aria-label="Sposta quota verso sinistra" title="Sposta quota verso sinistra">&#9664;</button>
+                      <input id="primaCasaMutuoPerc1" type="range" min="0" max="100" step="1" value="50" aria-label="Ripartizione quota mutuo" />
+                      <button id="primaCasaMutuoShiftRight" class="mortgage-split-nudge" type="button" aria-label="Sposta quota verso destra" title="Sposta quota verso destra">&#9654;</button>
+                    </div>
                     <div class="mortgage-split-center" id="primaCasaSplitCenter">50% / 50%</div>
                   </div>
                   <div class="mortgage-split-side mortgage-split-side-right" id="primaCasaSplitRight">
@@ -626,7 +630,7 @@
   <script src="supabase.min.js"></script>
   <script src="fabric.min.js"></script>
   <script src="html2pdf.bundle.min.js"></script>
-    <script src="app.js?v=2.4.5"></script>
+    <script src="app.js?v=2.4.6"></script>
 </body>
 </html>
 

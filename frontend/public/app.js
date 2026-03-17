@@ -289,7 +289,7 @@ const defaultExpenseItems = [
         firstHomeAssignedToHint: "Seleziona il coniuge a cui e ceduta la prima casa.",
         firstHomeAssignedToNone: "Nessuna cessione",
         firstHomeAssignedToSpouse: "Casa ceduta a {spouse}",
-        firstHomeSplitLabel: "Quota mutuo a carico {spouse} (%)",
+        firstHomeSplitLabel: "Quota mutuo a carico",
         firstHomeSplitHint: "Percentuale della rata mutuo pagata da {spouse}. La quota dell'altro coniuge e complementare a 100%.",
         firstHomeSplitInfo: "Ripartizione mutuo: {spouse1} {p1}% · {spouse2} {p2}%",
         calcCompBenefitsLabel: "Benefici compensativi gia allocati",
@@ -651,7 +651,7 @@ const defaultExpenseItems = [
         firstHomeAssignedToHint: "Select which spouse receives assignment of the primary home.",
         firstHomeAssignedToNone: "No assignment",
         firstHomeAssignedToSpouse: "Home assigned to {spouse}",
-        firstHomeSplitLabel: "Mortgage share paid by {spouse} (%)",
+        firstHomeSplitLabel: "Mortgage share allocation",
         firstHomeSplitHint: "Percentage of the monthly mortgage payment paid by {spouse}. The other spouse share is the complement to 100%.",
         firstHomeSplitInfo: "Mortgage split: {spouse1} {p1}% · {spouse2} {p2}%",
         calcCompBenefitsLabel: "Compensative benefits already allocated",
@@ -1290,7 +1290,7 @@ const defaultExpenseItems = [
       if (hintPrimaCasaMutuoImporto) hintPrimaCasaMutuoImporto.title = tr("firstHomeMortgageAmountHint");
       if (lblPrimaCasaAssegnataA) lblPrimaCasaAssegnataA.textContent = tr("firstHomeAssignedToLabel");
       if (hintPrimaCasaAssegnataA) hintPrimaCasaAssegnataA.title = tr("firstHomeAssignedToHint");
-      if (lblPrimaCasaMutuoPerc1) lblPrimaCasaMutuoPerc1.textContent = msg("firstHomeSplitLabel", { spouse: c1n() });
+      if (lblPrimaCasaMutuoPerc1) lblPrimaCasaMutuoPerc1.textContent = tr("firstHomeSplitLabel");
       if (hintPrimaCasaMutuoPerc1) hintPrimaCasaMutuoPerc1.title = msg("firstHomeSplitHint", { spouse: c1n() });
       if (lblStraordAnn1) lblStraordAnn1.textContent = msg("extraAnnLabel1", { spouse: c1n(), currency: currentCurrency });
       if (lblStraordAnn2) lblStraordAnn2.textContent = msg("extraAnnLabel2", { spouse: c2n(), currency: currentCurrency });
@@ -3931,7 +3931,7 @@ const defaultExpenseItems = [
       const amount = Math.max(0, num("primaCasaMutuoImporto"));
       const quota1 = amount * (normalizedShare1 / 100);
       const quota2 = amount - quota1;
-      if (splitLabelEl) splitLabelEl.textContent = msg("firstHomeSplitLabel", { spouse: c1n() });
+      if (splitLabelEl) splitLabelEl.textContent = tr("firstHomeSplitLabel");
       if (splitHintEl) splitHintEl.title = msg("firstHomeSplitHint", { spouse: c1n() });
       if (splitInfoEl) {
         splitInfoEl.textContent = msg("firstHomeSplitInfo", {
@@ -6468,6 +6468,19 @@ ${scenarioLab.length ? `
         renderAll();
       }
     });
+
+    const firstHomeShiftLeftBtn = document.getElementById("primaCasaMutuoShiftLeft");
+    const firstHomeShiftRightBtn = document.getElementById("primaCasaMutuoShiftRight");
+    const firstHomeShareInput = document.getElementById("primaCasaMutuoPerc1");
+    const shiftFirstHomeShare = (delta) => {
+      if (!firstHomeShareInput || firstHomeShareInput.disabled) return;
+      const next = Math.min(100, Math.max(0, Number(firstHomeShareInput.value || 0) + delta));
+      firstHomeShareInput.value = String(next);
+      updateFirstHomeMortgageUi();
+      renderAll();
+    };
+    if (firstHomeShiftLeftBtn) firstHomeShiftLeftBtn.addEventListener("click", () => shiftFirstHomeShare(-1));
+    if (firstHomeShiftRightBtn) firstHomeShiftRightBtn.addEventListener("click", () => shiftFirstHomeShare(1));
 
     document.getElementById("langSelect").addEventListener("change", (e) => {
       const next = String(e.target.value || "it").toLowerCase();
