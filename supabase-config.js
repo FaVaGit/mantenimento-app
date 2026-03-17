@@ -9,11 +9,11 @@ window.KEYLOCK_SUPABASE_ANON_KEY = "sb_publishable_f6_mJK6kgHKTjUMY7V9YJg_i6QCzG
 //   https://favagit.github.io/mantenimento-app/?env=prod
 window.KEYLOCK_CALC_API_ENVS = {
 	dev: "",
-	prod: ""
+	prod: "https://mantenimento-app.onrender.com"
 };
 
 // Optional frontend variants (used by ?frontend=dev on the published app).
-// The dev URL can point to the feature branch static preview.
+// The dev URL points to the feature branch frontend preview.
 window.KEYLOCK_FRONTEND_VARIANT_ENVS = {
 	dev: "https://raw.githack.com/FaVaGit/mantenimento-app/feature/v2-scenario-lab/frontend/public/index.html"
 };
