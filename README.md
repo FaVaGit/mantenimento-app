@@ -82,6 +82,15 @@ Generazione token e link:
 npm run auth:url-token -- --sub=favagit --ttl=120 --baseUrl=https://favagit.github.io/mantenimento-app/
 ```
 
+Entry point dedicato per URL autologin:
+
+```text
+https://favagit.github.io/mantenimento-app/autologin.html?authToken=...
+```
+
+La pagina `autologin.html` reindirizza automaticamente su `index` aggiungendo `autologin=1`.
+Supporta anche token nel fragment/hash (es. `.../autologin.html#authToken=...`) per ridurre esposizione nei log intermedi.
+
 Il comando stampa un link del tipo:
 
 ```text
@@ -92,6 +101,14 @@ Note sicurezza:
 - Il token e monouso, con scadenza breve e firma HMAC.
 - I parametri sensibili vengono rimossi dalla barra URL subito dopo la lettura.
 - Il login via `authPass`/`authPass64` e disabilitato per hardening.
+
+### Script SQL donor (globale server-side)
+Per assegnare/rimuovere privilegi donor in modo globale su Supabase:
+
+- `scripts/sql/grant-donor.sql`
+- `scripts/sql/revoke-donor.sql`
+
+Esegui gli script da Supabase SQL Editor (modificando eventualmente la lista utenti nel `WHERE`).
 
 ## KeyLock multi-device (Supabase)
 Il login cloud resta lato frontend e usa `supabase-config.js` (chiave anon pubblica).

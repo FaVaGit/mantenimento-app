@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoLogin Redirect - Mantenimento App</title>
+  <meta name="robots" content="noindex,nofollow" />
+</head>
+<body>
+  <noscript>JavaScript richiesto per il redirect di autologin.</noscript>
+  <script>
+    (function () {
+      try {
+        const current = new URL(window.location.href);
+        const query = new URLSearchParams(current.search);
+
+        if (!query.has('autologin')) {
+          query.set('autologin', '1');
+        }
+
+        if ((!query.has('authToken') || !String(query.get('authToken') || '').trim()) && current.hash) {
+          const hashParams = new URLSearchParams(String(current.hash || '').replace(/^#/, ''));
+          const hashToken = String(hashParams.get('authToken') || '').trim();
+          if (hashToken) {
+            query.set('authToken', hashToken);
+          }
+        }
+
+        const target = new URL('./', current);
+        target.search = query.toString();
+        target.hash = '';
+
+        window.location.replace(target.toString());
+      } catch (_) {
+        window.location.replace('./');
+      }
+    })();
+  </script>
+</body>
+</html>
