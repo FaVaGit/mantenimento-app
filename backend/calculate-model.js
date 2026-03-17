@@ -127,8 +127,19 @@ function calculateModel(input) {
 
   // Separation cost analysis (only active when speseConvivenza > 0)
   const speseConvivenza = Math.max(0, toNumber(input.speseConvivenza));
-  const costoSeparazioneMensile = speseConvivenza > 0 ? speseTot - speseConvivenza : null;
-  const nettoInsiemeCombinato = speseConvivenza > 0 ? (r1 + r2 - speseConvivenza) : null;
+  const housingIdx = new Set([0, 1, 2, 7]); // Affitto, casa/valore locativo, utenze, condominio
+  const housingUtility1 = c1Spese.reduce((acc, n, idx) => acc + (housingIdx.has(idx) ? toNumber(n) : 0), 0) + quotaMutuoSpese1;
+  const housingUtility2 = c2Spese.reduce((acc, n, idx) => acc + (housingIdx.has(idx) ? toNumber(n) : 0), 0) + quotaMutuoSpese2;
+  const housingUtilityNonColl = collocatario === 1 ? housingUtility2 : housingUtility1;
+  const baseDuplicazione = speseConvivenza > 0 ? (speseTot - speseConvivenza) : null;
+  const separationAdjustmentHousingUtilities = baseDuplicazione !== null && baseDuplicazione <= 0.005
+    ? Math.max(0, housingUtilityNonColl)
+    : 0;
+  const speseConvivenzaEffettive = speseConvivenza > 0
+    ? Math.max(0, speseConvivenza - separationAdjustmentHousingUtilities)
+    : null;
+  const costoSeparazioneMensile = speseConvivenzaEffettive !== null ? (speseTot - speseConvivenzaEffettive) : null;
+  const nettoInsiemeCombinato = speseConvivenzaEffettive !== null ? (r1 + r2 - speseConvivenzaEffettive) : null;
   const nettoSeparatoTotale = post1 + post2;
   const perditaMensile = nettoInsiemeCombinato !== null ? nettoInsiemeCombinato - nettoSeparatoTotale : null;
   const perditaAnnua = perditaMensile !== null ? perditaMensile * 12 : null;
@@ -156,7 +167,8 @@ function calculateModel(input) {
     compensativeBenefits,
     assegnoDa1a2, assegnoDa2a1,
     post1, post2,
-    speseConvivenza, costoSeparazioneMensile,
+    speseConvivenza, speseConvivenzaEffettive, costoSeparazioneMensile,
+    separationAdjustmentHousingUtilities,
     nettoInsiemeCombinato, nettoSeparatoTotale,
     perditaMensile, perditaAnnua,
     perditaSpouse1, perditaSpouse2

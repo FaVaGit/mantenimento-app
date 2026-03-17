@@ -385,6 +385,7 @@ const defaultExpenseItems = [
         sepCostLossMonthly: "Perdita economica mensile",
         sepCostLossAnnually: "Perdita economica annua",
         sepCostLossSpouse: "Impatto stimato su {spouse}",
+        sepCostHousingUtilityAdj: "Adeguamento affitto/utenze (stima minima)",
         sepCostInlineHint: "Duplicazione mensile stimata: {amount}",
         sepCostWarning: "Inserisci le spese mensili in convivenza nel campo sopra per attivare questa analisi.",
         sepCostCurrentTotal: "Totale spese attuali dopo separazione: {amount}",
@@ -726,6 +727,7 @@ const defaultExpenseItems = [
         sepCostLossMonthly: "Monthly economic loss",
         sepCostLossAnnually: "Annual economic loss",
         sepCostLossSpouse: "Estimated impact on {spouse}",
+        sepCostHousingUtilityAdj: "Rent/utilities adjustment (minimum estimate)",
         sepCostInlineHint: "Estimated monthly duplication: {amount}",
         sepCostWarning: "Enter the cohabiting monthly expenses above to activate this analysis.",
         sepCostCurrentTotal: "Current total expenses after separation: {amount}",
@@ -3436,8 +3438,33 @@ const defaultExpenseItems = [
 
         // Separation cost analysis (only active when speseConvivenza > 0)
         const speseConvivenza = Math.max(0, Number(payload.speseConvivenza || 0));
-        const costoSeparazioneMensile = speseConvivenza > 0 ? speseTot - speseConvivenza : null;
-        const nettoInsiemeCombinato = speseConvivenza > 0 ? (r1 + r2 - speseConvivenza) : null;
+        const isHousingUtilityLabel = (rawLabel) => {
+          const label = String(rawLabel || "").toLowerCase();
+          return label.includes("affitto")
+            || label.includes("utenze")
+            || label.includes("condominio")
+            || label.includes("casa")
+            || label.includes("mutuo");
+        };
+        const sumHousingUtilityBySpouse = (items, spouseKey) => {
+          return (items || []).reduce((acc, amount, idx) => {
+            if (!isHousingUtilityLabel(expenseItems[idx] && expenseItems[idx].label)) return acc;
+            return acc + Number(amount || 0);
+          }, 0);
+        };
+        const housingUtility1 = sumHousingUtilityBySpouse(payload.c1Spese, 1) + quotaMutuoSpese1;
+        const housingUtility2 = sumHousingUtilityBySpouse(payload.c2Spese, 2) + quotaMutuoSpese2;
+        const housingUtilityNonColl = collocatario === 1 ? housingUtility2 : housingUtility1;
+
+        const baseDuplicazione = speseConvivenza > 0 ? (speseTot - speseConvivenza) : null;
+        const separationAdjustmentHousingUtilities = baseDuplicazione !== null && baseDuplicazione <= 0.005
+          ? Math.max(0, housingUtilityNonColl)
+          : 0;
+        const speseConvivenzaEffettive = speseConvivenza > 0
+          ? Math.max(0, speseConvivenza - separationAdjustmentHousingUtilities)
+          : null;
+        const costoSeparazioneMensile = speseConvivenzaEffettive !== null ? (speseTot - speseConvivenzaEffettive) : null;
+        const nettoInsiemeCombinato = speseConvivenzaEffettive !== null ? (r1 + r2 - speseConvivenzaEffettive) : null;
         const nettoSeparatoTotale = post1 + post2;
         const perditaMensile = nettoInsiemeCombinato !== null ? nettoInsiemeCombinato - nettoSeparatoTotale : null;
         const perditaAnnua = perditaMensile !== null ? perditaMensile * 12 : null;
@@ -3464,7 +3491,8 @@ const defaultExpenseItems = [
         compensativeBenefits,
         assegnoDa1a2, assegnoDa2a1,
         post1, post2,
-        speseConvivenza, costoSeparazioneMensile,
+        speseConvivenza, speseConvivenzaEffettive, costoSeparazioneMensile,
+        separationAdjustmentHousingUtilities,
         nettoInsiemeCombinato, nettoSeparatoTotale,
         perditaMensile, perditaAnnua,
         perditaSpouse1, perditaSpouse2
@@ -4655,6 +4683,9 @@ const defaultExpenseItems = [
           </div>
           <div class="sep-cost-divider"></div>
           <div class="sep-cost-section">
+            ${m.separationAdjustmentHousingUtilities > 0
+              ? rowHtml(tr("sepCostHousingUtilityAdj"), m.separationAdjustmentHousingUtilities, false)
+              : ""}
             ${rowHtml(tr("sepCostDuplication"), m.costoSeparazioneMensile, false)}
             ${rowHtml(tr("sepCostLossMonthly"), m.perditaMensile, true)}
             ${rowHtml(tr("sepCostLossAnnually"), m.perditaAnnua, true)}
