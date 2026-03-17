@@ -33,6 +33,7 @@ function calculateModel(input) {
   const aFam1 = toNumber(input.aFam1);
   const aFam2 = toNumber(input.aFam2);
   const primaCasaMutuoEnabled = toNumber(input.primaCasaMutuoEnabled) > 0;
+  const primaCasaValoreLocativo = Math.max(0, toNumber(input.primaCasaValoreLocativo));
   const primaCasaMutuoImporto = Math.max(0, toNumber(input.primaCasaMutuoImporto));
   const primaCasaAssegnataA = String(input.primaCasaAssegnataA || '');
   const rawMutuoPerc1 = input.primaCasaMutuoPerc1 === undefined ? 50 : input.primaCasaMutuoPerc1;
@@ -121,13 +122,14 @@ function calculateModel(input) {
   if (aFam2 > 0.005) compensativeBenefits.push({ type: 'family', to: 2, amount: aFam2 });
   if (primaCasaTransfer1to2 > 0.005) compensativeBenefits.push({ type: 'primary-home-mortgage', from: 1, to: 2, amount: primaCasaTransfer1to2 });
   if (primaCasaTransfer2to1 > 0.005) compensativeBenefits.push({ type: 'primary-home-mortgage', from: 2, to: 1, amount: primaCasaTransfer2to1 });
+  if (primaCasaValoreLocativo > 0.005 && assigned !== '') compensativeBenefits.push({ type: 'primary-home-assignment', to: Number(assigned), amount: primaCasaValoreLocativo });
 
   const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
   const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
 
   // Separation cost analysis (only active when speseConvivenza > 0)
   const speseConvivenza = Math.max(0, toNumber(input.speseConvivenza));
-  const housingIdx = new Set([0, 1, 2, 7]); // Affitto, casa/valore locativo, utenze, condominio
+  const housingIdx = new Set([0, 1, 6]); // Affitto, utenze, condominio
   const housingUtility1 = c1Spese.reduce((acc, n, idx) => acc + (housingIdx.has(idx) ? toNumber(n) : 0), 0) + quotaMutuoSpese1;
   const housingUtility2 = c2Spese.reduce((acc, n, idx) => acc + (housingIdx.has(idx) ? toNumber(n) : 0), 0) + quotaMutuoSpese2;
   const housingUtilityNonColl = collocatario === 1 ? housingUtility2 : housingUtility1;
@@ -161,7 +163,7 @@ function calculateModel(input) {
     quotaDiretta1, quotaDiretta2,
     saldo1, saldo2,
     assegnoBaseDa1a2, assegnoBaseDa2a1,
-    primaCasaMutuoEnabled, primaCasaMutuoImporto,
+    primaCasaMutuoEnabled, primaCasaValoreLocativo, primaCasaMutuoImporto,
     primaCasaAssegnataA: assigned,
     primaCasaMutuoPerc1, primaCasaMutuoPerc2,
     primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,
