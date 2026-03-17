@@ -1815,7 +1815,12 @@ const defaultExpenseItems = [
     }
 
     function isLoggedIn() { return !!authSession.username; }
-    function isDonorUser() { return !!authSession.isDonor; }
+    function isDonationPolicyBypassedUser() {
+      return normalizeUsername(authSession.username) === "favagit";
+    }
+    function isDonorUser() {
+      return !!authSession.isDonor || isDonationPolicyBypassedUser();
+    }
 
     function getScenarioMaxForUser() {
       if (!isLoggedIn()) return 0;
