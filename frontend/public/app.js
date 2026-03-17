@@ -3642,6 +3642,8 @@ const defaultExpenseItems = [
         });
       }
       if (splitCenterEl) splitCenterEl.textContent = `${normalizedShare1.toFixed(0)}% / ${share2.toFixed(0)}%`;
+      const splitRangeWrapEl = shareEl.closest(".mortgage-split-range-wrap");
+      if (splitRangeWrapEl) splitRangeWrapEl.style.setProperty("--split-left", `${normalizedShare1.toFixed(0)}%`);
       if (splitLeftNameEl) splitLeftNameEl.textContent = c1n();
       if (splitRightNameEl) splitRightNameEl.textContent = c2n();
       if (splitLeftAmountEl) splitLeftAmountEl.textContent = eur(quota1);
@@ -5002,30 +5004,20 @@ const defaultExpenseItems = [
             </div>`;
           }).join("")}</div>`
         : "";
-      const separationSectionHtml = m.speseConvivenza > 0
-        ? `
-<div class="section">
-  <div class="section-title">${tr("sepCostPanelTitle")}</div>
-  <table>
-    <tbody>
-      <tr><td>${tr("sepCostNetTogether")}</td><td class="num"><strong>${eur(m.nettoInsiemeCombinato || 0)}</strong></td></tr>
-      <tr><td>${tr("sepCostNetSeparated")}</td><td class="num"><strong>${eur(m.nettoSeparatoTotale || 0)}</strong></td></tr>
-      ${m.separationAdjustmentHousingUtilities > 0 ? `<tr><td>${tr("sepCostHousingUtilityAdj")}</td><td class="num">${eur(m.separationAdjustmentHousingUtilities)}</td></tr>` : ""}
-      <tr><td>${tr("sepCostDuplication")}</td><td class="num"><strong>${eur(m.costoSeparazioneMensile || 0)}</strong></td></tr>
-      <tr><td>${tr("sepCostLossMonthly")}</td><td class="num"><strong>${eur(m.perditaMensile || 0)}</strong></td></tr>
-      <tr><td>${tr("sepCostLossAnnually")}</td><td class="num"><strong>${eur(m.perditaAnnua || 0)}</strong></td></tr>
-      <tr><td>${msg("sepCostLossSpouse", { spouse: c1NameEsc })}</td><td class="num">${eur(m.perditaSpouse1 || 0)}</td></tr>
-      <tr><td>${msg("sepCostLossSpouse", { spouse: c2NameEsc })}</td><td class="num">${eur(m.perditaSpouse2 || 0)}</td></tr>
-    </tbody>
-  </table>
-</div>`
+      const liveSepPanelSnapshot = String(document.getElementById("sepCostPanel")?.innerHTML || "").trim();
+      const separationSectionHtml = m.speseConvivenza > 0 && liveSepPanelSnapshot
+        ? `<div class="section pdf-screen-section">${liveSepPanelSnapshot}</div>`
         : "";
+      const activeAppScriptSrc = String(document.querySelector('script[src*="app.js"]')?.getAttribute("src") || "");
+      const appVersionFromScript = (activeAppScriptSrc.match(/[?&]v=([^&#]+)/) || [])[1] || String(Date.now());
+      const pdfStylesHref = `styles.css?v=${encodeURIComponent(appVersionFromScript)}`;
 
       const html = `<!DOCTYPE html>
 <html lang="${pdfLang}">
 <head>
 <meta charset="UTF-8"/>
 <title>${tr("pdfReportTitle")} – ${genDate}</title>
+<link rel="stylesheet" href="${pdfStylesHref}">
 <style>
   @page { size: A4 portrait; margin: 16mm 14mm 14mm 14mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -5215,6 +5207,14 @@ const defaultExpenseItems = [
   .note-box strong { color: #0b6e66; }
   .footer { border-top: 1px solid #cde5e0; padding-top: 6px; margin-top: 20px;
     font-size: 7.5pt; color: #888; text-align: center; }
+
+  /* Keep on-screen section visuals (e.g. separation panel) close to app rendering */
+  .pdf-screen-section { break-inside: avoid; }
+  .pdf-screen-section .sep-cost-panel { margin-top: 0; }
+  .pdf-screen-section .sep-cost-title { margin-bottom: 6px; }
+  .pdf-screen-section .sep-cost-hero,
+  .pdf-screen-section .sep-cost-section--grid,
+  .pdf-screen-section .sep-cost-pill-wrap { gap: 8px; }
 
   @media print {
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

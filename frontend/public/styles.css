@@ -910,13 +910,14 @@
 
     .mortgage-split-side {
       border: 1px solid #c6ded8;
-      border-radius: 10px;
-      padding: 7px;
-      background: rgba(255, 255, 255, 0.84);
+      border-radius: 12px;
+      padding: 8px;
+      background: linear-gradient(180deg, #ffffff, #f3faf8);
       min-height: 58px;
       display: grid;
       align-content: center;
-      gap: 2px;
+      gap: 3px;
+      box-shadow: 0 1px 3px rgba(17, 74, 68, 0.08);
     }
 
     .mortgage-split-side-left {
@@ -945,6 +946,7 @@
     .mortgage-split-range-wrap {
       position: relative;
       padding: 14px 0 6px;
+      --split-left: 50%;
     }
 
     .mortgage-split-range-wrap input[type="range"] {
@@ -953,9 +955,14 @@
       width: 100%;
       height: 8px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #2b9d8e 0%, #6cb9a9 46%, #dfb264 54%, #cb8a2d 100%);
+      background: linear-gradient(90deg,
+        #2b9d8e 0%,
+        #6cb9a9 var(--split-left),
+        #dfb264 var(--split-left),
+        #cb8a2d 100%);
       outline: none;
       margin: 0;
+      transition: background 0.16s ease;
     }
 
     .mortgage-split-range-wrap input[type="range"]::-webkit-slider-thumb {
