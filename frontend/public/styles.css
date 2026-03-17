@@ -1832,6 +1832,19 @@
         padding: 10px 12px;
       }
 
+      .sep-cost-warning-meta {
+        margin-top: 6px;
+        font-size: 0.8rem;
+        color: #6f4c13;
+        font-weight: 700;
+      }
+
+      .sep-cost-fill-btn {
+        margin-top: 8px;
+        width: fit-content;
+        max-width: 100%;
+      }
+
       .sep-cost-panel {
         margin-top: 10px;
         border-radius: 14px;

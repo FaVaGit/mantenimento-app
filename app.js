@@ -387,6 +387,8 @@ const defaultExpenseItems = [
         sepCostLossSpouse: "Impatto stimato su {spouse}",
         sepCostInlineHint: "Duplicazione mensile stimata: {amount}",
         sepCostWarning: "Inserisci le spese mensili in convivenza nel campo sopra per attivare questa analisi.",
+        sepCostCurrentTotal: "Totale spese attuali dopo separazione: {amount}",
+        sepCostUseCurrentTotalBtn: "Usa il totale spese attuale",
         footerVisitorsTotal: "Visitatori totali",
         footerVisitorsActive: "Visitatori attivi",
         footerLoggedUsers: "Utenti loggati",
@@ -726,6 +728,8 @@ const defaultExpenseItems = [
         sepCostLossSpouse: "Estimated impact on {spouse}",
         sepCostInlineHint: "Estimated monthly duplication: {amount}",
         sepCostWarning: "Enter the cohabiting monthly expenses above to activate this analysis.",
+        sepCostCurrentTotal: "Current total expenses after separation: {amount}",
+        sepCostUseCurrentTotalBtn: "Use current total expenses",
         footerVisitorsTotal: "Total visitors",
         footerVisitorsActive: "Active visitors",
         footerLoggedUsers: "Logged users",
@@ -4603,7 +4607,27 @@ const defaultExpenseItems = [
       }
 
       if (!m.speseConvivenza || m.speseConvivenza <= 0) {
-        panel.innerHTML = `<div class="sep-cost-warning">${escapeHtml(tr("sepCostWarning"))}</div>`;
+        panel.innerHTML = `
+          <div class="sep-cost-panel">
+            <h3 class="sep-cost-title">${escapeHtml(tr("sepCostPanelTitle"))}</h3>
+            <div class="sep-cost-warning">
+              <div>${escapeHtml(tr("sepCostWarning"))}</div>
+              <div class="sep-cost-warning-meta">${escapeHtml(msg("sepCostCurrentTotal", { amount: eur(m.speseTot) }))}</div>
+              <button type="button" class="btn-secondary sep-cost-fill-btn">${escapeHtml(tr("sepCostUseCurrentTotalBtn"))}</button>
+            </div>
+          </div>
+        `;
+        const fillBtn = panel.querySelector(".sep-cost-fill-btn");
+        if (fillBtn) {
+          fillBtn.addEventListener("click", () => {
+            const input = document.getElementById("speseConvivenza");
+            if (!input) return;
+            const suggested = Math.max(0, Math.round(Number(m.speseTot || 0)));
+            input.value = String(suggested);
+            input.focus();
+            renderAll();
+          });
+        }
         return;
       }
 
