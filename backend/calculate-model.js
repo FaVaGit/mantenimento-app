@@ -125,6 +125,17 @@ function calculateModel(input) {
   const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
   const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
 
+  // Separation cost analysis (only active when speseConvivenza > 0)
+  const speseConvivenza = Math.max(0, toNumber(input.speseConvivenza));
+  const costoSeparazioneMensile = speseConvivenza > 0 ? speseTot - speseConvivenza : null;
+  const nettoInsiemeCombinato = speseConvivenza > 0 ? (r1 + r2 - speseConvivenza) : null;
+  const nettoSeparatoTotale = post1 + post2;
+  const perditaMensile = nettoInsiemeCombinato !== null ? nettoInsiemeCombinato - nettoSeparatoTotale : null;
+  const perditaAnnua = perditaMensile !== null ? perditaMensile * 12 : null;
+  const totReddito = Math.max(0.001, r1 + r2);
+  const perditaSpouse1 = perditaMensile !== null ? perditaMensile * (r1 / totReddito) : null;
+  const perditaSpouse2 = perditaMensile !== null ? perditaMensile * (r2 / totReddito) : null;
+
   return {
     r1, r2, r1Raw, r2Raw, incomeMode, figli, perm1, perm2,
     aPerc1, aPag1, aPerc2, aPag2, aFam1, aFam2,
@@ -144,7 +155,11 @@ function calculateModel(input) {
     primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,
     compensativeBenefits,
     assegnoDa1a2, assegnoDa2a1,
-    post1, post2
+    post1, post2,
+    speseConvivenza, costoSeparazioneMensile,
+    nettoInsiemeCombinato, nettoSeparatoTotale,
+    perditaMensile, perditaAnnua,
+    perditaSpouse1, perditaSpouse2
   };
 }
 

@@ -1821,6 +1821,83 @@
       font-variant-numeric: tabular-nums;
     }
 
+      .sep-cost-warning {
+        margin-top: 10px;
+        border-radius: 12px;
+        border: 1px dashed #d8b26d;
+        background: linear-gradient(135deg, #fff7e7, #fff1d7);
+        color: #835209;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 10px 12px;
+      }
+
+      .sep-cost-panel {
+        margin-top: 10px;
+        border-radius: 14px;
+        border: 1.5px solid #e2a5a5;
+        background: linear-gradient(145deg, #fff5f3, #ffeceb 52%, #fff6f0);
+        box-shadow: 0 8px 22px rgba(130, 33, 33, 0.12);
+        padding: 12px;
+      }
+
+      .sep-cost-title {
+        margin: 0 0 8px;
+        font-size: 0.98rem;
+        font-weight: 900;
+        color: #842d2d;
+        letter-spacing: 0.2px;
+      }
+
+      .sep-cost-section {
+        display: grid;
+        gap: 7px;
+      }
+
+      .sep-cost-divider {
+        height: 1px;
+        margin: 8px 0;
+        background: linear-gradient(90deg, rgba(153,33,33,0), rgba(153,33,33,0.28), rgba(153,33,33,0));
+      }
+
+      .sep-cost-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        border-radius: 9px;
+        padding: 7px 9px;
+        border: 1px solid rgba(145, 42, 42, 0.13);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .sep-cost-row--em {
+        background: linear-gradient(120deg, rgba(255, 228, 226, 0.86), rgba(255, 241, 225, 0.88));
+        border-color: rgba(180, 72, 43, 0.32);
+      }
+
+      .sep-cost-label {
+        font-size: 0.82rem;
+        color: #6a3939;
+        font-weight: 700;
+      }
+
+      .sep-cost-value {
+        font-size: 0.94rem;
+        font-weight: 900;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        color: #5d2e2e;
+      }
+
+      .sep-loss-negative {
+        color: #9b1f1f;
+      }
+
+      .sep-loss-positive {
+        color: #0d7a57;
+      }
+
     @page {
       size: A4 landscape;
       margin: 8mm;

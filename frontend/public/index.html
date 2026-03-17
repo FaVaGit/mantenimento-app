@@ -414,6 +414,20 @@
             </div>
           </div>
 
+          <div class="extra-box extra-box-sep-cost" id="sepCostBox">
+            <div class="extra-box-title" id="sepCostBoxTitle">💸 Costo della separazione</div>
+            <div class="extra-box-note" id="sepCostBoxNote">Stima le spese mensili che la coppia avrebbe sostenuto vivendo insieme: il modello calcolerà il costo di duplicazione generato dalla separazione e la perdita economica netta per ciascun coniuge.</div>
+            <div class="extra-grid">
+              <div class="field">
+                <label for="speseConvivenza" class="label-row"><span id="lblSpeseConvivenza">Spese mensili stimate in convivenza ({currency})</span>
+                  <span class="hint" id="hintSpeseConvivenza" title="Stima delle spese mensili totali della coppia se non si fosse separata: affitto/mutuo unico, una sola utenza, una sola auto, ecc. Lascia 0 per non includere questa analisi.">i</span>
+                </label>
+                <input id="speseConvivenza" type="number" min="0" step="50" value="0" />
+                <div class="extra-monthly" id="speseConvivenzaHint" style="color:#c05a00"></div>
+              </div>
+            </div>
+          </div>
+
 
           <p class="spese-count-title" id="speseCountNote">
             Elenco spese compilabili.
@@ -480,6 +494,8 @@
             </div>
             <div id="liveBreakdown"></div>
           </div>
+
+          <div id="sepCostPanel"></div>
 
           <div class="kpi" id="kpi"></div>
 
@@ -583,7 +599,7 @@
   <script src="supabase.min.js"></script>
   <script src="fabric.min.js"></script>
   <script src="html2pdf.bundle.min.js"></script>
-    <script src="app.js?v=2.1.9"></script>
+    <script src="app.js?v=2.2.0"></script>
 </body>
 </html>
 
