@@ -1523,6 +1523,75 @@
       color: #204644;
     }
 
+    .spese-detail-store {
+      display: none;
+    }
+
+    .spese-detail-grid-wrap {
+      border: 1px solid #c8dad4;
+      border-radius: 8px;
+      background: #f9fcfb;
+      padding: 6px;
+    }
+
+    .spese-detail-grid {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 0.72rem;
+      color: #204644;
+    }
+
+    .spese-detail-grid th {
+      text-align: left;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #3b6964;
+      padding: 2px 4px 5px;
+    }
+
+    .spese-detail-grid td {
+      padding: 3px;
+      vertical-align: middle;
+    }
+
+    .spese-detail-cell-input {
+      width: 100%;
+      border: 1px solid #bfd5d0;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #214b47;
+      font-size: 0.72rem;
+      padding: 4px 6px;
+    }
+
+    .spese-detail-actions-cell {
+      width: 30px;
+      text-align: center;
+    }
+
+    .spese-detail-row-remove {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #c4d7d2;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #355b57;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .spese-detail-row-remove:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .spese-detail-add-row {
+      margin-top: 6px;
+      padding: 3px 8px;
+      font-size: 0.67rem;
+    }
+
     .spese-detail-counter {
       margin-top: 3px;
       font-size: 0.66rem;

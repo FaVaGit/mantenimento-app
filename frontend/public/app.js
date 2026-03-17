@@ -30,6 +30,7 @@ const defaultExpenseItems = [
     const SCENARIO_LABELS = ["A", "B", "C", "D", "E", "F"];
     const EXPENSE_DETAIL_MAX_CHARS = 560;
     const EXPENSE_DETAIL_MAX_LINES = 10;
+    const EXPENSE_DETAIL_MAX_ROWS = 8;
 
     const QUOTA_MANTENIMENTO_PERC = 35;
 
@@ -250,6 +251,11 @@ const defaultExpenseItems = [
         expenseDetailBtn: "Dettaglio",
         expenseDetailTitle: "Apri dettaglio voce spesa",
         expenseDetailPlaceholder: "Scrivi qui il dettaglio di questa cifra (es. mesi, quota, riferimento).",
+        expenseDetailColThing: "Cosa",
+        expenseDetailColAmount: "Quanto",
+        expenseDetailColDue: "Scadenza",
+        expenseDetailAddRow: "Aggiungi riga",
+        expenseDetailRemoveRow: "Rimuovi riga",
         expenseDetailCharsRemaining: "Caratteri rimanenti: {count}",
         expenseRemoveTitle: "Rimuovi voce spesa",
         expenseRemoveBtn: "Rimuovi",
@@ -612,6 +618,11 @@ const defaultExpenseItems = [
         expenseDetailBtn: "Detail",
         expenseDetailTitle: "Open expense detail",
         expenseDetailPlaceholder: "Write details for this amount (e.g. months, share, reference).",
+        expenseDetailColThing: "What",
+        expenseDetailColAmount: "How much",
+        expenseDetailColDue: "Due date",
+        expenseDetailAddRow: "Add row",
+        expenseDetailRemoveRow: "Remove row",
         expenseDetailCharsRemaining: "Remaining characters: {count}",
         expenseRemoveTitle: "Remove expense item",
         expenseRemoveBtn: "Remove",
@@ -1457,6 +1468,105 @@ const defaultExpenseItems = [
       if (!textarea) return;
       autoResizeExpenseDetailTextarea(textarea, preferredHeight);
       updateExpenseDetailCounter(textarea);
+      syncExpenseDetailTableFromStore(textarea);
+    }
+
+    function parseExpenseDetailRows(raw) {
+      const lines = String(raw || "")
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      if (!lines.length) return [{ what: "", amount: "", due: "" }];
+      return lines
+        .map((line) => {
+          const cols = line.split("|").map((part) => part.trim());
+          if (cols.length >= 2) {
+            return {
+              what: cols[0] || "",
+              amount: cols[1] || "",
+              due: cols.slice(2).join(" | ") || ""
+            };
+          }
+          return { what: line, amount: "", due: "" };
+        })
+        .slice(0, EXPENSE_DETAIL_MAX_ROWS);
+    }
+
+    function sanitizeExpenseDetailCell(value) {
+      return String(value || "")
+        .replace(/[\r\n]+/g, " ")
+        .replace(/\|/g, "/")
+        .trim();
+    }
+
+    function serializeExpenseDetailRows(rows) {
+      const compact = (Array.isArray(rows) ? rows : [])
+        .map((row) => ({
+          what: sanitizeExpenseDetailCell(row && row.what),
+          amount: sanitizeExpenseDetailCell(row && row.amount),
+          due: sanitizeExpenseDetailCell(row && row.due)
+        }))
+        .filter((row) => row.what || row.amount || row.due);
+      return compact.map((row) => `${row.what} | ${row.amount} | ${row.due}`.trim()).join("\n");
+    }
+
+    function buildExpenseDetailTableHtml(textareaId, rows) {
+      const safeRows = (Array.isArray(rows) && rows.length ? rows : [{ what: "", amount: "", due: "" }])
+        .slice(0, EXPENSE_DETAIL_MAX_ROWS);
+      const rowsHtml = safeRows.map((row) => {
+        const canRemove = safeRows.length > 1;
+        return `<tr>
+          <td><input class="spese-detail-cell-input" data-col="what" type="text" maxlength="120" value="${escapeHtml(row.what || "")}" /></td>
+          <td><input class="spese-detail-cell-input" data-col="amount" type="text" maxlength="80" value="${escapeHtml(row.amount || "")}" /></td>
+          <td><input class="spese-detail-cell-input" data-col="due" type="text" maxlength="80" value="${escapeHtml(row.due || "")}" /></td>
+          <td class="spese-detail-actions-cell"><button type="button" class="spese-detail-row-remove" data-row-remove="1" ${canRemove ? "" : "disabled"} title="${escapeHtml(tr("expenseDetailRemoveRow"))}">-</button></td>
+        </tr>`;
+      }).join("");
+      return `<div class="spese-detail-grid-wrap" data-detail-table="${textareaId}">
+        <table class="spese-detail-grid" aria-label="${escapeHtml(tr("expenseDetailTitle"))}">
+          <thead>
+            <tr>
+              <th>${escapeHtml(tr("expenseDetailColThing"))}</th>
+              <th>${escapeHtml(tr("expenseDetailColAmount"))}</th>
+              <th>${escapeHtml(tr("expenseDetailColDue"))}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <button type="button" class="btn-secondary spese-detail-add-row" data-row-add="${textareaId}">${escapeHtml(tr("expenseDetailAddRow"))}</button>
+      </div>`;
+    }
+
+    function readExpenseDetailRowsFromTable(tableWrap) {
+      if (!tableWrap) return [];
+      return Array.from(tableWrap.querySelectorAll("tbody tr")).map((trEl) => ({
+        what: String(trEl.querySelector('input[data-col="what"]')?.value || "").trim(),
+        amount: String(trEl.querySelector('input[data-col="amount"]')?.value || "").trim(),
+        due: String(trEl.querySelector('input[data-col="due"]')?.value || "").trim()
+      }));
+    }
+
+    function syncExpenseDetailStoreFromTable(tableWrap) {
+      if (!tableWrap) return;
+      const textareaId = String(tableWrap.getAttribute("data-detail-table") || "");
+      const textarea = textareaId ? document.getElementById(textareaId) : null;
+      if (!textarea) return;
+      const serialized = serializeExpenseDetailRows(readExpenseDetailRowsFromTable(tableWrap));
+      textarea.value = serialized.slice(0, EXPENSE_DETAIL_MAX_CHARS);
+      updateExpenseDetailCounter(textarea);
+    }
+
+    function syncExpenseDetailTableFromStore(textarea) {
+      if (!textarea || !textarea.id) return;
+      const host = document.getElementById(`${textarea.id}TableHost`);
+      if (!host) return;
+      const existing = host.querySelector(`[data-detail-table='${textarea.id}']`);
+      const existingSerialized = serializeExpenseDetailRows(existing ? readExpenseDetailRowsFromTable(existing) : []);
+      const storeSerialized = String(textarea.value || "").trim();
+      if (existing && existingSerialized === storeSerialized) return;
+      host.innerHTML = buildExpenseDetailTableHtml(textarea.id, parseExpenseDetailRows(storeSerialized));
+      syncExpenseDetailStoreFromTable(host.querySelector(`[data-detail-table='${textarea.id}']`));
     }
 
     function collectExpenseDetailUiMeta(spouseKey, idx) {
@@ -2938,7 +3048,8 @@ const defaultExpenseItems = [
                 <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c1d_${idx}" data-detail-wrap="c1dw_${idx}" title="${tr("expenseDetailTitle")}"><span class="spese-detail-label">${tr("expenseDetailBtn")}</span></button>
               </div>
               <div class="spese-detail-wrap is-hidden" id="c1dw_${idx}">
-                <textarea id="c1d_${idx}" class="spese-detail-text" rows="2" maxlength="${EXPENSE_DETAIL_MAX_CHARS}" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}" aria-describedby="c1d_${idx}Counter"></textarea>
+                <div id="c1d_${idx}TableHost"></div>
+                <textarea id="c1d_${idx}" class="spese-detail-text spese-detail-store" rows="2" maxlength="${EXPENSE_DETAIL_MAX_CHARS}" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}" aria-describedby="c1d_${idx}Counter"></textarea>
                 <div class="spese-detail-counter" id="c1d_${idx}Counter" aria-live="polite"></div>
               </div>
               <span class="spese-partial" id="p1_${idx}" title="${tr("expensePartialTitle")}">${tr("expensePartialLabel")}: ${eurTiny(0)}</span>
@@ -2951,7 +3062,8 @@ const defaultExpenseItems = [
                 <button class="btn-secondary spese-detail-btn" type="button" data-detail-target="c2d_${idx}" data-detail-wrap="c2dw_${idx}" title="${tr("expenseDetailTitle")}"><span class="spese-detail-label">${tr("expenseDetailBtn")}</span></button>
               </div>
               <div class="spese-detail-wrap is-hidden" id="c2dw_${idx}">
-                <textarea id="c2d_${idx}" class="spese-detail-text" rows="2" maxlength="${EXPENSE_DETAIL_MAX_CHARS}" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}" aria-describedby="c2d_${idx}Counter"></textarea>
+                <div id="c2d_${idx}TableHost"></div>
+                <textarea id="c2d_${idx}" class="spese-detail-text spese-detail-store" rows="2" maxlength="${EXPENSE_DETAIL_MAX_CHARS}" placeholder="${escapeHtml(tr("expenseDetailPlaceholder"))}" aria-describedby="c2d_${idx}Counter"></textarea>
                 <div class="spese-detail-counter" id="c2d_${idx}Counter" aria-live="polite"></div>
               </div>
               <span class="spese-partial" id="p2_${idx}" title="${tr("expensePartialTitle")}">${tr("expensePartialLabel")}: ${eurTiny(0)}</span>
@@ -2965,6 +3077,9 @@ const defaultExpenseItems = [
       });
       rowsSpese.querySelectorAll("textarea.spese-detail-text").forEach((el) => {
         updateExpenseDetailTextareaUi(el);
+      });
+      rowsSpese.querySelectorAll("textarea.spese-detail-store").forEach((el) => {
+        syncExpenseDetailTableFromStore(el);
       });
       refreshExpenseDetailButtonState();
     }
@@ -6317,9 +6432,46 @@ ${scenarioLab.length ? `
           detailBtn.classList.toggle("is-open", willOpen);
           if (target) {
             updateExpenseDetailTextareaUi(target);
-            if (willOpen) target.focus();
+            if (willOpen) {
+              const firstField = document.querySelector(`#${targetId}TableHost .spese-detail-cell-input`);
+              if (firstField) firstField.focus();
+            }
           }
         }
+        return;
+      }
+
+      const addRowBtn = e.target && e.target.closest("button[data-row-add]");
+      if (addRowBtn) {
+        const textareaId = String(addRowBtn.getAttribute("data-row-add") || "");
+        const textarea = textareaId ? document.getElementById(textareaId) : null;
+        if (!textarea) return;
+        const rows = parseExpenseDetailRows(textarea.value);
+        if (rows.length < EXPENSE_DETAIL_MAX_ROWS) {
+          rows.push({ what: "", amount: "", due: "" });
+          textarea.value = serializeExpenseDetailRows(rows);
+          syncExpenseDetailTableFromStore(textarea);
+          refreshExpenseDetailButtonState();
+        }
+        return;
+      }
+
+      const removeRowBtn = e.target && e.target.closest("button[data-row-remove]");
+      if (removeRowBtn) {
+        const tableWrap = removeRowBtn.closest("[data-detail-table]");
+        const rowEl = removeRowBtn.closest("tr");
+        if (!tableWrap || !rowEl) return;
+        const rows = readExpenseDetailRowsFromTable(tableWrap);
+        const rowEls = Array.from(tableWrap.querySelectorAll("tbody tr"));
+        const removeIdx = rowEls.indexOf(rowEl);
+        if (removeIdx >= 0) rows.splice(removeIdx, 1);
+        const nextRows = rows.length ? rows : [{ what: "", amount: "", due: "" }];
+        const textareaId = String(tableWrap.getAttribute("data-detail-table") || "");
+        const textarea = textareaId ? document.getElementById(textareaId) : null;
+        if (!textarea) return;
+        textarea.value = serializeExpenseDetailRows(nextRows);
+        syncExpenseDetailTableFromStore(textarea);
+        refreshExpenseDetailButtonState();
         return;
       }
 
@@ -6332,6 +6484,12 @@ ${scenarioLab.length ? `
     rowsSpese.addEventListener("input", (e) => {
       if (e.target && e.target.matches("textarea.spese-detail-text")) {
         updateExpenseDetailTextareaUi(e.target);
+        refreshExpenseDetailButtonState();
+        return;
+      }
+      if (e.target && e.target.matches(".spese-detail-cell-input")) {
+        const tableWrap = e.target.closest("[data-detail-table]");
+        syncExpenseDetailStoreFromTable(tableWrap);
         refreshExpenseDetailButtonState();
       }
     });
