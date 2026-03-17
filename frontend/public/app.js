@@ -5874,7 +5874,7 @@ ${scenarioLab.length ? `
             throw new Error(tr("authInvalidJsonFormat"));
           }
 
-          if (!authSession.username || !authSession.keyBits) {
+          if (!authSession.username) {
             throw new Error(tr("authLoginBeforeImport"));
           }
 
@@ -5882,6 +5882,9 @@ ${scenarioLab.length ? `
           if (payload.format === "keylock-encrypted-state-v1") {
             if (!payload.cipher) {
               throw new Error(tr("authInvalidJsonFormat"));
+            }
+            if (!authSession.keyBits) {
+              throw new Error(tr("authLoginBeforeImport"));
             }
             if (normalizeUsername(payload.owner) !== normalizeUsername(authSession.username)) {
               throw new Error(tr("authFileOwnedByOther"));
