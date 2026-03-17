@@ -21,11 +21,18 @@ const urlLoginTokenStore = new Map();
 const accessLogEnabled = String(process.env.ACCESS_LOG_ENABLED || (process.env.NODE_ENV === 'production' ? 'true' : 'false')).toLowerCase() === 'true';
 const accessLogSalt = String(process.env.ACCESS_LOG_SALT || 'mantenimento-app');
 const authUrlLoginSecret = String(process.env.AUTH_URL_LOGIN_SECRET || '').trim();
-const authUrlLoginAllowedUser = String(process.env.AUTH_URL_LOGIN_ALLOWED_USER || 'favagit').trim().toLowerCase();
+const authUrlLoginAllowedUsers = new Set(
+  String(process.env.AUTH_URL_LOGIN_ALLOWED_USER || 'favagit')
+    .split(',')
+    .map((v) => v.trim().toLowerCase())
+    .filter(Boolean)
+);
+const authUrlLoginDefaultUser = authUrlLoginAllowedUsers.values().next().value || 'favagit';
 const authUrlLoginSupabaseUrl = String(process.env.AUTH_URL_LOGIN_SUPABASE_URL || process.env.KEYLOCK_SUPABASE_URL || '').trim().replace(/\/+$/, '');
 const authUrlLoginSupabaseAnonKey = String(process.env.AUTH_URL_LOGIN_SUPABASE_ANON_KEY || process.env.KEYLOCK_SUPABASE_ANON_KEY || '').trim();
 const authUrlLoginSupabaseEmail = String(process.env.AUTH_URL_LOGIN_SUPABASE_EMAIL || '').trim().toLowerCase();
 const authUrlLoginSupabasePassword = String(process.env.AUTH_URL_LOGIN_SUPABASE_PASSWORD || '');
+const authUrlLoginSupabaseUsersRaw = String(process.env.AUTH_URL_LOGIN_SUPABASE_USERS_JSON || '').trim();
 const authUrlLoginMaxTtlSec = Number(process.env.AUTH_URL_LOGIN_MAX_TTL_SEC || 180);
 const authUrlLoginBootstrapKey = String(process.env.AUTH_URL_LOGIN_BOOTSTRAP_KEY || '').trim();
 const authUrlLoginFrontendBase = String(process.env.AUTH_URL_LOGIN_FRONTEND_BASE || 'https://favagit.github.io/mantenimento-app/autologin.html').trim();
@@ -33,6 +40,28 @@ const apiAllowedOrigins = String(process.env.API_ALLOWED_ORIGINS || '')
   .split(',')
   .map((v) => v.trim())
   .filter(Boolean);
+
+function parseSupabaseUserMap(rawValue) {
+  if (!rawValue) return {};
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (!parsed || typeof parsed !== 'object') return {};
+    const out = {};
+    Object.entries(parsed).forEach(([rawUser, creds]) => {
+      const username = String(rawUser || '').trim().toLowerCase();
+      if (!username || !creds || typeof creds !== 'object') return;
+      const email = String(creds.email || '').trim().toLowerCase();
+      const password = String(creds.password || '');
+      if (!email || !password) return;
+      out[username] = { email, password };
+    });
+    return out;
+  } catch (_) {
+    return {};
+  }
+}
+
+const authUrlLoginSupabaseUsersMap = parseSupabaseUserMap(authUrlLoginSupabaseUsersRaw);
 
 function isAllowedApiOrigin(origin) {
   if (!origin) return false;
@@ -114,7 +143,7 @@ function validateUrlLoginToken(tokenValue) {
   const exp = Number(payload && payload.exp);
   const iat = Number(payload && payload.iat);
 
-  if (!sub || sub !== authUrlLoginAllowedUser) return { ok: false, error: 'Token user not allowed.' };
+  if (!sub || !authUrlLoginAllowedUsers.has(sub)) return { ok: false, error: 'Token user not allowed.' };
   if (aud && aud !== 'url-login') return { ok: false, error: 'Invalid token audience.' };
   if (!jti) return { ok: false, error: 'Token nonce missing.' };
   if (!Number.isFinite(exp) || exp <= nowSec) return { ok: false, error: 'Token expired.' };
@@ -124,6 +153,20 @@ function validateUrlLoginToken(tokenValue) {
 
   urlLoginTokenStore.set(jti, exp);
   return { ok: true, payload };
+}
+
+function resolveSupabaseCredentialsForSubject(subject) {
+  const normalizedSubject = String(subject || '').trim().toLowerCase();
+  const mapped = authUrlLoginSupabaseUsersMap[normalizedSubject];
+  if (mapped && mapped.email && mapped.password) {
+    return { email: mapped.email, password: mapped.password };
+  }
+
+  if (authUrlLoginSupabaseEmail && authUrlLoginSupabasePassword) {
+    return { email: authUrlLoginSupabaseEmail, password: authUrlLoginSupabasePassword };
+  }
+
+  return { email: '', password: '' };
 }
 
 function createUrlLoginToken(subject, ttlSeconds) {
@@ -154,8 +197,8 @@ function buildFrontendAutologinUrl(token) {
   return `${base}${joiner}autologin=1&authToken=${encodeURIComponent(String(token || '').trim())}`;
 }
 
-async function deriveProfileKeyForUser(userId) {
-  const password = String(authUrlLoginSupabasePassword || '');
+async function deriveProfileKeyForUser(userId, passwordSeed) {
+  const password = String(passwordSeed || '');
   if (!password || !userId) return '';
 
   const salt = crypto.createHash('sha256').update(`keylock:${userId}`).digest();
@@ -314,9 +357,7 @@ app.post('/api/auth/url-login/exchange', async (req, res) => {
 
   const hasServerConfig = authUrlLoginSecret
     && authUrlLoginSupabaseUrl
-    && authUrlLoginSupabaseAnonKey
-    && authUrlLoginSupabaseEmail
-    && authUrlLoginSupabasePassword;
+    && authUrlLoginSupabaseAnonKey;
 
   if (!hasServerConfig) {
     return res.status(503).json({ ok: false, error: 'Secure URL login not configured on server.' });
@@ -328,6 +369,12 @@ app.post('/api/auth/url-login/exchange', async (req, res) => {
     return res.status(401).json({ ok: false, error: tokenCheck.error || 'Invalid token.' });
   }
 
+  const tokenSub = String(tokenCheck.payload && tokenCheck.payload.sub ? tokenCheck.payload.sub : '').trim().toLowerCase();
+  const creds = resolveSupabaseCredentialsForSubject(tokenSub);
+  if (!creds.email || !creds.password) {
+    return res.status(503).json({ ok: false, error: 'Secure URL login credentials not configured for user.' });
+  }
+
   try {
     const supaResponse = await fetch(`${authUrlLoginSupabaseUrl}/auth/v1/token?grant_type=password`, {
       method: 'POST',
@@ -336,8 +383,8 @@ app.post('/api/auth/url-login/exchange', async (req, res) => {
         apikey: authUrlLoginSupabaseAnonKey
       },
       body: JSON.stringify({
-        email: authUrlLoginSupabaseEmail,
-        password: authUrlLoginSupabasePassword
+        email: creds.email,
+        password: creds.password
       })
     });
 
@@ -346,7 +393,7 @@ app.post('/api/auth/url-login/exchange', async (req, res) => {
       return res.status(401).json({ ok: false, error: 'Supabase session exchange failed.' });
     }
 
-    const profileKey = await deriveProfileKeyForUser(String(supaJson.user.id));
+    const profileKey = await deriveProfileKeyForUser(String(supaJson.user.id), creds.password);
     return res.json({
       ok: true,
       session: {
@@ -376,8 +423,8 @@ app.get('/api/auth/url-login/start', (req, res) => {
     return res.status(401).json({ ok: false, error: 'Invalid bootstrap key.' });
   }
 
-  const requestedSub = String(req.query.sub || authUrlLoginAllowedUser).trim().toLowerCase();
-  if (!requestedSub || requestedSub !== authUrlLoginAllowedUser) {
+  const requestedSub = String(req.query.sub || authUrlLoginDefaultUser).trim().toLowerCase();
+  if (!requestedSub || !authUrlLoginAllowedUsers.has(requestedSub)) {
     return res.status(400).json({ ok: false, error: 'Unsupported bootstrap subject.' });
   }
 

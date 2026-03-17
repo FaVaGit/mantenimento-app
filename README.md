@@ -68,11 +68,12 @@ Per evitare credenziali in chiaro nel link, e disponibile un flusso `authToken` 
 
 Variabili ambiente backend richieste:
 - `AUTH_URL_LOGIN_SECRET`: segreto HMAC (lungo e casuale)
-- `AUTH_URL_LOGIN_ALLOWED_USER`: utente consentito (default `favagit`)
+- `AUTH_URL_LOGIN_ALLOWED_USER`: utenti consentiti (separati da virgola, es. `favagit,fabio.vacchino`)
 - `AUTH_URL_LOGIN_SUPABASE_URL`: URL progetto Supabase
 - `AUTH_URL_LOGIN_SUPABASE_ANON_KEY`: anon key Supabase
 - `AUTH_URL_LOGIN_SUPABASE_EMAIL`: email account da autenticare via URL token
 - `AUTH_URL_LOGIN_SUPABASE_PASSWORD`: password account da autenticare via URL token
+- `AUTH_URL_LOGIN_SUPABASE_USERS_JSON`: mappa opzionale `sub -> {email,password}` per login per-utente
 - `AUTH_URL_LOGIN_MAX_TTL_SEC`: TTL massimo token (default `180`)
 - `AUTH_URL_LOGIN_BOOTSTRAP_KEY`: chiave per avviare autologin server-side senza shell
 - `AUTH_URL_LOGIN_FRONTEND_BASE`: URL frontend di destinazione (default `https://favagit.github.io/mantenimento-app/autologin.html`)
@@ -106,6 +107,7 @@ https://mantenimento-app.onrender.com/api/auth/url-login/start?k=<BOOTSTRAP_KEY>
 ```
 
 Il backend genera token monouso in automatico e reindirizza al frontend.
+Se `AUTH_URL_LOGIN_SUPABASE_USERS_JSON` e configurato, il valore `sub` determina anche quale account Supabase viene autenticato.
 
 Per ottenere il link in JSON invece del redirect:
 
