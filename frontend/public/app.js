@@ -4747,6 +4747,21 @@ const defaultExpenseItems = [
       };
       const pdfCalHtml = buildPdfCalendarHtml();
       const compBenefits = getCompensativeBenefitRows(m, c1Name, c2Name);
+      const compBenefitsRowsHtml = compBenefits.length
+        ? compBenefits.map((row) => `<tr><td>${escapeHtml(row.label)}</td><td class="num">${eur(row.amount)}</td></tr>`).join("")
+        : `<tr><td colspan="2">${tr("pdfCompBenefitsNone")}</td></tr>`;
+      const primaryHomeAssignedLabel = m.primaCasaAssegnataA === "1"
+        ? c1NameEsc
+        : m.primaCasaAssegnataA === "2"
+          ? c2NameEsc
+          : tr("pdfPrimaryHomeNotDeclared");
+      const primaryHomeSummaryRows = m.primaCasaMutuoEnabled
+        ? `
+        <tr><td>${tr("pdfPrimaryHomeAssignedTo")}</td><td>${primaryHomeAssignedLabel}</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeMonthlyAmount")}</td><td>${eur(m.primaCasaMutuoImporto || 0)}</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeSplit")}</td><td>${c1NameEsc} ${(m.primaCasaMutuoPerc1 || 0).toFixed(0)}% · ${c2NameEsc} ${(m.primaCasaMutuoPerc2 || 0).toFixed(0)}%</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeAppliedOnlyColl")}</td><td>${m.primaCasaConsidered ? "OK" : tr("pdfPrimaryHomeNotDeclared")}</td></tr>`
+        : `<tr><td>${tr("pdfPrimaryHomeMortgage")}</td><td>${tr("pdfPrimaryHomeNotDeclared")}</td></tr>`;
 
       let explainResultHtml = `<div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>`;
       if (m.assegnoDa1a2 > 0.005) {
