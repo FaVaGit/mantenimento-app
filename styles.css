@@ -885,9 +885,21 @@
     }
 
     .extra-box-first-home {
+      position: relative;
+      overflow: hidden;
       background: linear-gradient(135deg, #ffffff 0%, #f0fffe 50%, #f5faff 100%);
       border: 1px solid rgba(27, 141, 127, 0.15);
       box-shadow: 0 2px 8px rgba(27, 141, 127, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .extra-box-first-home::after {
+      content: "";
+      position: absolute;
+      inset: -40% -20% auto;
+      height: 180px;
+      background: radial-gradient(circle at 50% 50%, rgba(61, 181, 160, 0.16), rgba(216, 154, 53, 0.08) 45%, transparent 70%);
+      pointer-events: none;
+      animation: first-home-aurora 7s ease-in-out infinite alternate;
     }
 
     .extra-box-first-home .extra-box-title::before {
@@ -896,10 +908,37 @@
     }
 
     .extra-box-first-home .extra-grid {
+      position: relative;
+      z-index: 1;
       gap: 8px 10px;
     }
 
+    .extra-box-first-home .field {
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .extra-box-first-home .field:focus-within {
+      transform: translateY(-1px);
+      filter: saturate(1.04);
+    }
+
+    .extra-box-first-home .field input[type="number"],
+    .extra-box-first-home .field select {
+      border-width: 1.5px;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .extra-box-first-home .field input[type="number"]:focus,
+    .extra-box-first-home .field select:focus {
+      border-color: rgba(27, 141, 127, 0.4);
+      box-shadow: 0 0 0 3px rgba(27, 141, 127, 0.14), 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+      background: linear-gradient(180deg, #ffffff, #f4fffd);
+    }
+
     .mortgage-split-slider {
+      position: relative;
+      overflow: hidden;
       margin-top: 12px;
       border: 1.5px solid rgba(27, 141, 127, 0.2);
       border-radius: 16px;
@@ -916,9 +955,23 @@
       transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
+    .mortgage-split-slider::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(112deg, transparent 30%, rgba(255, 255, 255, 0.55) 46%, transparent 58%);
+      transform: translateX(-120%);
+      transition: transform 0.5s ease;
+      pointer-events: none;
+    }
+
     .mortgage-split-slider:hover {
       box-shadow: 0 8px 20px rgba(27, 141, 127, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
       border-color: rgba(27, 141, 127, 0.3);
+    }
+
+    .mortgage-split-slider:hover::after {
+      transform: translateX(120%);
     }
 
     .mortgage-split-slider.is-disabled {
@@ -1098,6 +1151,17 @@
       box-shadow: 0 2px 6px rgba(27, 141, 127, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6);
       transition: all 0.2s ease;
       letter-spacing: 0.2px;
+      animation: split-center-breathe 2.6s ease-in-out infinite;
+    }
+
+    @keyframes first-home-aurora {
+      0% { transform: translate3d(-5%, -12%, 0) scale(1); }
+      100% { transform: translate3d(6%, -6%, 0) scale(1.08); }
+    }
+
+    @keyframes split-center-breathe {
+      0%, 100% { box-shadow: 0 2px 6px rgba(27, 141, 127, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6); }
+      50% { box-shadow: 0 5px 14px rgba(27, 141, 127, 0.24), inset 0 1px 2px rgba(255, 255, 255, 0.75); }
     }
 
     #primaCasaMutuoSplitInfo {

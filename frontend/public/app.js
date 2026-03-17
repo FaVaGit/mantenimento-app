@@ -295,6 +295,7 @@ const defaultExpenseItems = [
         calcBenefitFamilyAllowance: "Assegno familiare INPS percepito da {spouse}",
         calcBenefitPrimaryHomeMortgage: "Quota mutuo prima casa ceduta al collocatario ({payer} -> {receiver})",
         calcBenefitPrimaryHomeAssignment: "Assegnazione casa familiare - valore locativo ({receiver})",
+        calcBenefitExcludedFromTotal: "fuori totale",
         pdfCompBenefitsSection: "Benefici compensativi gia allocati",
         pdfCompBenefitsItem: "Beneficio",
         pdfCompBenefitsAmount: "Valore {currency}/mese",
@@ -654,6 +655,7 @@ const defaultExpenseItems = [
         calcBenefitFamilyAllowance: "INPS family allowance received by {spouse}",
         calcBenefitPrimaryHomeMortgage: "Primary-home mortgage share assigned to custodial parent ({payer} -> {receiver})",
         calcBenefitPrimaryHomeAssignment: "Primary home assignment - rental value ({receiver})",
+        calcBenefitExcludedFromTotal: "excluded from total",
         pdfCompBenefitsSection: "Compensative benefits already allocated",
         pdfCompBenefitsItem: "Benefit",
         pdfCompBenefitsAmount: "Value {currency}/month",
@@ -1494,6 +1496,14 @@ const defaultExpenseItems = [
         ? defaultMatch.help
         : (rawHelp || `Voce aggiunta manualmente: ${label}.`);
       return { label, help };
+    }
+
+    function isLegacyLocativeExpenseLabel(label) {
+      const normalized = String(label || "")
+        .replace(/^[^A-Za-z\u00C0-\u024F]+/, "")
+        .trim()
+        .toLowerCase();
+      return normalized === "casa (valore locativo)";
     }
 
     function populateSuggestedExpenseOptions() {
@@ -4638,14 +4648,14 @@ const defaultExpenseItems = [
           const rawBenefs = Array.isArray(m.compensativeBenefits)
             ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
             : [];
-          const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
+          const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1", "primary-home-assignment": "\uD83C\uDFE0" };
           const cardsHtml = benefitRows
             .map((row, i) => {
               const icon = (rawBenefs[i] && typeIcons[rawBenefs[i].type]) || "\u2726";
               return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
             })
             .join("");
-          const total = benefitRows.reduce((s, r) => s + r.amount, 0);
+          const total = getCompensativeBenefitsTotal(benefitRows);
           const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
           resultHtml = `
             <div class="spieg-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>
@@ -4730,19 +4740,30 @@ const defaultExpenseItems = [
           const amount = Number(row.amount || 0);
           if (row.type === "family") {
             const spouse = Number(row.to) === 2 ? name2 : name1;
-            return { label: msg("calcBenefitFamilyAllowance", { spouse }), amount };
+            return { label: msg("calcBenefitFamilyAllowance", { spouse }), amount, includeInTotal: true };
           }
           if (row.type === "primary-home-mortgage") {
             const payer = Number(row.from) === 2 ? name2 : name1;
             const receiver = Number(row.to) === 2 ? name2 : name1;
-            return { label: msg("calcBenefitPrimaryHomeMortgage", { payer, receiver }), amount };
+            return { label: msg("calcBenefitPrimaryHomeMortgage", { payer, receiver }), amount, includeInTotal: true };
           }
           if (row.type === "primary-home-assignment") {
             const receiver = Number(row.to) === 2 ? name2 : name1;
-            return { label: msg("calcBenefitPrimaryHomeAssignment", { receiver }), amount };
+            return {
+              label: `${msg("calcBenefitPrimaryHomeAssignment", { receiver })} (${tr("calcBenefitExcludedFromTotal")})`,
+              amount,
+              includeInTotal: false
+            };
           }
-          return { label: tr("calcCompBenefitsLabel"), amount };
+          return { label: tr("calcCompBenefitsLabel"), amount, includeInTotal: true };
         });
+    }
+
+    function getCompensativeBenefitsTotal(rows) {
+      return (rows || []).reduce((sum, row) => {
+        if (!row || row.includeInTotal === false) return sum;
+        return sum + Number(row.amount || 0);
+      }, 0);
     }
 
     function formatCompensativeBenefitsInline(m, name1 = c1n(), name2 = c2n()) {
@@ -4851,14 +4872,14 @@ const defaultExpenseItems = [
           const rawBenefs = Array.isArray(m.compensativeBenefits)
             ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
             : [];
-          const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
+          const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1", "primary-home-assignment": "\uD83C\uDFE0" };
           const cardsHtml = benefitRows
             .map((row, i) => {
               const icon = (rawBenefs[i] && typeIcons[rawBenefs[i].type]) || "\u2726";
               return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
             })
             .join("");
-          const total = benefitRows.reduce((s, r) => s + r.amount, 0);
+          const total = getCompensativeBenefitsTotal(benefitRows);
           const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
           benefitCardsHtml = `
             <div class="result-benefits-box">
@@ -5122,12 +5143,12 @@ const defaultExpenseItems = [
         const rawBenefs = Array.isArray(m.compensativeBenefits)
           ? m.compensativeBenefits.filter((row) => row && Number(row.amount || 0) > 0.005)
           : [];
-        const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
+        const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1", "primary-home-assignment": "\uD83C\uDFE0" };
         const cardsHtml = compBenefits.map((row, idx) => {
           const icon = (rawBenefs[idx] && typeIcons[rawBenefs[idx].type]) || "\u2726";
           return `<li class="pdf-explain-benefit-card"><span class="pdf-explain-benefit-icon">${icon}</span><span class="pdf-explain-benefit-label">${escapeHtml(row.label)}</span><strong class="pdf-explain-benefit-amount">${eur(row.amount)}</strong></li>`;
         }).join("");
-        const benefitsTotal = compBenefits.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+        const benefitsTotal = getCompensativeBenefitsTotal(compBenefits);
         explainResultHtml = `
           <div class="pdf-explain-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>
           <div class="pdf-explain-benefits-section">
@@ -6050,6 +6071,7 @@ ${scenarioLab.length ? `
 
     function hydrateState(state) {
       if (!state || !state.base || !state.spese) return;
+      let stateSpeseRows = Array.isArray(state.spese) ? state.spese : [];
       Object.entries(state.base).forEach(([k, v]) => {
         const el = document.getElementById(k);
         if (!el) return;
@@ -6065,11 +6087,15 @@ ${scenarioLab.length ? `
         speseConvivenzaAutoMode = Math.max(0, Number(state.base && state.base.speseConvivenza || 0)) <= 0.005;
       }
       if (Array.isArray(state.expenseItems) && state.expenseItems.length) {
-        expenseItems = state.expenseItems.map((item, idx) => normalizeExpenseItem(item, idx));
+        const filteredPairs = state.expenseItems
+          .map((item, idx) => ({ item, row: stateSpeseRows[idx] }))
+          .filter((pair) => !isLegacyLocativeExpenseLabel(pair && pair.item && pair.item.label));
+        expenseItems = filteredPairs.map((pair, idx) => normalizeExpenseItem(pair.item, idx));
+        stateSpeseRows = filteredPairs.map((pair) => pair.row).filter((row) => row !== undefined);
       } else {
         expenseItems = defaultExpenseItems.map((item) => ({ ...item }));
       }
-      while (expenseItems.length < state.spese.length) {
+      while (expenseItems.length < stateSpeseRows.length) {
         expenseItems.push(normalizeExpenseItem(null, expenseItems.length));
       }
       scenarioLab = normalizeScenarioLabState(state.scenarioLab);
@@ -6107,7 +6133,7 @@ ${scenarioLab.length ? `
       updateSpouseLabels();
       buildExpenseRows();
       syncPermanenza("calendar");
-      state.spese.forEach((row, i) => {
+      stateSpeseRows.forEach((row, i) => {
         const c1 = document.getElementById(`c1_${i}`);
         const c2 = document.getElementById(`c2_${i}`);
         const d1 = document.getElementById(`c1d_${i}`);
