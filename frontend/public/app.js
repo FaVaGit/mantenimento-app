@@ -747,6 +747,7 @@ const defaultExpenseItems = [
         : null;
     const authSession = {
       username: null,
+      email: null,
       userId: null,
       keyBits: null,
       isDonor: false
@@ -1687,6 +1688,7 @@ const defaultExpenseItems = [
 
     async function completeAuthSession(username, password, user) {
       authSession.username = username;
+      authSession.email = normalizeEmail(user && user.email ? user.email : "");
       authSession.userId = user.id;
       authSession.keyBits = await deriveSessionKeyBits(password, user.id);
       authSession.isDonor = localStorage.getItem(`m_donor_${user.id}`) === "1";
@@ -1816,7 +1818,10 @@ const defaultExpenseItems = [
 
     function isLoggedIn() { return !!authSession.username; }
     function isDonationPolicyBypassedUser() {
-      return normalizeUsername(authSession.username) === "favagit";
+      const bypassUsername = "favagit";
+      const normalizedUser = normalizeUsername(authSession.username);
+      const normalizedMailLocal = normalizeUsername(String(authSession.email || "").split("@")[0]);
+      return normalizedUser === bypassUsername || normalizedMailLocal === bypassUsername;
     }
     function isDonorUser() {
       return !!authSession.isDonor || isDonationPolicyBypassedUser();
@@ -1906,7 +1911,7 @@ const defaultExpenseItems = [
       if (sessionActions) sessionActions.classList.toggle("is-hidden", !logged);
       if (toggleBtn) {
         toggleBtn.classList.toggle("logged", logged);
-        const badge = logged && authSession.isDonor ? ` ✦` : "";
+        const badge = logged && isDonorUser() ? ` ✦` : "";
         toggleBtn.querySelector("span").textContent = logged ? `${tr("authUserPrefix")}: ${authSession.username}${badge}` : tr("authLogin");
       }
 
@@ -2474,6 +2479,7 @@ const defaultExpenseItems = [
         await supabaseClient.auth.signOut();
       }
       authSession.username = null;
+      authSession.email = null;
       authSession.userId = null;
       authSession.keyBits = null;
       authSession.isDonor = false;
@@ -4576,6 +4582,9 @@ const defaultExpenseItems = [
       items.forEach(([label, value, cls]) => {
         const el = document.createElement("div");
         el.className = "kpi-item";
+        if (label === tr("calcCompBenefitsLabel")) {
+          el.classList.add("kpi-item--longtext");
+        }
         el.innerHTML = `<span>${label}</span><strong class="${cls}">${value}</strong>`;
         kpi.appendChild(el);
       });
@@ -4713,6 +4722,7 @@ const defaultExpenseItems = [
         </div>`;
       };
       const pdfCalHtml = buildPdfCalendarHtml();
+      const compBenefits = getCompensativeBenefitRows(m, c1Name, c2Name);
 
       let explainResultHtml = `<div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>`;
       if (m.assegnoDa1a2 > 0.005) {
