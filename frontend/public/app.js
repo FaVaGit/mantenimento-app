@@ -281,6 +281,8 @@ const defaultExpenseItems = [
         firstHomeBoxNote: "Dichiara se esiste un mutuo sulla prima casa dei coniugi ceduta a uno dei due: il modello considera il trasferimento implicito quando la casa e assegnata al collocatario.",
         firstHomeMortgageEnabledLabel: "Mutuo su prima casa dei coniugi",
         firstHomeMortgageEnabledHint: "Attiva per includere il mutuo della prima casa ceduta nei benefici compensativi.",
+        firstHomeLocativeValueLabel: "Casa (valore locativo) ({currency})",
+        firstHomeLocativeValueHint: "Valore locativo mensile della casa assegnata, usato per valorizzare il beneficio economico implicito.",
         firstHomeMortgageAmountLabel: "Rata mutuo mensile ({currency})",
         firstHomeMortgageAmountHint: "Importo mensile complessivo della rata del mutuo prima casa.",
         firstHomeAssignedToLabel: "Casa assegnata a",
@@ -641,6 +643,8 @@ const defaultExpenseItems = [
         firstHomeBoxNote: "Declare whether there is a mortgage on the spouses' primary home assigned to one spouse: the model counts the implicit transfer when the home is assigned to the custodial parent.",
         firstHomeMortgageEnabledLabel: "Mortgage on spouses' primary home",
         firstHomeMortgageEnabledHint: "Enable to include the assigned primary-home mortgage in compensative benefits.",
+        firstHomeLocativeValueLabel: "Home (rental value) ({currency})",
+        firstHomeLocativeValueHint: "Monthly rental value of the assigned home, used to value the implicit economic benefit.",
         firstHomeMortgageAmountLabel: "Monthly mortgage payment ({currency})",
         firstHomeMortgageAmountHint: "Total monthly amount of the primary-home mortgage payment.",
         firstHomeAssignedToLabel: "Home assigned to",
@@ -1215,6 +1219,8 @@ const defaultExpenseItems = [
       const firstHomeBoxNote = document.getElementById("firstHomeBoxNote");
       const lblPrimaCasaMutuoEnabled = document.getElementById("lblPrimaCasaMutuoEnabled");
       const hintPrimaCasaMutuoEnabled = document.getElementById("hintPrimaCasaMutuoEnabled");
+      const lblPrimaCasaValoreLocativo = document.getElementById("lblPrimaCasaValoreLocativo");
+      const hintPrimaCasaValoreLocativo = document.getElementById("hintPrimaCasaValoreLocativo");
       const lblPrimaCasaMutuoImporto = document.getElementById("lblPrimaCasaMutuoImporto");
       const hintPrimaCasaMutuoImporto = document.getElementById("hintPrimaCasaMutuoImporto");
       const lblPrimaCasaAssegnataA = document.getElementById("lblPrimaCasaAssegnataA");
@@ -1278,6 +1284,8 @@ const defaultExpenseItems = [
       if (firstHomeBoxNote) firstHomeBoxNote.textContent = tr("firstHomeBoxNote");
       if (lblPrimaCasaMutuoEnabled) lblPrimaCasaMutuoEnabled.textContent = tr("firstHomeMortgageEnabledLabel");
       if (hintPrimaCasaMutuoEnabled) hintPrimaCasaMutuoEnabled.title = tr("firstHomeMortgageEnabledHint");
+      if (lblPrimaCasaValoreLocativo) lblPrimaCasaValoreLocativo.textContent = msg("firstHomeLocativeValueLabel", { currency: currentCurrency });
+      if (hintPrimaCasaValoreLocativo) hintPrimaCasaValoreLocativo.title = tr("firstHomeLocativeValueHint");
       if (lblPrimaCasaMutuoImporto) lblPrimaCasaMutuoImporto.textContent = msg("firstHomeMortgageAmountLabel", { currency: currentCurrency });
       if (hintPrimaCasaMutuoImporto) hintPrimaCasaMutuoImporto.title = tr("firstHomeMortgageAmountHint");
       if (lblPrimaCasaAssegnataA) lblPrimaCasaAssegnataA.textContent = tr("firstHomeAssignedToLabel");
@@ -3599,6 +3607,7 @@ const defaultExpenseItems = [
         aFam1: num("assegnoFam1"),
         aFam2: num("assegnoFam2"),
         primaCasaMutuoEnabled: firstHome.enabled ? 1 : 0,
+        primaCasaValoreLocativo: num("primaCasaValoreLocativo"),
         primaCasaMutuoImporto: firstHome.amount,
         primaCasaAssegnataA: firstHome.assignedTo,
         primaCasaMutuoPerc1: firstHome.share1,
@@ -6028,6 +6037,7 @@ ${scenarioLab.length ? `
         assegnoPagato2: num("assegnoPagato2"),
         assegnoFam2: num("assegnoFam2"),
         primaCasaMutuoEnabled: document.getElementById("primaCasaMutuoEnabled")?.checked ? 1 : 0,
+        primaCasaValoreLocativo: num("primaCasaValoreLocativo"),
         primaCasaMutuoImporto: num("primaCasaMutuoImporto"),
         primaCasaAssegnataA: String(document.getElementById("primaCasaAssegnataA")?.value || ""),
         primaCasaMutuoPerc1: num("primaCasaMutuoPerc1"),
