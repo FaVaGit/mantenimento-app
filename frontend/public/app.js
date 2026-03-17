@@ -757,12 +757,13 @@ const defaultExpenseItems = [
       && !SUPABASE_ANON_KEY.includes("YOUR_PUBLIC_ANON_KEY")
         ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
-              persistSession: false,
-              autoRefreshToken: false,
+              persistSession: true,
+              autoRefreshToken: true,
               detectSessionInUrl: false
             }
           })
         : null;
+    const PROFILE_KEY_STORAGE_PREFIX = "m_profile_key_";
     const authSession = {
       username: null,
       email: null,
@@ -1737,6 +1738,7 @@ const defaultExpenseItems = [
       authSession.userId = user.id;
       authSession.keyBits = await deriveSessionKeyBits(password, user.id);
       authSession.isDonor = userHasServerDonorEntitlement(user);
+      saveProfileKeyForUser(user.id, authSession.keyBits);
       updateAuthUi();
       return msg("authLoginAs", { username });
     }
@@ -1756,6 +1758,32 @@ const defaultExpenseItems = [
         out[i] = s.charCodeAt(i);
       }
       return out;
+    }
+
+    function saveProfileKeyForUser(userId, keyBits) {
+      try {
+        if (!userId || !(keyBits instanceof Uint8Array) || keyBits.length !== 32) return;
+        localStorage.setItem(`${PROFILE_KEY_STORAGE_PREFIX}${userId}`, bytesToBase64(keyBits));
+      } catch (_) {}
+    }
+
+    function loadProfileKeyForUser(userId) {
+      try {
+        if (!userId) return null;
+        const stored = String(localStorage.getItem(`${PROFILE_KEY_STORAGE_PREFIX}${userId}`) || "").trim();
+        if (!stored) return null;
+        const bytes = base64ToBytes(stored);
+        return bytes && bytes.length === 32 ? bytes : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function clearProfileKeyForUser(userId) {
+      try {
+        if (!userId) return;
+        localStorage.removeItem(`${PROFILE_KEY_STORAGE_PREFIX}${userId}`);
+      } catch (_) {}
     }
 
     function decodeBytesFlexible(value) {
@@ -2523,6 +2551,7 @@ const defaultExpenseItems = [
       try {
         const currentUrl = new URL(window.location.href);
         const params = currentUrl.searchParams;
+        const hashParams = new URLSearchParams(String(currentUrl.hash || "").replace(/^#/, ""));
         const keys = ["autologin", "authUser", "authEmail", "authPass", "authPass64", "authToken"];
         let changed = false;
         keys.forEach((key) => {
@@ -2530,11 +2559,42 @@ const defaultExpenseItems = [
             params.delete(key);
             changed = true;
           }
+          if (hashParams.has(key)) {
+            hashParams.delete(key);
+            changed = true;
+          }
         });
         if (!changed) return;
         const nextSearch = params.toString();
-        const nextUrl = `${currentUrl.pathname}${nextSearch ? `?${nextSearch}` : ""}${currentUrl.hash || ""}`;
+        const nextHash = hashParams.toString();
+        const nextUrl = `${currentUrl.pathname}${nextSearch ? `?${nextSearch}` : ""}${nextHash ? `#${nextHash}` : ""}`;
         window.history.replaceState({}, "", nextUrl);
+      } catch (_) {}
+    }
+
+    async function restorePersistedAuthSession() {
+      try {
+        if (!(supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.getSession === "function")) return;
+        const sessionRes = await supabaseClient.auth.getSession();
+        const session = sessionRes && sessionRes.data ? sessionRes.data.session : null;
+        const user = session && session.user ? session.user : null;
+        if (!user || !user.id) return;
+
+        const userMeta = user && user.user_metadata ? user.user_metadata : {};
+        const effectiveUsername = normalizeUsername(userMeta.username || "")
+          || normalizeUsername(String(user.email || "").split("@")[0])
+          || tr("authUserFallback");
+
+        authSession.username = effectiveUsername;
+        authSession.email = normalizeEmail(user.email || "");
+        authSession.userId = user.id;
+        authSession.keyBits = loadProfileKeyForUser(user.id);
+        authSession.isDonor = userHasServerDonorEntitlement(user);
+        updateAuthUi();
+
+        if (authSession.keyBits) {
+          await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
+        }
       } catch (_) {}
     }
 
@@ -2562,7 +2622,10 @@ const defaultExpenseItems = [
         }
 
         const authToken = String(params.get("authToken") || "").trim();
-        if (!authToken) {
+        const hashParams = new URLSearchParams(String(window.location.hash || "").replace(/^#/, ""));
+        const hashToken = String(hashParams.get("authToken") || "").trim();
+        const tokenForExchange = authToken || hashToken;
+        if (!tokenForExchange) {
           clearSensitiveAuthQueryParams();
           setAuthStatus(tr("authUrlLoginTokenMissing"), true);
           return;
@@ -2582,7 +2645,7 @@ const defaultExpenseItems = [
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ token: authToken })
+          body: JSON.stringify({ token: tokenForExchange })
         });
 
         const payload = await response.json().catch(() => ({}));
@@ -2630,8 +2693,9 @@ const defaultExpenseItems = [
         authSession.userId = user.id;
         authSession.keyBits = profileKeyBytes && profileKeyBytes.length === 32
           ? profileKeyBytes
-          : await deriveSessionKeyBits(authToken, user.id);
+          : await deriveSessionKeyBits(tokenForExchange, user.id);
         authSession.isDonor = userHasServerDonorEntitlement(user);
+        saveProfileKeyForUser(user.id, authSession.keyBits);
         updateAuthUi();
         await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
 
@@ -2640,6 +2704,7 @@ const defaultExpenseItems = [
     }
 
     async function logoutKeyLockUser() {
+      const previousUserId = authSession.userId;
       if (supabaseClient) {
         await supabaseClient.auth.signOut();
       }
@@ -2648,6 +2713,7 @@ const defaultExpenseItems = [
       authSession.userId = null;
       authSession.keyBits = null;
       authSession.isDonor = false;
+      clearProfileKeyForUser(previousUserId);
       cloudProfileSession.loaded = null;
       cloudProfileSession.history = [];
       updateAuthUi();
@@ -6265,7 +6331,9 @@ ${scenarioLab.length ? `
     void initVisitorCounters();
     setAuthMode("login");
     updateAuthUi();
-    void maybeAutoLoginFromUrl();
+    void restorePersistedAuthSession().finally(() => {
+      void maybeAutoLoginFromUrl();
+    });
     renderCloudHistoryPanel();
     applyUiViewStateToDom();
     updateFirstHomeMortgageUi();
