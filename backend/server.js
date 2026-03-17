@@ -30,6 +30,7 @@ const authUrlLoginAllowedUsers = new Set(
 const authUrlLoginDefaultUser = authUrlLoginAllowedUsers.values().next().value || 'favagit';
 const authUrlLoginSupabaseUrl = String(process.env.AUTH_URL_LOGIN_SUPABASE_URL || process.env.KEYLOCK_SUPABASE_URL || '').trim().replace(/\/+$/, '');
 const authUrlLoginSupabaseAnonKey = String(process.env.AUTH_URL_LOGIN_SUPABASE_ANON_KEY || process.env.KEYLOCK_SUPABASE_ANON_KEY || '').trim();
+const authUrlLoginSupabaseServiceRoleKey = String(process.env.AUTH_URL_LOGIN_SUPABASE_SERVICE_ROLE_KEY || '').trim();
 const authUrlLoginSupabaseEmail = String(process.env.AUTH_URL_LOGIN_SUPABASE_EMAIL || '').trim().toLowerCase();
 const authUrlLoginSupabasePassword = String(process.env.AUTH_URL_LOGIN_SUPABASE_PASSWORD || '');
 const authUrlLoginSupabaseUsersRaw = String(process.env.AUTH_URL_LOGIN_SUPABASE_USERS_JSON || '').trim();
@@ -52,7 +53,7 @@ function parseSupabaseUserMap(rawValue) {
       if (!username || !creds || typeof creds !== 'object') return;
       const email = String(creds.email || '').trim().toLowerCase();
       const password = String(creds.password || '');
-      if (!email || !password) return;
+      if (!password) return;
       out[username] = { email, password };
     });
     return out;
@@ -62,6 +63,7 @@ function parseSupabaseUserMap(rawValue) {
 }
 
 const authUrlLoginSupabaseUsersMap = parseSupabaseUserMap(authUrlLoginSupabaseUsersRaw);
+const authUrlLoginSupabaseEmailCache = new Map();
 
 function isAllowedApiOrigin(origin) {
   if (!origin) return false;
@@ -155,11 +157,59 @@ function validateUrlLoginToken(tokenValue) {
   return { ok: true, payload };
 }
 
-function resolveSupabaseCredentialsForSubject(subject) {
+async function findSupabaseEmailBySubject(subject) {
+  const normalizedSubject = String(subject || '').trim().toLowerCase();
+  if (!normalizedSubject) return '';
+  if (authUrlLoginSupabaseEmailCache.has(normalizedSubject)) {
+    return authUrlLoginSupabaseEmailCache.get(normalizedSubject) || '';
+  }
+  if (!authUrlLoginSupabaseServiceRoleKey || !authUrlLoginSupabaseUrl) return '';
+
+  let page = 1;
+  while (page <= 20) {
+    const response = await fetch(`${authUrlLoginSupabaseUrl}/auth/v1/admin/users?page=${page}&per_page=200`, {
+      headers: {
+        apikey: authUrlLoginSupabaseServiceRoleKey,
+        Authorization: `Bearer ${authUrlLoginSupabaseServiceRoleKey}`
+      }
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) return '';
+
+    const users = Array.isArray(payload && payload.users) ? payload.users : [];
+    if (!users.length) break;
+
+    const found = users.find((user) => {
+      const email = String(user && user.email ? user.email : '').trim().toLowerCase();
+      const localPart = email.split('@')[0] || '';
+      return localPart === normalizedSubject;
+    });
+
+    if (found && found.email) {
+      const email = String(found.email).trim().toLowerCase();
+      authUrlLoginSupabaseEmailCache.set(normalizedSubject, email);
+      return email;
+    }
+
+    if (users.length < 200) break;
+    page += 1;
+  }
+
+  return '';
+}
+
+async function resolveSupabaseCredentialsForSubject(subject) {
   const normalizedSubject = String(subject || '').trim().toLowerCase();
   const mapped = authUrlLoginSupabaseUsersMap[normalizedSubject];
-  if (mapped && mapped.email && mapped.password) {
-    return { email: mapped.email, password: mapped.password };
+  if (mapped && mapped.password) {
+    if (mapped.email) {
+      return { email: mapped.email, password: mapped.password };
+    }
+
+    const discoveredEmail = await findSupabaseEmailBySubject(normalizedSubject);
+    if (discoveredEmail) {
+      return { email: discoveredEmail, password: mapped.password };
+    }
   }
 
   if (authUrlLoginSupabaseEmail && authUrlLoginSupabasePassword) {
@@ -370,7 +420,7 @@ app.post('/api/auth/url-login/exchange', async (req, res) => {
   }
 
   const tokenSub = String(tokenCheck.payload && tokenCheck.payload.sub ? tokenCheck.payload.sub : '').trim().toLowerCase();
-  const creds = resolveSupabaseCredentialsForSubject(tokenSub);
+  const creds = await resolveSupabaseCredentialsForSubject(tokenSub);
   if (!creds.email || !creds.password) {
     return res.status(503).json({ ok: false, error: 'Secure URL login credentials not configured for user.' });
   }
