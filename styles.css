@@ -884,68 +884,138 @@
       color: #184a44;
     }
 
+    .extra-box-first-home {
+      background: linear-gradient(135deg, #ffffff 0%, #f0fffe 50%, #f5faff 100%);
+      border: 1px solid rgba(27, 141, 127, 0.15);
+      box-shadow: 0 2px 8px rgba(27, 141, 127, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .extra-box-first-home .extra-box-title::before {
+      content: '🏠 ';
+      margin-right: 4px;
+    }
+
     .extra-box-first-home .extra-grid {
       gap: 8px 10px;
     }
 
     .mortgage-split-slider {
-      margin-top: 2px;
-      border: 1px solid #b9d6cf;
-      border-radius: 12px;
+      margin-top: 12px;
+      border: 1.5px solid rgba(27, 141, 127, 0.2);
+      border-radius: 16px;
       background:
-        radial-gradient(120% 160% at 0% 0%, rgba(229, 247, 242, 0.8), transparent 58%),
-        radial-gradient(120% 160% at 100% 0%, rgba(255, 241, 214, 0.8), transparent 58%),
-        linear-gradient(180deg, #fafdfc, #eef7f5);
-      padding: 8px;
+        radial-gradient(120% 160% at 0% 0%, rgba(229, 247, 242, 0.6), transparent 58%),
+        radial-gradient(120% 160% at 100% 0%, rgba(255, 241, 214, 0.6), transparent 58%),
+        linear-gradient(180deg, #fafffe, #f2f8f7);
+      padding: 14px;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(180px, 2fr) minmax(0, 1fr);
-      gap: 6px;
+      gap: 10px;
       align-items: center;
-      transition: opacity 0.2s ease;
+      box-shadow: 0 4px 12px rgba(27, 141, 127, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .mortgage-split-slider:hover {
+      box-shadow: 0 8px 20px rgba(27, 141, 127, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      border-color: rgba(27, 141, 127, 0.3);
     }
 
     .mortgage-split-slider.is-disabled {
-      opacity: 0.58;
+      opacity: 0.55;
+      filter: grayscale(0.4);
     }
 
     .mortgage-split-side {
-      border: 1px solid #c6ded8;
-      border-radius: 12px;
-      padding: 8px;
-      background: linear-gradient(180deg, #ffffff, #f3faf8);
-      min-height: 58px;
+      border: 1.5px solid rgba(27, 141, 127, 0.15);
+      border-radius: 14px;
+      padding: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #f5fbf9 100%);
+      min-height: 62px;
       display: grid;
       align-content: center;
-      gap: 3px;
-      box-shadow: 0 1px 3px rgba(17, 74, 68, 0.08);
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(27, 141, 127, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.7);
+      transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mortgage-split-side::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(120% 200% at 50% 0%, rgba(255, 255, 255, 0.4), transparent 70%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+    }
+
+    .mortgage-split-side:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(27, 141, 127, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+      border-color: rgba(27, 141, 127, 0.25);
+    }
+
+    .mortgage-split-side:hover::before {
+      opacity: 1;
     }
 
     .mortgage-split-side-left {
-      box-shadow: inset 3px 0 0 #1b8d7f;
+      box-shadow: 0 2px 6px rgba(27, 141, 127, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.7), inset 3px 0 0 #1b8d7f;
+      background: linear-gradient(135deg, #effaf8 0%, #e5f5f1 100%);
+    }
+
+    .mortgage-split-side-left:hover {
+      box-shadow: 0 6px 16px rgba(27, 141, 127, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.9), inset 3px 0 0 #1b8d7f;
+      background: linear-gradient(135deg, #f0faf8 0%, #e8f7f4 100%);
     }
 
     .mortgage-split-side-right {
-      box-shadow: inset -3px 0 0 #d89a35;
+      box-shadow: 0 2px 6px rgba(27, 141, 127, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.7), inset -3px 0 0 #d89a35;
       text-align: right;
+      background: linear-gradient(135deg, #fef9f1 0%, #fdf5e8 100%);
+    }
+
+    .mortgage-split-side-right:hover {
+      box-shadow: 0 6px 16px rgba(27, 141, 127, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.9), inset -3px 0 0 #d89a35;
+      background: linear-gradient(135deg, #fefaf4 0%, #fef7ed 100%);
     }
 
     .mortgage-split-name {
-      font-size: 0.72rem;
+      font-size: 0.73rem;
       font-weight: 800;
-      color: #2a4a46;
+      color: #1a3a36;
       overflow-wrap: anywhere;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
     }
 
     .mortgage-split-amount {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 900;
-      color: #124f48;
-      letter-spacing: 0.2px;
+      color: #0b4440;
+      letter-spacing: 0.3px;
+      background: linear-gradient(135deg, #0f6659, #1b8d7f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 1px 2px rgba(27, 141, 127, 0.2));
+    }
+
+    .mortgage-split-side-right .mortgage-split-amount {
+      background: linear-gradient(135deg, #c86d28, #d89a35);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .mortgage-split-range-wrap {
       position: relative;
-      padding: 14px 0 6px;
+      padding: 20px 0 8px;
       --split-left: 50%;
     }
 
@@ -953,53 +1023,81 @@
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      height: 8px;
+      height: 10px;
       border-radius: 999px;
       background: linear-gradient(90deg,
-        #2b9d8e 0%,
-        #6cb9a9 var(--split-left),
-        #dfb264 var(--split-left),
-        #cb8a2d 100%);
+        #16a396 0%,
+        #3db5a0 20%,
+        #6cbba8 var(--split-left),
+        #ddb05a var(--split-left),
+        #d89a35 80%,
+        #c27f1d 100%);
       outline: none;
       margin: 0;
-      transition: background 0.16s ease;
+      transition: background 0.2s ease;
+      box-shadow: 0 2px 4px rgba(22, 163, 150, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+
+    .mortgage-split-range-wrap input[type="range"]:hover {
+      box-shadow: 0 3px 8px rgba(22, 163, 150, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
     }
 
     .mortgage-split-range-wrap input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 22px;
-      height: 22px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
-      border: 2px solid #ffffff;
-      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e8f8f5 42%, #177a6f 100%);
-      box-shadow: 0 3px 9px rgba(13, 70, 64, 0.35);
-      cursor: pointer;
+      border: 3px solid #ffffff;
+      background: radial-gradient(circle at 30% 25%, #ffffff 0%, #f0faf8 30%, #16a396 100%);
+      box-shadow: 0 4px 12px rgba(13, 70, 64, 0.4), 0 0 0 1px rgba(27, 141, 127, 0.15);
+      cursor: grab;
+      transition: all 0.2s ease;
+    }
+
+    .mortgage-split-range-wrap input[type="range"]::-webkit-slider-thumb:hover {
+      width: 28px;
+      height: 28px;
+      box-shadow: 0 6px 16px rgba(13, 70, 64, 0.5), 0 0 0 2px rgba(27, 141, 127, 0.2);
+    }
+
+    .mortgage-split-range-wrap input[type="range"]::-webkit-slider-thumb:active {
+      cursor: grabbing;
     }
 
     .mortgage-split-range-wrap input[type="range"]::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
-      border: 2px solid #ffffff;
-      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e8f8f5 42%, #177a6f 100%);
-      box-shadow: 0 3px 9px rgba(13, 70, 64, 0.35);
-      cursor: pointer;
+      border: 3px solid #ffffff;
+      background: radial-gradient(circle at 30% 25%, #ffffff 0%, #f0faf8 30%, #16a396 100%);
+      box-shadow: 0 4px 12px rgba(13, 70, 64, 0.4), 0 0 0 1px rgba(27, 141, 127, 0.15);
+      cursor: grab;
+      transition: all 0.2s ease;
+    }
+
+    .mortgage-split-range-wrap input[type="range"]::-moz-range-thumb:hover {
+      width: 28px;
+      height: 28px;
+      box-shadow: 0 6px 16px rgba(13, 70, 64, 0.5), 0 0 0 2px rgba(27, 141, 127, 0.2);
     }
 
     .mortgage-split-center {
       position: absolute;
-      top: -1px;
-      left: 50%;
+      top: 2px;
+      left: var(--split-left);
       transform: translateX(-50%);
-      font-size: 0.7rem;
+      font-size: 0.73rem;
       font-weight: 900;
-      color: #114c45;
-      background: #ffffff;
-      border: 1px solid #b8d5ce;
+      color: #0f544d;
+      background: linear-gradient(135deg, #ffffff, #f5fbf9);
+      border: 1.5px solid rgba(27, 141, 127, 0.2);
       border-radius: 999px;
-      padding: 1px 7px;
+      padding: 2px 9px;
       white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(27, 141, 127, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+      transition: all 0.2s ease;
+      letter-spacing: 0.2px;
     }
 
     #primaCasaMutuoSplitInfo {

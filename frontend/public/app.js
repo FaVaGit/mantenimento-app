@@ -1,6 +1,5 @@
 const defaultExpenseItems = [
       { label: "🏠 Affitto", help: "Canone mensile di locazione dell'abitazione." },
-      { label: "🏡 Casa (valore locativo)", help: "Valore locativo teorico della casa in uso, se rilevante." },
       { label: "💡 Utenze", help: "Luce, gas, acqua, internet e altre utenze domestiche." },
       { label: "🛒 Cibo/Alimenti", help: "Spesa alimentare mensile imputabile al nucleo familiare." },
       { label: "👕 Abbigliamento", help: "Spese medie mensili per abbigliamento dei figli." },
@@ -295,6 +294,7 @@ const defaultExpenseItems = [
         calcNoTransferWithBenefits: "Nessun trasferimento monetario suggerito. Benefici gia allocati: {benefits}.",
         calcBenefitFamilyAllowance: "Assegno familiare INPS percepito da {spouse}",
         calcBenefitPrimaryHomeMortgage: "Quota mutuo prima casa ceduta al collocatario ({payer} -> {receiver})",
+        calcBenefitPrimaryHomeAssignment: "Assegnazione casa familiare - valore locativo ({receiver})",
         pdfCompBenefitsSection: "Benefici compensativi gia allocati",
         pdfCompBenefitsItem: "Beneficio",
         pdfCompBenefitsAmount: "Valore {currency}/mese",
@@ -653,6 +653,7 @@ const defaultExpenseItems = [
         calcNoTransferWithBenefits: "No monetary transfer suggested. Already allocated benefits: {benefits}.",
         calcBenefitFamilyAllowance: "INPS family allowance received by {spouse}",
         calcBenefitPrimaryHomeMortgage: "Primary-home mortgage share assigned to custodial parent ({payer} -> {receiver})",
+        calcBenefitPrimaryHomeAssignment: "Primary home assignment - rental value ({receiver})",
         pdfCompBenefitsSection: "Compensative benefits already allocated",
         pdfCompBenefitsItem: "Benefit",
         pdfCompBenefitsAmount: "Value {currency}/month",
@@ -3633,6 +3634,7 @@ const defaultExpenseItems = [
       const primaCasaAssegnataA = (String(payload.primaCasaAssegnataA || "") === "1" || String(payload.primaCasaAssegnataA || "") === "2")
         ? String(payload.primaCasaAssegnataA)
         : "";
+      const primaCasaValoreLocativo = Math.max(0, Number(payload.primaCasaValoreLocativo || 0));
       const rawMutuoPerc1 = payload.primaCasaMutuoPerc1 === undefined ? 50 : payload.primaCasaMutuoPerc1;
       const primaCasaMutuoPerc1 = Math.min(100, Math.max(0, Number(rawMutuoPerc1 || 0)));
       const primaCasaMutuoPerc2 = 100 - primaCasaMutuoPerc1;
@@ -3712,6 +3714,7 @@ const defaultExpenseItems = [
       if (aFam2 > 0.005) compensativeBenefits.push({ type: "family", to: 2, amount: aFam2 });
       if (primaCasaTransfer1to2 > 0.005) compensativeBenefits.push({ type: "primary-home-mortgage", from: 1, to: 2, amount: primaCasaTransfer1to2 });
       if (primaCasaTransfer2to1 > 0.005) compensativeBenefits.push({ type: "primary-home-mortgage", from: 2, to: 1, amount: primaCasaTransfer2to1 });
+      if (primaCasaValoreLocativo > 0.005 && primaCasaAssegnataA !== "") compensativeBenefits.push({ type: "primary-home-assignment", to: Number(primaCasaAssegnataA), amount: primaCasaValoreLocativo });
 
       const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
       const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
@@ -3767,7 +3770,7 @@ const defaultExpenseItems = [
         quotaDiretta1, quotaDiretta2,
         saldo1, saldo2,
         assegnoBaseDa1a2, assegnoBaseDa2a1,
-        primaCasaMutuoEnabled, primaCasaMutuoImporto, primaCasaAssegnataA,
+        primaCasaMutuoEnabled, primaCasaMutuoImporto, primaCasaAssegnataA, primaCasaValoreLocativo,
         primaCasaMutuoPerc1, primaCasaMutuoPerc2,
         primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,
         compensativeBenefits,
@@ -4733,6 +4736,10 @@ const defaultExpenseItems = [
             const payer = Number(row.from) === 2 ? name2 : name1;
             const receiver = Number(row.to) === 2 ? name2 : name1;
             return { label: msg("calcBenefitPrimaryHomeMortgage", { payer, receiver }), amount };
+          }
+          if (row.type === "primary-home-assignment") {
+            const receiver = Number(row.to) === 2 ? name2 : name1;
+            return { label: msg("calcBenefitPrimaryHomeAssignment", { receiver }), amount };
           }
           return { label: tr("calcCompBenefitsLabel"), amount };
         });
