@@ -110,6 +110,32 @@ Per assegnare/rimuovere privilegi donor in modo globale su Supabase:
 
 Esegui gli script da Supabase SQL Editor (modificando eventualmente la lista utenti nel `WHERE`).
 
+### Gestione donor da CLI (senza SQL Editor)
+In alternativa puoi gestire i donor direttamente da riga di comando usando l'Admin API di Supabase.
+
+Variabili ambiente richieste:
+- `DONOR_ADMIN_SUPABASE_URL` (es. `https://<project>.supabase.co`)
+- `DONOR_ADMIN_SUPABASE_SERVICE_ROLE_KEY` (service-role key)
+
+Esempi:
+
+```bash
+npm run donor:grant -- --users=favagit,fabio.vacchino
+npm run donor:revoke -- --users=fabio.vacchino
+```
+
+Per test senza scrivere modifiche:
+
+```bash
+npm run donor:grant -- --users=favagit --dry-run
+```
+
+Supporta anche email complete:
+
+```bash
+npm run donor:grant -- --emails=fabio.vacchino@gmail.com
+```
+
 ## KeyLock multi-device (Supabase)
 Il login cloud resta lato frontend e usa `supabase-config.js` (chiave anon pubblica).
 Non inserire nel frontend segreti server o credenziali DB.

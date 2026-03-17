@@ -15,6 +15,8 @@
     "dev:watch": "node scripts/build-frontend.mjs --watch",
     "build:frontend": "node scripts/build-frontend.mjs",
     "auth:url-token": "node scripts/create-url-login-token.mjs",
+    "donor:grant": "node scripts/manage-donor-users.mjs --mode=grant",
+    "donor:revoke": "node scripts/manage-donor-users.mjs --mode=revoke",
     "start": "npm run build:frontend && node backend/server.js"
   },
   "keywords": [
