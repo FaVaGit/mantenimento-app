@@ -1,6 +1,6 @@
 {
   "name": "mantenimento-app",
-  "version": "2.2.7",
+  "version": "2.2.8",
   "description": "Frontend + backend architecture for the mantenimento calculator",
   "type": "commonjs",
   "main": "backend/calculate-model.js",

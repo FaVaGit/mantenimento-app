@@ -2800,6 +2800,8 @@ const defaultExpenseItems = [
         sliderBar.style.setProperty("--perm-left", `${p1}%`);
         sliderBar.setAttribute("aria-valuenow", String(p1));
         sliderBar.setAttribute("aria-valuetext", `${p1}% / ${p2}%`);
+        const centerBadge = document.getElementById("permDaysCenter");
+        if (centerBadge) centerBadge.textContent = `${p1}% / ${p2}%`;
       }
 
       // Update days bar below slider.
