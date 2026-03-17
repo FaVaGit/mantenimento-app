@@ -59,8 +59,8 @@ const defaultExpenseItems = [
         heroSubtitle: "Modello di calcolo orientativo adattato a <strong>reddito netto mensile/annuale</strong> oppure a <strong>CU (lordo annuale con stima del netto)</strong>, con inserimento spese separato per <strong>Coniuge 1</strong> e <strong>Coniuge 2</strong>.",
         quickActions: "Azioni rapide",
         btnReset: "Reset valori",
-        btnExport: "Esporta JSON cifrato",
-        btnImport: "Carica JSON cifrato",
+        btnExport: "Esporta JSON",
+        btnImport: "Carica JSON",
         btnPdf: "Genera e scarica PDF",
         btnZoomReset: "Reset",
         btnZoomOutTitle: "Riduci zoom",
@@ -226,12 +226,21 @@ const defaultExpenseItems = [
         pdfPopupBlocked: "Il popup è stato bloccato dal browser. Consenti i popup per questo sito e riprova.",
         authLoginBeforeExportStatus: "Effettua il login KeyLock prima di esportare JSON cifrato.",
         authLoginBeforeExportAlert: "Per esportare, devi prima fare login KeyLock.",
-        authInvalidJsonFormat: "Formato JSON non valido: e richiesto un export cifrato KeyLock",
+        authInvalidJsonFormat: "Formato JSON non valido: e richiesto un export KeyLock valido (cifrato o non cifrato)",
         authLoginBeforeImport: "Effettua prima il login KeyLock per importare il file cifrato",
         authFileOwnedByOther: "Questo file appartiene a un altro utente KeyLock",
         authDecryptedContentInvalid: "Contenuto decifrato non valido",
         authEncryptedJsonImported: "JSON cifrato importato correttamente.",
         authEncryptedJsonLoaded: "Dati caricati da JSON cifrato.",
+        authExportModalTitle: "Esportazione JSON",
+        authExportModalWarning: "Per impostazione predefinita il file viene cifrato e puo essere importato solo dallo stesso utente KeyLock.",
+        authExportPlainCheckbox: "Esporta JSON non cifrato (compatibile con altri utenti)",
+        authExportPlainRisk: "Conferma esplicita richiesta: il file non cifrato puo essere letto da chiunque.",
+        authExportModalCancel: "Annulla",
+        authExportModalConfirm: "Conferma export",
+        authExportPlainFileWarning: "Attenzione: stai esportando un JSON non cifrato.",
+        authPlainJsonImported: "JSON non cifrato importato correttamente.",
+        authPlainJsonLoaded: "Dati caricati da JSON non cifrato.",
         authImportFailedStatus: "Import JSON fallito: {message}",
         authImportFailedAlert: "Impossibile caricare il JSON: {message}",
         spouse1Default: "Coniuge 1",
@@ -407,8 +416,8 @@ const defaultExpenseItems = [
         heroSubtitle: "Indicative calculation model based on <strong>monthly/yearly net income</strong> or <strong>CU gross yearly income (estimated monthly net)</strong>, with separate expense input for <strong>Spouse 1</strong> and <strong>Spouse 2</strong>.",
         quickActions: "Quick actions",
         btnReset: "Reset values",
-        btnExport: "Export encrypted JSON",
-        btnImport: "Import encrypted JSON",
+        btnExport: "Export JSON",
+        btnImport: "Import JSON",
         btnPdf: "Generate and download PDF",
         btnZoomReset: "Reset",
         btnZoomOutTitle: "Zoom out",
@@ -574,12 +583,21 @@ const defaultExpenseItems = [
         pdfPopupBlocked: "The popup was blocked by the browser. Allow popups for this site and try again.",
         authLoginBeforeExportStatus: "Please login to KeyLock before exporting encrypted JSON.",
         authLoginBeforeExportAlert: "You must login to KeyLock before exporting.",
-        authInvalidJsonFormat: "Invalid JSON format: an encrypted KeyLock export is required",
+        authInvalidJsonFormat: "Invalid JSON format: a valid KeyLock export is required (encrypted or unencrypted)",
         authLoginBeforeImport: "Login to KeyLock before importing the encrypted file",
         authFileOwnedByOther: "This file belongs to another KeyLock user",
         authDecryptedContentInvalid: "Invalid decrypted content",
         authEncryptedJsonImported: "Encrypted JSON imported successfully.",
         authEncryptedJsonLoaded: "Data loaded from encrypted JSON.",
+        authExportModalTitle: "JSON export",
+        authExportModalWarning: "By default, the file is encrypted and can only be imported by the same KeyLock user.",
+        authExportPlainCheckbox: "Export unencrypted JSON (compatible with other users)",
+        authExportPlainRisk: "Explicit confirmation required: unencrypted files can be read by anyone.",
+        authExportModalCancel: "Cancel",
+        authExportModalConfirm: "Confirm export",
+        authExportPlainFileWarning: "Warning: you are exporting an unencrypted JSON file.",
+        authPlainJsonImported: "Unencrypted JSON imported successfully.",
+        authPlainJsonLoaded: "Data loaded from unencrypted JSON.",
         authImportFailedStatus: "JSON import failed: {message}",
         authImportFailedAlert: "Unable to load JSON: {message}",
         spouse1Default: "Spouse 1",
@@ -1166,6 +1184,12 @@ const defaultExpenseItems = [
       const btnZoomReset = document.getElementById("btnZoomReset");
       const btnZoomOut = document.getElementById("btnZoomOut");
       const btnZoomIn = document.getElementById("btnZoomIn");
+      const exportModeModalTitle = document.getElementById("exportModeModalTitle");
+      const exportModeModalWarning = document.getElementById("exportModeModalWarning");
+      const lblExportPlainJson = document.getElementById("lblExportPlainJson");
+      const exportModeModalRisk = document.getElementById("exportModeModalRisk");
+      const btnCancelExportMode = document.getElementById("btnCancelExportMode");
+      const btnConfirmExportMode = document.getElementById("btnConfirmExportMode");
       const lblLang = document.getElementById("lblLang");
       const lblCurrency = document.getElementById("lblCurrency");
       const authHead = document.getElementById("authHead");
@@ -1211,6 +1235,12 @@ const defaultExpenseItems = [
       if (btnExport) btnExport.textContent = tr("btnExport");
       if (btnImport) btnImport.textContent = tr("btnImport");
       if (btnPdf) btnPdf.textContent = tr("btnPdf");
+      if (exportModeModalTitle) exportModeModalTitle.textContent = tr("authExportModalTitle");
+      if (exportModeModalWarning) exportModeModalWarning.textContent = tr("authExportModalWarning");
+      if (lblExportPlainJson) lblExportPlainJson.textContent = tr("authExportPlainCheckbox");
+      if (exportModeModalRisk) exportModeModalRisk.textContent = tr("authExportPlainRisk");
+      if (btnCancelExportMode) btnCancelExportMode.textContent = tr("authExportModalCancel");
+      if (btnConfirmExportMode) btnConfirmExportMode.textContent = tr("authExportModalConfirm");
       if (btnZoomReset) btnZoomReset.textContent = tr("btnZoomReset");
       if (btnZoomOut) btnZoomOut.title = tr("btnZoomOutTitle");
       if (btnZoomIn) btnZoomIn.title = tr("btnZoomInTitle");
@@ -5790,32 +5820,49 @@ ${scenarioLab.length ? `
       win.document.close();
     }
 
-    async function exportJson() {
+    async function exportJson(options = {}) {
       if (!authSession.username || !authSession.keyBits) {
         setAuthStatus(tr("authLoginBeforeExportStatus"), true);
         alert(tr("authLoginBeforeExportAlert"));
         return;
       }
 
+      const plain = !!options.plain;
       const state = serializeState();
-      const encrypted = await encryptStateForKey(state, authSession.keyBits);
-      const payloadObj = {
-        format: "keylock-encrypted-state-v1",
-        owner: authSession.username,
-        createdAt: new Date().toISOString(),
-        cipher: encrypted
-      };
+      let payloadObj;
+      if (plain) {
+        payloadObj = {
+          format: "keylock-plain-state-v1",
+          owner: authSession.username,
+          createdAt: new Date().toISOString(),
+          state
+        };
+      } else {
+        const encrypted = await encryptStateForKey(state, authSession.keyBits);
+        payloadObj = {
+          format: "keylock-encrypted-state-v1",
+          owner: authSession.username,
+          createdAt: new Date().toISOString(),
+          cipher: encrypted
+        };
+      }
       const payload = JSON.stringify(payloadObj, null, 2);
       const blob = new Blob([payload], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
       a.href = url;
-      a.download = `mantenimento-cifrato-${authSession.username}-${ts}.json`;
+      a.download = plain
+        ? `mantenimento-plain-${authSession.username}-${ts}.json`
+        : `mantenimento-cifrato-${authSession.username}-${ts}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+
+      if (plain) {
+        setAuthStatus(tr("authExportPlainFileWarning"), true);
+      }
     }
 
     async function importJsonFromFile(file) {
@@ -5823,7 +5870,7 @@ ${scenarioLab.length ? `
       reader.onload = async () => {
         try {
           const payload = JSON.parse(String(reader.result || "{}"));
-          if (!payload || payload.format !== "keylock-encrypted-state-v1" || !payload.owner || !payload.cipher) {
+          if (!payload || !payload.format || !payload.owner) {
             throw new Error(tr("authInvalidJsonFormat"));
           }
 
@@ -5831,24 +5878,78 @@ ${scenarioLab.length ? `
             throw new Error(tr("authLoginBeforeImport"));
           }
 
-          if (normalizeUsername(payload.owner) !== normalizeUsername(authSession.username)) {
-            throw new Error(tr("authFileOwnedByOther"));
+          let state = null;
+          if (payload.format === "keylock-encrypted-state-v1") {
+            if (!payload.cipher) {
+              throw new Error(tr("authInvalidJsonFormat"));
+            }
+            if (normalizeUsername(payload.owner) !== normalizeUsername(authSession.username)) {
+              throw new Error(tr("authFileOwnedByOther"));
+            }
+            state = await decryptStateForKey(payload.cipher, authSession.keyBits);
+          } else if (payload.format === "keylock-plain-state-v1") {
+            state = payload.state;
+          } else {
+            throw new Error(tr("authInvalidJsonFormat"));
           }
 
-          const state = await decryptStateForKey(payload.cipher, authSession.keyBits);
           if (!state || typeof state !== "object" || !state.base || !Array.isArray(state.spese)) {
             throw new Error(tr("authDecryptedContentInvalid"));
           }
 
           applyState(state);
-          setAuthStatus(tr("authEncryptedJsonImported"));
-          alert(tr("authEncryptedJsonLoaded"));
+          if (payload.format === "keylock-plain-state-v1") {
+            setAuthStatus(tr("authPlainJsonImported"));
+            alert(tr("authPlainJsonLoaded"));
+          } else {
+            setAuthStatus(tr("authEncryptedJsonImported"));
+            alert(tr("authEncryptedJsonLoaded"));
+          }
         } catch (err) {
           setAuthStatus(msg("authImportFailedStatus", { message: err.message }), true);
           alert(msg("authImportFailedAlert", { message: err.message }));
         }
       };
       reader.readAsText(file, "utf-8");
+    }
+
+    function openExportModeModal() {
+      const modal = document.getElementById("exportModeModal");
+      const chk = document.getElementById("chkExportPlainJson");
+      if (!modal || !chk) {
+        return Promise.resolve(null);
+      }
+      chk.checked = false;
+      modal.classList.remove("is-hidden");
+      modal.setAttribute("aria-hidden", "false");
+
+      return new Promise((resolve) => {
+        const close = (confirmed) => {
+          modal.classList.add("is-hidden");
+          modal.setAttribute("aria-hidden", "true");
+          confirmBtn.removeEventListener("click", onConfirm);
+          cancelBtn.removeEventListener("click", onCancel);
+          modal.removeEventListener("click", onBackdrop);
+          resolve(confirmed ? chk.checked : null);
+        };
+        const confirmBtn = document.getElementById("btnConfirmExportMode");
+        const cancelBtn = document.getElementById("btnCancelExportMode");
+        const onConfirm = () => close(true);
+        const onCancel = () => close(false);
+        const onBackdrop = (evt) => {
+          if (evt.target && evt.target.getAttribute("data-export-modal-close") === "1") {
+            close(false);
+          }
+        };
+
+        if (!confirmBtn || !cancelBtn) {
+          close(false);
+          return;
+        }
+        confirmBtn.addEventListener("click", onConfirm);
+        cancelBtn.addEventListener("click", onCancel);
+        modal.addEventListener("click", onBackdrop);
+      });
     }
 
     function serializeState() {
@@ -6019,7 +6120,11 @@ ${scenarioLab.length ? `
 
     document.getElementById("btnExportJson").addEventListener("click", async () => {
       if (!isLoggedIn()) { showAuthGateMessage(document.getElementById("btnExportJson")); return; }
-      await exportJson();
+      const plainExport = await openExportModeModal();
+      if (plainExport === null) {
+        return;
+      }
+      await exportJson({ plain: plainExport });
     });
 
     document.getElementById("btnImportJson").addEventListener("click", () => {

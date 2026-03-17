@@ -102,8 +102,8 @@
           <button class="top-actions-trigger" type="button" aria-expanded="false" aria-controls="topActionsMenu">Azioni rapide</button>
           <div class="top-actions-menu" id="topActionsMenu" aria-label="Azioni applicazione">
             <button class="btn-secondary" id="btnReset" type="button">Reset valori</button>
-            <button class="btn-secondary" id="btnExportJson" type="button">Esporta JSON cifrato</button>
-            <button class="btn-secondary" id="btnImportJson" type="button">Carica JSON cifrato</button>
+            <button class="btn-secondary" id="btnExportJson" type="button">Esporta JSON</button>
+            <button class="btn-secondary" id="btnImportJson" type="button">Carica JSON</button>
             <button class="btn-secondary" id="btnPdf" type="button">Genera e scarica PDF</button>
             <input id="fileJson" type="file" accept="application/json,.json" style="display:none" />
           </div>
@@ -594,6 +594,23 @@
       </div>
     </div>
     <button class="coffee-float-btn" title="Offrimi un caff&egrave;!">&#9749;</button>
+  </div>
+
+  <div id="exportModeModal" class="export-mode-modal is-hidden" aria-hidden="true">
+    <div class="export-mode-modal-backdrop" data-export-modal-close="1"></div>
+    <div class="export-mode-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="exportModeModalTitle">
+      <h3 id="exportModeModalTitle">Esportazione JSON</h3>
+      <p id="exportModeModalWarning">Per impostazione predefinita il file viene cifrato e puo essere importato solo dallo stesso utente KeyLock.</p>
+      <label class="export-mode-checkbox">
+        <input type="checkbox" id="chkExportPlainJson" />
+        <span id="lblExportPlainJson">Esporta JSON non cifrato (compatibile con altri utenti)</span>
+      </label>
+      <p id="exportModeModalRisk" class="export-mode-risk">Conferma esplicita richiesta: il file non cifrato puo essere letto da chiunque.</p>
+      <div class="export-mode-actions">
+        <button type="button" class="btn-secondary" id="btnCancelExportMode">Annulla</button>
+        <button type="button" class="btn-secondary" id="btnConfirmExportMode">Conferma export</button>
+      </div>
+    </div>
   </div>
 
   <script src="supabase-config.js"></script>
