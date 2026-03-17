@@ -1847,24 +1847,87 @@
 
       .sep-cost-panel {
         margin-top: 10px;
-        border-radius: 14px;
+        border-radius: 16px;
         border: 1.5px solid #e2a5a5;
-        background: linear-gradient(145deg, #fff5f3, #ffeceb 52%, #fff6f0);
-        box-shadow: 0 8px 22px rgba(130, 33, 33, 0.12);
-        padding: 12px;
+        background:
+          radial-gradient(120% 180% at 0% -20%, rgba(255, 241, 230, 0.75), transparent 58%),
+          radial-gradient(120% 180% at 100% -20%, rgba(255, 228, 228, 0.72), transparent 56%),
+          linear-gradient(145deg, #fff5f3, #ffeceb 52%, #fff6f0);
+        box-shadow: 0 10px 24px rgba(130, 33, 33, 0.14);
+        padding: 14px;
       }
 
       .sep-cost-title {
-        margin: 0 0 8px;
-        font-size: 0.98rem;
+        margin: 0 0 10px;
+        font-size: 1.01rem;
         font-weight: 900;
         color: #842d2d;
         letter-spacing: 0.2px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .sep-cost-title-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        background: rgba(140, 32, 32, 0.12);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+      }
+
+      .sep-cost-hero {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 9px;
+      }
+
+      .sep-cost-stat {
+        border-radius: 12px;
+        border: 1px solid rgba(138, 44, 44, 0.16);
+        background: rgba(255,255,255,0.82);
+        padding: 8px 10px;
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .sep-cost-stat--primary {
+        background: linear-gradient(130deg, rgba(255, 233, 232, 0.95), rgba(255, 244, 232, 0.92));
+        border-color: rgba(170, 67, 46, 0.35);
+      }
+
+      .sep-cost-stat--secondary {
+        background: linear-gradient(130deg, rgba(255, 245, 240, 0.95), rgba(255, 235, 231, 0.92));
+        border-color: rgba(164, 61, 61, 0.28);
+      }
+
+      .sep-cost-stat-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #7a3d3d;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .sep-cost-stat-value {
+        font-size: 1.12rem;
+        font-weight: 900;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
       }
 
       .sep-cost-section {
         display: grid;
         gap: 7px;
+      }
+
+      .sep-cost-section--grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .sep-cost-divider {
@@ -1893,6 +1956,7 @@
         font-size: 0.82rem;
         color: #6a3939;
         font-weight: 700;
+        min-width: 0;
       }
 
       .sep-cost-value {
@@ -1901,6 +1965,47 @@
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
         color: #5d2e2e;
+      }
+
+      .sep-cost-pill-wrap {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .sep-cost-pill {
+        border: 1px solid rgba(134, 40, 40, 0.18);
+        border-radius: 11px;
+        background: rgba(255,255,255,0.82);
+        padding: 8px 10px;
+        display: grid;
+        gap: 2px;
+      }
+
+      .sep-cost-pill-label {
+        font-size: 0.76rem;
+        color: #714343;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .sep-cost-pill-value {
+        font-size: 1rem;
+        font-weight: 900;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 720px) {
+        .sep-cost-hero,
+        .sep-cost-section--grid,
+        .sep-cost-pill-wrap {
+          grid-template-columns: 1fr;
+        }
+        .sep-cost-stat-value,
+        .sep-cost-pill-value {
+          white-space: normal;
+        }
       }
 
       .sep-loss-negative {

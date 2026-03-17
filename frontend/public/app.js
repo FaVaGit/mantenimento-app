@@ -4675,24 +4675,42 @@ const defaultExpenseItems = [
           <strong class="sep-cost-value ${cls}">${formatted}</strong>
         </div>`;
       };
+      const statHtml = (label, value, tone) => {
+        const cls = lossClass(value);
+        const formatted = value === null ? "&mdash;" : eur(value);
+        return `<div class="sep-cost-stat ${tone || ""}">
+          <span class="sep-cost-stat-label">${label}</span>
+          <strong class="sep-cost-stat-value ${cls}">${formatted}</strong>
+        </div>`;
+      };
+      const pillHtml = (label, value) => {
+        const cls = lossClass(value);
+        const formatted = value === null ? "&mdash;" : eur(value);
+        return `<div class="sep-cost-pill">
+          <span class="sep-cost-pill-label">${label}</span>
+          <strong class="sep-cost-pill-value ${cls}">${formatted}</strong>
+        </div>`;
+      };
 
       panel.innerHTML = `
         <div class="sep-cost-panel">
-          <h3 class="sep-cost-title">${escapeHtml(tr("sepCostPanelTitle"))}</h3>
-          <div class="sep-cost-section">
+          <h3 class="sep-cost-title"><span class="sep-cost-title-icon">&#128148;</span>${escapeHtml(tr("sepCostPanelTitle"))}</h3>
+          <div class="sep-cost-hero">
+            ${statHtml(tr("sepCostLossMonthly"), m.perditaMensile, "sep-cost-stat--primary")}
+            ${statHtml(tr("sepCostLossAnnually"), m.perditaAnnua, "sep-cost-stat--secondary")}
+          </div>
+          <div class="sep-cost-section sep-cost-section--grid">
             ${rowHtml(tr("sepCostNetTogether"), m.nettoInsiemeCombinato, false)}
             ${rowHtml(tr("sepCostNetSeparated"), m.nettoSeparatoTotale, false)}
-          </div>
-          <div class="sep-cost-divider"></div>
-          <div class="sep-cost-section">
             ${m.separationAdjustmentHousingUtilities > 0
               ? rowHtml(tr("sepCostHousingUtilityAdj"), m.separationAdjustmentHousingUtilities, false)
               : ""}
             ${rowHtml(tr("sepCostDuplication"), m.costoSeparazioneMensile, false)}
-            ${rowHtml(tr("sepCostLossMonthly"), m.perditaMensile, true)}
-            ${rowHtml(tr("sepCostLossAnnually"), m.perditaAnnua, true)}
-            ${rowHtml(msg("sepCostLossSpouse", { spouse: c1NameEsc }), m.perditaSpouse1, false)}
-            ${rowHtml(msg("sepCostLossSpouse", { spouse: c2NameEsc }), m.perditaSpouse2, false)}
+          </div>
+          <div class="sep-cost-divider"></div>
+          <div class="sep-cost-pill-wrap">
+            ${pillHtml(msg("sepCostLossSpouse", { spouse: c1NameEsc }), m.perditaSpouse1)}
+            ${pillHtml(msg("sepCostLossSpouse", { spouse: c2NameEsc }), m.perditaSpouse2)}
           </div>
         </div>
       `;
