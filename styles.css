@@ -1000,7 +1000,7 @@
         linear-gradient(180deg, #fafffe, #f2f8f7);
       padding: 14px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(180px, 2fr) minmax(0, 1fr);
+      grid-template-columns: minmax(170px, 0.9fr) minmax(380px, 2.9fr) minmax(170px, 0.9fr);
       gap: 10px;
       align-items: center;
       box-shadow: 0 10px 18px rgba(27, 141, 127, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.65);
@@ -1039,7 +1039,9 @@
       min-height: 74px;
       display: grid;
       align-content: center;
+      justify-items: center;
       gap: 4px;
+      text-align: center;
       box-shadow: 0 2px 6px rgba(27, 141, 127, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.7);
       transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
@@ -1081,7 +1083,7 @@
 
     .mortgage-split-side-right {
       box-shadow: 0 2px 6px rgba(27, 141, 127, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.7), inset -3px 0 0 #d89a35;
-      text-align: right;
+      text-align: center;
       background: linear-gradient(135deg, #fef9f1 0%, #fdf5e8 100%);
     }
 
@@ -1097,6 +1099,7 @@
       overflow-wrap: anywhere;
       letter-spacing: 0.2px;
       text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+      text-align: center;
     }
 
     .mortgage-split-amount {
@@ -1109,6 +1112,7 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       filter: drop-shadow(0 1px 2px rgba(27, 141, 127, 0.2));
+      text-align: center;
     }
 
     .mortgage-split-side-right .mortgage-split-amount {
@@ -1120,7 +1124,7 @@
 
     .mortgage-split-range-wrap {
       position: relative;
-      padding: 20px 0 8px;
+      padding: 30px 0 8px;
       --split-left: 50%;
     }
 
@@ -1231,7 +1235,7 @@
 
     .mortgage-split-center {
       position: absolute;
-      top: 2px;
+      top: -14px;
       left: var(--split-left);
       transform: translateX(-50%);
       font-size: 0.92rem;
@@ -1246,6 +1250,8 @@
       transition: all 0.2s ease;
       letter-spacing: 0.2px;
       animation: split-center-breathe 2.6s ease-in-out infinite;
+      z-index: 3;
+      pointer-events: none;
     }
 
     @keyframes first-home-aurora {
@@ -2552,18 +2558,32 @@
     }
 
     .kpi-item--longtext {
+      flex-direction: column;
       align-items: flex-start;
+      gap: 5px;
     }
 
-    .kpi-item--longtext strong {
+    .kpi-item--longtext span {
+      width: 100%;
+      flex: none;
+    }
+
+    .kpi-longtext-value {
+      margin: 0;
+      width: 100%;
       white-space: normal;
       text-align: left;
-      font-size: 0.88rem;
-      line-height: 1.32;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.42;
       overflow-wrap: anywhere;
       word-break: break-word;
-      flex: 1;
+      color: #9a5a00;
     }
+
+    .kpi-longtext-value.ok { color: #0c6c52; }
+    .kpi-longtext-value.warn { color: #9a5a00; }
+    .kpi-longtext-value.bad { color: #b53c2f; }
 
     .spieg-details {
       border: 1px solid #bed9d4;

@@ -4918,8 +4918,10 @@ const defaultExpenseItems = [
         [tr("pdfAmountPerChild"), eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
       ];
 
-      if (benefitsInline) {
-        items.push([tr("calcCompBenefitsLabel"), benefitsInline, "warn"]);
+      const kpiBenefitLines = getCompensativeBenefitRows(m, c1n(), c2n())
+        .map((row) => `${escapeHtml(row.label)}: ${eur(row.amount)}`);
+      if (kpiBenefitLines.length) {
+        items.push([tr("calcCompBenefitsLabel"), kpiBenefitLines.join("<br />"), "warn", true]);
       }
 
       if (m.incomeMode === "cu") {
@@ -4932,13 +4934,20 @@ const defaultExpenseItems = [
         );
       }
 
-      items.forEach(([label, value, cls]) => {
+      items.forEach(([label, value, cls, isHtml = false]) => {
         const el = document.createElement("div");
         el.className = "kpi-item";
-        if (label === tr("calcCompBenefitsLabel")) {
+        const isBenefitsRow = label === tr("calcCompBenefitsLabel");
+        if (isBenefitsRow) {
           el.classList.add("kpi-item--longtext");
         }
-        el.innerHTML = `<span>${label}</span><strong class="${cls}">${value}</strong>`;
+        const safeLabel = escapeHtml(String(label || ""));
+        const safeValue = isHtml ? String(value || "") : escapeHtml(String(value || ""));
+        if (isBenefitsRow) {
+          el.innerHTML = `<span>${safeLabel}</span><p class="kpi-longtext-value ${cls}">${safeValue}</p>`;
+        } else {
+          el.innerHTML = `<span>${safeLabel}</span><strong class="${cls}">${safeValue}</strong>`;
+        }
         kpi.appendChild(el);
       });
     }
