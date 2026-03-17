@@ -299,6 +299,7 @@ const defaultExpenseItems = [
         pdfCompBenefitsItem: "Beneficio",
         pdfCompBenefitsAmount: "Valore {currency}/mese",
         pdfCompBenefitsNone: "Nessun beneficio compensativo aggiuntivo dichiarato.",
+        pdfCompBenefitsTotal: "Totale benefici allocati",
         pdfPrimaryHomeMortgage: "Mutuo prima casa ceduta",
         pdfPrimaryHomeNotDeclared: "Non dichiarato",
         pdfPrimaryHomeAssignedTo: "Assegnata a",
@@ -656,6 +657,7 @@ const defaultExpenseItems = [
         pdfCompBenefitsItem: "Benefit",
         pdfCompBenefitsAmount: "Value {currency}/month",
         pdfCompBenefitsNone: "No additional compensative benefits declared.",
+        pdfCompBenefitsTotal: "Total allocated benefits",
         pdfPrimaryHomeMortgage: "Assigned primary-home mortgage",
         pdfPrimaryHomeNotDeclared: "Not declared",
         pdfPrimaryHomeAssignedTo: "Assigned to",
@@ -5110,9 +5112,22 @@ const defaultExpenseItems = [
           <div class="pdf-explain-amount">${eur(m.assegnoDa2a1)}</div>
         `;
       } else if (compBenefits.length) {
+        const rawBenefs = Array.isArray(m.compensativeBenefits)
+          ? m.compensativeBenefits.filter((row) => row && Number(row.amount || 0) > 0.005)
+          : [];
+        const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
+        const cardsHtml = compBenefits.map((row, idx) => {
+          const icon = (rawBenefs[idx] && typeIcons[rawBenefs[idx].type]) || "\u2726";
+          return `<li class="pdf-explain-benefit-card"><span class="pdf-explain-benefit-icon">${icon}</span><span class="pdf-explain-benefit-label">${escapeHtml(row.label)}</span><strong class="pdf-explain-benefit-amount">${eur(row.amount)}</strong></li>`;
+        }).join("");
+        const benefitsTotal = compBenefits.reduce((sum, row) => sum + Number(row.amount || 0), 0);
         explainResultHtml = `
-          <div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>
-          <div class="pdf-explain-formula"><strong>${tr("calcCompBenefitsLabel")}:</strong> ${compBenefits.map((row) => `${escapeHtml(row.label)} (${eur(row.amount)})`).join(" | ")}</div>
+          <div class="pdf-explain-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>
+          <div class="pdf-explain-benefits-section">
+            <div class="pdf-explain-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
+            <ul class="pdf-explain-benefits-cards">${cardsHtml}</ul>
+            <div class="pdf-explain-benefits-total"><span>${escapeHtml(tr("pdfCompBenefitsTotal"))}</span><strong>${eur(benefitsTotal)}</strong></div>
+          </div>
         `;
       }
 
@@ -5466,6 +5481,16 @@ const defaultExpenseItems = [
   .pdf-explain-formula { font-size: 8.5pt; color: #284e49; margin-bottom: 3px; }
   .pdf-explain-amount { font-size: 13pt; font-weight: 900; color: #0e6b62; }
   .pdf-explain-result-empty { font-size: 10pt; font-weight: 800; color: #0f6a61; }
+  .pdf-explain-no-transfer-badge { display: block; border: 1px solid #93d1bc; background: linear-gradient(90deg,#e7f6ef,#cdeedf); border-radius: 999px; padding: 8px 12px; text-align: center; font-size: 10pt; font-weight: 800; color: #0f6158; margin-bottom: 10px; }
+  .pdf-explain-benefits-section { border: 1px solid #b9ddd1; border-radius: 10px; background: #f8fcfb; padding: 8px 10px; }
+  .pdf-explain-benefits-label { font-size: 8pt; font-weight: 800; color: #1d5550; text-transform: uppercase; letter-spacing: 0.45px; margin-bottom: 7px; }
+  .pdf-explain-benefits-cards { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 7px; }
+  .pdf-explain-benefit-card { display: flex; align-items: center; gap: 8px; border: 1px solid #c7e2db; border-radius: 9px; background: #fff; padding: 7px 9px; }
+  .pdf-explain-benefit-icon { width: 22px; height: 22px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: #def0ea; border: 1px solid #bddbd2; font-size: 10pt; }
+  .pdf-explain-benefit-label { flex: 1; font-size: 8.4pt; color: #214b46; font-weight: 700; }
+  .pdf-explain-benefit-amount { font-size: 10pt; color: #0e645b; font-weight: 900; }
+  .pdf-explain-benefits-total { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; padding: 8px 10px; border-radius: 9px; background: linear-gradient(90deg,#dff3ea,#bfe8d8); border: 1px solid #9cd0bb; color: #124d46; font-size: 8.6pt; font-weight: 700; }
+  .pdf-explain-benefits-total strong { font-size: 12pt; color: #0b5d54; }
 
   /* ── PDF INLINE CALENDAR ── */
   .pdf-cal-wrap { margin-top: 8px; }
