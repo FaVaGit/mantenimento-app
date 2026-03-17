@@ -27,6 +27,8 @@ const authUrlLoginSupabaseAnonKey = String(process.env.AUTH_URL_LOGIN_SUPABASE_A
 const authUrlLoginSupabaseEmail = String(process.env.AUTH_URL_LOGIN_SUPABASE_EMAIL || '').trim().toLowerCase();
 const authUrlLoginSupabasePassword = String(process.env.AUTH_URL_LOGIN_SUPABASE_PASSWORD || '');
 const authUrlLoginMaxTtlSec = Number(process.env.AUTH_URL_LOGIN_MAX_TTL_SEC || 180);
+const authUrlLoginBootstrapKey = String(process.env.AUTH_URL_LOGIN_BOOTSTRAP_KEY || '').trim();
+const authUrlLoginFrontendBase = String(process.env.AUTH_URL_LOGIN_FRONTEND_BASE || 'https://favagit.github.io/mantenimento-app/autologin.html').trim();
 const apiAllowedOrigins = String(process.env.API_ALLOWED_ORIGINS || '')
   .split(',')
   .map((v) => v.trim())
@@ -63,6 +65,13 @@ function safeCompareHex(aHex, bHex) {
   } catch (_) {
     return false;
   }
+}
+
+function safeCompareText(aText, bText) {
+  const a = Buffer.from(String(aText || ''), 'utf8');
+  const b = Buffer.from(String(bText || ''), 'utf8');
+  if (!a.length || !b.length || a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }
 
 function pruneConsumedUrlLoginTokens(nowSec) {
@@ -115,6 +124,34 @@ function validateUrlLoginToken(tokenValue) {
 
   urlLoginTokenStore.set(jti, exp);
   return { ok: true, payload };
+}
+
+function createUrlLoginToken(subject, ttlSeconds) {
+  const nowSec = Math.floor(Date.now() / 1000);
+  const ttl = Number.isFinite(ttlSeconds)
+    ? Math.max(30, Math.min(authUrlLoginMaxTtlSec, Math.floor(ttlSeconds)))
+    : Math.min(120, authUrlLoginMaxTtlSec);
+
+  const payload = {
+    sub: String(subject || '').trim().toLowerCase(),
+    aud: 'url-login',
+    iat: nowSec,
+    exp: nowSec + ttl,
+    jti: typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : crypto.randomBytes(16).toString('hex')
+  };
+
+  const payloadPart = toBase64Url(JSON.stringify(payload));
+  const signatureHex = crypto.createHmac('sha256', authUrlLoginSecret).update(payloadPart).digest('hex');
+  const signaturePart = toBase64Url(Buffer.from(signatureHex, 'hex'));
+  return `${payloadPart}.${signaturePart}`;
+}
+
+function buildFrontendAutologinUrl(token) {
+  const base = authUrlLoginFrontendBase || 'https://favagit.github.io/mantenimento-app/autologin.html';
+  const joiner = base.includes('?') ? '&' : '?';
+  return `${base}${joiner}autologin=1&authToken=${encodeURIComponent(String(token || '').trim())}`;
 }
 
 async function deriveProfileKeyForUser(userId) {
@@ -324,6 +361,38 @@ app.post('/api/auth/url-login/exchange', async (req, res) => {
   } catch (_) {
     return res.status(500).json({ ok: false, error: 'Secure URL login exchange error.' });
   }
+});
+
+app.get('/api/auth/url-login/start', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+
+  if (!authUrlLoginSecret || !authUrlLoginBootstrapKey) {
+    return res.status(503).json({ ok: false, error: 'Secure URL login bootstrap not configured on server.' });
+  }
+
+  const bootstrapKeyInput = String(req.get('x-url-login-key') || req.query.k || '').trim();
+  if (!safeCompareText(authUrlLoginBootstrapKey, bootstrapKeyInput)) {
+    return res.status(401).json({ ok: false, error: 'Invalid bootstrap key.' });
+  }
+
+  const requestedSub = String(req.query.sub || authUrlLoginAllowedUser).trim().toLowerCase();
+  if (!requestedSub || requestedSub !== authUrlLoginAllowedUser) {
+    return res.status(400).json({ ok: false, error: 'Unsupported bootstrap subject.' });
+  }
+
+  const ttlRaw = Number(req.query.ttl);
+  const ttl = Number.isFinite(ttlRaw) ? ttlRaw : Math.min(120, authUrlLoginMaxTtlSec);
+
+  const token = createUrlLoginToken(requestedSub, ttl);
+  const url = buildFrontendAutologinUrl(token);
+  const asJson = String(req.query.format || '').trim().toLowerCase() === 'json';
+
+  if (asJson) {
+    return res.json({ ok: true, url });
+  }
+
+  return res.redirect(302, url);
 });
 
 app.post('/api/calculate', applyCalculateRateLimit, (req, res) => {

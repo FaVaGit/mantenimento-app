@@ -74,6 +74,8 @@ Variabili ambiente backend richieste:
 - `AUTH_URL_LOGIN_SUPABASE_EMAIL`: email account da autenticare via URL token
 - `AUTH_URL_LOGIN_SUPABASE_PASSWORD`: password account da autenticare via URL token
 - `AUTH_URL_LOGIN_MAX_TTL_SEC`: TTL massimo token (default `180`)
+- `AUTH_URL_LOGIN_BOOTSTRAP_KEY`: chiave per avviare autologin server-side senza shell
+- `AUTH_URL_LOGIN_FRONTEND_BASE`: URL frontend di destinazione (default `https://favagit.github.io/mantenimento-app/autologin.html`)
 - `API_ALLOWED_ORIGINS`: origini consentite per API cross-origin (es. `https://favagit.github.io`)
 
 Generazione token e link:
@@ -95,6 +97,20 @@ Il comando stampa un link del tipo:
 
 ```text
 https://favagit.github.io/mantenimento-app/?autologin=1&authToken=...
+```
+
+Avvio completamente automatico lato backend (senza generare token da shell):
+
+```text
+https://mantenimento-app.onrender.com/api/auth/url-login/start?k=<BOOTSTRAP_KEY>&sub=favagit
+```
+
+Il backend genera token monouso in automatico e reindirizza al frontend.
+
+Per ottenere il link in JSON invece del redirect:
+
+```text
+https://mantenimento-app.onrender.com/api/auth/url-login/start?k=<BOOTSTRAP_KEY>&sub=favagit&format=json
 ```
 
 Note sicurezza:
