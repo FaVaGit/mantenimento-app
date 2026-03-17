@@ -17,12 +17,119 @@ const port = Number(process.env.PORT || 3000);
 const calculateRateWindowMs = Number(process.env.CALCULATE_RATE_WINDOW_MS || 60_000);
 const calculateRateMaxRequests = Number(process.env.CALCULATE_RATE_MAX_REQUESTS || 30);
 const calculateRequestLog = new Map();
+const urlLoginTokenStore = new Map();
 const accessLogEnabled = String(process.env.ACCESS_LOG_ENABLED || (process.env.NODE_ENV === 'production' ? 'true' : 'false')).toLowerCase() === 'true';
 const accessLogSalt = String(process.env.ACCESS_LOG_SALT || 'mantenimento-app');
-const corsAllowedOrigins = String(process.env.CORS_ALLOWED_ORIGINS || '')
+const authUrlLoginSecret = String(process.env.AUTH_URL_LOGIN_SECRET || '').trim();
+const authUrlLoginAllowedUser = String(process.env.AUTH_URL_LOGIN_ALLOWED_USER || 'favagit').trim().toLowerCase();
+const authUrlLoginSupabaseUrl = String(process.env.AUTH_URL_LOGIN_SUPABASE_URL || process.env.KEYLOCK_SUPABASE_URL || '').trim().replace(/\/+$/, '');
+const authUrlLoginSupabaseAnonKey = String(process.env.AUTH_URL_LOGIN_SUPABASE_ANON_KEY || process.env.KEYLOCK_SUPABASE_ANON_KEY || '').trim();
+const authUrlLoginSupabaseEmail = String(process.env.AUTH_URL_LOGIN_SUPABASE_EMAIL || '').trim().toLowerCase();
+const authUrlLoginSupabasePassword = String(process.env.AUTH_URL_LOGIN_SUPABASE_PASSWORD || '');
+const authUrlLoginMaxTtlSec = Number(process.env.AUTH_URL_LOGIN_MAX_TTL_SEC || 180);
+const apiAllowedOrigins = String(process.env.API_ALLOWED_ORIGINS || '')
   .split(',')
-  .map((value) => value.trim())
+  .map((v) => v.trim())
   .filter(Boolean);
+
+function isAllowedApiOrigin(origin) {
+  if (!origin) return false;
+  if (!apiAllowedOrigins.length) return false;
+  return apiAllowedOrigins.includes(origin);
+}
+
+function toBase64Url(input) {
+  return Buffer.from(input)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+function fromBase64Url(input) {
+  const normalized = String(input || '')
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+  const padLength = (4 - (normalized.length % 4)) % 4;
+  return Buffer.from(normalized + '='.repeat(padLength), 'base64');
+}
+
+function safeCompareHex(aHex, bHex) {
+  try {
+    const a = Buffer.from(String(aHex || ''), 'hex');
+    const b = Buffer.from(String(bHex || ''), 'hex');
+    if (a.length === 0 || b.length === 0 || a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  } catch (_) {
+    return false;
+  }
+}
+
+function pruneConsumedUrlLoginTokens(nowSec) {
+  for (const [jti, exp] of urlLoginTokenStore.entries()) {
+    if (!Number.isFinite(exp) || exp <= nowSec) {
+      urlLoginTokenStore.delete(jti);
+    }
+  }
+}
+
+function validateUrlLoginToken(tokenValue) {
+  if (!authUrlLoginSecret) return { ok: false, error: 'URL login secret missing on server.' };
+  if (!tokenValue || typeof tokenValue !== 'string') return { ok: false, error: 'Token missing.' };
+
+  const token = String(tokenValue || '').trim();
+  const parts = token.split('.');
+  if (parts.length !== 2) return { ok: false, error: 'Malformed token.' };
+
+  const payloadPart = parts[0];
+  const signaturePart = parts[1];
+  const expectedSignatureHex = crypto.createHmac('sha256', authUrlLoginSecret).update(payloadPart).digest('hex');
+  const gotSignatureHex = fromBase64Url(signaturePart).toString('hex');
+  if (!safeCompareHex(expectedSignatureHex, gotSignatureHex)) {
+    return { ok: false, error: 'Invalid token signature.' };
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(fromBase64Url(payloadPart).toString('utf8'));
+  } catch (_) {
+    return { ok: false, error: 'Invalid token payload.' };
+  }
+
+  const nowSec = Math.floor(Date.now() / 1000);
+  pruneConsumedUrlLoginTokens(nowSec);
+
+  const sub = String(payload && payload.sub ? payload.sub : '').trim().toLowerCase();
+  const aud = String(payload && payload.aud ? payload.aud : '').trim().toLowerCase();
+  const jti = String(payload && payload.jti ? payload.jti : '').trim();
+  const exp = Number(payload && payload.exp);
+  const iat = Number(payload && payload.iat);
+
+  if (!sub || sub !== authUrlLoginAllowedUser) return { ok: false, error: 'Token user not allowed.' };
+  if (aud && aud !== 'url-login') return { ok: false, error: 'Invalid token audience.' };
+  if (!jti) return { ok: false, error: 'Token nonce missing.' };
+  if (!Number.isFinite(exp) || exp <= nowSec) return { ok: false, error: 'Token expired.' };
+  if (!Number.isFinite(iat) || iat > nowSec + 30) return { ok: false, error: 'Invalid token issue time.' };
+  if ((exp - iat) > authUrlLoginMaxTtlSec) return { ok: false, error: 'Token TTL too long.' };
+  if (urlLoginTokenStore.has(jti)) return { ok: false, error: 'Token already used.' };
+
+  urlLoginTokenStore.set(jti, exp);
+  return { ok: true, payload };
+}
+
+async function deriveProfileKeyForUser(userId) {
+  const password = String(authUrlLoginSupabasePassword || '');
+  if (!password || !userId) return '';
+
+  const salt = crypto.createHash('sha256').update(`keylock:${userId}`).digest();
+  const key = await new Promise((resolve, reject) => {
+    crypto.pbkdf2(password, salt, 120000, 32, 'sha256', (err, derivedKey) => {
+      if (err) return reject(err);
+      resolve(derivedKey);
+    });
+  });
+  return Buffer.from(key).toString('base64');
+}
 
 const publicDir = path.join(__dirname, '..', 'frontend', 'public');
 // When DEV_SOURCE_JS=true the server always serves raw app.js (no rebuild needed).
@@ -83,27 +190,6 @@ function applyCalculateRateLimit(req, res, next) {
 
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
-app.use((req, res, next) => {
-  const origin = String(req.headers.origin || '').trim();
-  const isAllowedOrigin = origin && corsAllowedOrigins.includes(origin);
-
-  if (isAllowedOrigin) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,X-Request-Id');
-    res.setHeader('Access-Control-Max-Age', '600');
-  }
-
-  if (req.method === 'OPTIONS') {
-    if (isAllowedOrigin) {
-      return res.status(204).end();
-    }
-    return res.status(403).json({ ok: false, error: 'Origin not allowed.' });
-  }
-
-  return next();
-});
 app.use(express.json({ limit: '64kb' }));
 app.use((req, res, next) => {
   const startedAt = process.hrtime.bigint();
@@ -161,12 +247,83 @@ app.use((err, req, res, next) => {
   return next(err);
 });
 
+app.use('/api', (req, res, next) => {
+  const origin = String(req.get('origin') || '');
+  if (isAllowedApiOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+    res.setHeader('Access-Control-Max-Age', '600');
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  return next();
+});
+
 // Serve minified bundle when available, fallback to source app.js in development.
 app.get('/app.js', (req, res) => {
   const minPath = path.join(publicDir, 'app.min.js');
   const sourcePath = path.join(publicDir, 'app.js');
   const target = (!devSourceJs && fs.existsSync(minPath)) ? minPath : sourcePath;
   res.sendFile(target);
+});
+
+app.post('/api/auth/url-login/exchange', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+
+  const hasServerConfig = authUrlLoginSecret
+    && authUrlLoginSupabaseUrl
+    && authUrlLoginSupabaseAnonKey
+    && authUrlLoginSupabaseEmail
+    && authUrlLoginSupabasePassword;
+
+  if (!hasServerConfig) {
+    return res.status(503).json({ ok: false, error: 'Secure URL login not configured on server.' });
+  }
+
+  const token = String(req.body && req.body.token ? req.body.token : '').trim();
+  const tokenCheck = validateUrlLoginToken(token);
+  if (!tokenCheck.ok) {
+    return res.status(401).json({ ok: false, error: tokenCheck.error || 'Invalid token.' });
+  }
+
+  try {
+    const supaResponse = await fetch(`${authUrlLoginSupabaseUrl}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: authUrlLoginSupabaseAnonKey
+      },
+      body: JSON.stringify({
+        email: authUrlLoginSupabaseEmail,
+        password: authUrlLoginSupabasePassword
+      })
+    });
+
+    const supaJson = await supaResponse.json().catch(() => ({}));
+    if (!supaResponse.ok || !supaJson || !supaJson.access_token || !supaJson.refresh_token || !supaJson.user || !supaJson.user.id) {
+      return res.status(401).json({ ok: false, error: 'Supabase session exchange failed.' });
+    }
+
+    const profileKey = await deriveProfileKeyForUser(String(supaJson.user.id));
+    return res.json({
+      ok: true,
+      session: {
+        access_token: supaJson.access_token,
+        refresh_token: supaJson.refresh_token,
+        expires_in: Number(supaJson.expires_in || 0),
+        token_type: String(supaJson.token_type || 'bearer'),
+        user: supaJson.user,
+        profile_key: profileKey
+      }
+    });
+  } catch (_) {
+    return res.status(500).json({ ok: false, error: 'Secure URL login exchange error.' });
+  }
 });
 
 app.post('/api/calculate', applyCalculateRateLimit, (req, res) => {

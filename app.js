@@ -135,7 +135,10 @@ const defaultExpenseItems = [
         authLoginFailed: "Login fallito: {message}",
         authUrlLoginHttpsOnly: "Login da URL consentito solo in HTTPS.",
         authUrlLoginMissingParams: "Login da URL ignorato: servono utente (o email) e password.",
-        authUrlLoginStarted: "Login automatico da URL in corso...",
+        authUrlLoginStarted: "Login automatico sicuro in corso...",
+        authUrlLoginPasswordDisabled: "Login da URL con password disabilitato per sicurezza. Usa authToken monouso.",
+        authUrlLoginTokenMissing: "Login da URL ignorato: manca authToken.",
+        authUrlLoginTokenExchangeFailed: "Login automatico sicuro fallito: {message}",
         authUserFallback: "utente",
         authLogoutDone: "Logout eseguito.",
         authLoginRequired: "Effettua prima il login.",
@@ -480,7 +483,10 @@ const defaultExpenseItems = [
         authLoginFailed: "Login failed: {message}",
         authUrlLoginHttpsOnly: "URL login is allowed only over HTTPS.",
         authUrlLoginMissingParams: "URL login ignored: username/email and password are required.",
-        authUrlLoginStarted: "Automatic URL login in progress...",
+        authUrlLoginStarted: "Secure automatic URL login in progress...",
+        authUrlLoginPasswordDisabled: "Password-in-URL login is disabled for security. Use one-time authToken.",
+        authUrlLoginTokenMissing: "URL login ignored: authToken is missing.",
+        authUrlLoginTokenExchangeFailed: "Secure automatic login failed: {message}",
         authUserFallback: "user",
         authLogoutDone: "Logout completed.",
         authLoginRequired: "Please login first.",
@@ -2486,26 +2492,11 @@ const defaultExpenseItems = [
       }
     }
 
-    function decodeUrlBase64(value) {
-      const raw = String(value || "").trim();
-      if (!raw) return "";
-      try {
-        const normalized = raw.replace(/-/g, "+").replace(/_/g, "/");
-        return decodeURIComponent(escape(atob(normalized)));
-      } catch (_) {
-        try {
-          return atob(raw);
-        } catch (_) {
-          return "";
-        }
-      }
-    }
-
     function clearSensitiveAuthQueryParams() {
       try {
         const currentUrl = new URL(window.location.href);
         const params = currentUrl.searchParams;
-        const keys = ["autologin", "authUser", "authEmail", "authPass", "authPass64"];
+        const keys = ["autologin", "authUser", "authEmail", "authPass", "authPass64", "authToken"];
         let changed = false;
         keys.forEach((key) => {
           if (params.has(key)) {
@@ -2523,7 +2514,7 @@ const defaultExpenseItems = [
     async function maybeAutoLoginFromUrl() {
       try {
         const params = new URLSearchParams(window.location.search || "");
-        const hasAnyAutoAuthParam = ["autologin", "authUser", "authEmail", "authPass", "authPass64"].some((key) => params.has(key));
+        const hasAnyAutoAuthParam = ["autologin", "authUser", "authEmail", "authPass", "authPass64", "authToken"].some((key) => params.has(key));
         if (!hasAnyAutoAuthParam) return;
 
         const force = String(params.get("autologin") || "1").trim().toLowerCase();
@@ -2536,30 +2527,88 @@ const defaultExpenseItems = [
           return;
         }
 
-        const username = normalizeUsername(params.get("authUser") || "");
-        const email = normalizeEmail(params.get("authEmail") || "");
-        const plainPassword = String(params.get("authPass") || "");
-        const encodedPassword = String(params.get("authPass64") || "");
-        const password = plainPassword || decodeUrlBase64(encodedPassword);
-
-        if ((!username && !email) || !password) {
+        const hasLegacyPasswordParams = params.has("authPass") || params.has("authPass64") || params.has("authUser") || params.has("authEmail");
+        if (hasLegacyPasswordParams) {
           clearSensitiveAuthQueryParams();
-          setAuthStatus(tr("authUrlLoginMissingParams"), true);
+          setAuthStatus(tr("authUrlLoginPasswordDisabled"), true);
           return;
         }
 
-        const userEl = document.getElementById("keylockUser");
-        const emailEl = document.getElementById("keylockEmail");
-        const passEl = document.getElementById("keylockPass");
-        if (userEl) userEl.value = username;
-        if (emailEl) emailEl.value = email;
-        if (passEl) passEl.value = password;
+        const authToken = String(params.get("authToken") || "").trim();
+        if (!authToken) {
+          clearSensitiveAuthQueryParams();
+          setAuthStatus(tr("authUrlLoginTokenMissing"), true);
+          return;
+        }
 
-        clearSensitiveAuthQueryParams();
+        const apiBase = resolveCalculationApiBase();
+        if (!apiBase) {
+          clearSensitiveAuthQueryParams();
+          setAuthStatus(msg("authUrlLoginTokenExchangeFailed", { message: "API base non configurata" }), true);
+          return;
+        }
+
         setAuthMode("login");
         setAuthStatus(tr("authUrlLoginStarted"), false);
-        await loginKeyLockUser();
-        if (passEl) passEl.value = "";
+        const response = await fetch(`${apiBase}/api/auth/url-login/exchange`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ token: authToken })
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload || !payload.ok || !payload.session) {
+          clearSensitiveAuthQueryParams();
+          const reason = String(payload && payload.error ? payload.error : `HTTP ${response.status}`);
+          setAuthStatus(msg("authUrlLoginTokenExchangeFailed", { message: reason }), true);
+          return;
+        }
+
+        if (!(supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.setSession === "function")) {
+          clearSensitiveAuthQueryParams();
+          setAuthStatus(msg("authUrlLoginTokenExchangeFailed", { message: "Supabase non configurato" }), true);
+          return;
+        }
+
+        const accessToken = String(payload.session.access_token || "");
+        const refreshToken = String(payload.session.refresh_token || "");
+        if (!accessToken || !refreshToken) {
+          clearSensitiveAuthQueryParams();
+          setAuthStatus(msg("authUrlLoginTokenExchangeFailed", { message: "sessione non valida" }), true);
+          return;
+        }
+
+        const setSessionRes = await supabaseClient.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+        if (setSessionRes.error || !setSessionRes.data || !setSessionRes.data.user || !setSessionRes.data.session) {
+          clearSensitiveAuthQueryParams();
+          const reason = String(setSessionRes.error && setSessionRes.error.message ? setSessionRes.error.message : "sessione Supabase non impostabile");
+          setAuthStatus(msg("authUrlLoginTokenExchangeFailed", { message: reason }), true);
+          return;
+        }
+
+        const user = setSessionRes.data.user;
+        const userMeta = user && user.user_metadata ? user.user_metadata : {};
+        const effectiveUsername = normalizeUsername(userMeta.username || "")
+          || normalizeUsername(String(user.email || "").split("@")[0])
+          || tr("authUserFallback");
+        const profileKeyBytes = decodeBytesFlexible(payload.session.profile_key || "");
+
+        authSession.username = effectiveUsername;
+        authSession.email = normalizeEmail(user.email || "");
+        authSession.userId = user.id;
+        authSession.keyBits = profileKeyBytes && profileKeyBytes.length === 32
+          ? profileKeyBytes
+          : await deriveSessionKeyBits(authToken, user.id);
+        authSession.isDonor = localStorage.getItem(`m_donor_${user.id}`) === "1";
+        updateAuthUi();
+        await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
+
+        clearSensitiveAuthQueryParams();
       } catch (_) {}
     }
 

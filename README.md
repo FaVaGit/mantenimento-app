@@ -33,42 +33,7 @@ npm run dev
 3. Apri:
 
 ```text
-http://localhost:3001
-```
-
-## Puntare GitHub Pages a un backend dev separato
-
-Il frontend gia supporta un endpoint backend esplicitamente configurato.
-Per usare `https://favagit.github.io/mantenimento-app/` contro un backend dev reale:
-
-1. Pubblica il backend dev su un host HTTPS raggiungibile pubblicamente.
-	Esempio: `https://dev-api.example.com`
-2. Nel backend dev abilita CORS verso GitHub Pages:
-
-```env
-CORS_ALLOWED_ORIGINS=https://favagit.github.io
-```
-
-3. Apri GitHub Pages con l'override runtime dell'API base:
-
-```text
-https://favagit.github.io/mantenimento-app/?apiBase=https://dev-api.example.com
-```
-
-Per usare anche il frontend del branch dev con un link unico:
-
-```text
-https://favagit.github.io/mantenimento-app/?frontend=dev&env=dev
-```
-
-`frontend=dev` apre la preview frontend del branch configurata in `supabase-config.js`,
-mentre `env=dev` seleziona il backend dev.
-
-L'override viene memorizzato in `localStorage`, quindi resta attivo anche ai refresh successivi.
-Per tornare al backend di default:
-
-```text
-https://favagit.github.io/mantenimento-app/?apiBase=reset
+http://localhost:3000
 ```
 
 ## Build frontend minificato
@@ -97,6 +62,36 @@ Parametri server utili:
 - `ACCESS_LOG_ENABLED`: abilita log strutturati minimizzati, attivo di default in produzione
 - `ACCESS_LOG_SALT`: sale usato per anonimizzare il riferimento client nei log applicativi
 - payload JSON in ingresso limitato a `64kb`
+
+### URL login sicuro (token monouso)
+Per evitare credenziali in chiaro nel link, e disponibile un flusso `authToken` firmato server-side.
+
+Variabili ambiente backend richieste:
+- `AUTH_URL_LOGIN_SECRET`: segreto HMAC (lungo e casuale)
+- `AUTH_URL_LOGIN_ALLOWED_USER`: utente consentito (default `favagit`)
+- `AUTH_URL_LOGIN_SUPABASE_URL`: URL progetto Supabase
+- `AUTH_URL_LOGIN_SUPABASE_ANON_KEY`: anon key Supabase
+- `AUTH_URL_LOGIN_SUPABASE_EMAIL`: email account da autenticare via URL token
+- `AUTH_URL_LOGIN_SUPABASE_PASSWORD`: password account da autenticare via URL token
+- `AUTH_URL_LOGIN_MAX_TTL_SEC`: TTL massimo token (default `180`)
+- `API_ALLOWED_ORIGINS`: origini consentite per API cross-origin (es. `https://favagit.github.io`)
+
+Generazione token e link:
+
+```bash
+npm run auth:url-token -- --sub=favagit --ttl=120 --baseUrl=https://favagit.github.io/mantenimento-app/
+```
+
+Il comando stampa un link del tipo:
+
+```text
+https://favagit.github.io/mantenimento-app/?autologin=1&authToken=...
+```
+
+Note sicurezza:
+- Il token e monouso, con scadenza breve e firma HMAC.
+- I parametri sensibili vengono rimossi dalla barra URL subito dopo la lettura.
+- Il login via `authPass`/`authPass64` e disabilitato per hardening.
 
 ## KeyLock multi-device (Supabase)
 Il login cloud resta lato frontend e usa `supabase-config.js` (chiave anon pubblica).

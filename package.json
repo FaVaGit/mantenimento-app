@@ -14,6 +14,7 @@
     "dev": "node scripts/dev-server.mjs",
     "dev:watch": "node scripts/build-frontend.mjs --watch",
     "build:frontend": "node scripts/build-frontend.mjs",
+    "auth:url-token": "node scripts/create-url-login-token.mjs",
     "start": "npm run build:frontend && node backend/server.js"
   },
   "keywords": [
