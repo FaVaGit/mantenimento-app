@@ -133,6 +133,9 @@ const defaultExpenseItems = [
         authEmailNotVerified: "Email non verificata. Apri la mail di conferma e completa la verifica, poi riprova il login.",
         authInvalidCredentials: "Login fallito: credenziali non valide o utente non presente nel nuovo cloud. Usa Registrati solo se l'utente non e mai stato creato su Supabase.",
         authLoginFailed: "Login fallito: {message}",
+        authUrlLoginHttpsOnly: "Login da URL consentito solo in HTTPS.",
+        authUrlLoginMissingParams: "Login da URL ignorato: servono utente (o email) e password.",
+        authUrlLoginStarted: "Login automatico da URL in corso...",
         authUserFallback: "utente",
         authLogoutDone: "Logout eseguito.",
         authLoginRequired: "Effettua prima il login.",
@@ -475,6 +478,9 @@ const defaultExpenseItems = [
         authEmailNotVerified: "Email not verified. Open your confirmation email and complete verification, then retry login.",
         authInvalidCredentials: "Login failed: invalid credentials or user not found in this cloud. Use Register only if the user was never created in Supabase.",
         authLoginFailed: "Login failed: {message}",
+        authUrlLoginHttpsOnly: "URL login is allowed only over HTTPS.",
+        authUrlLoginMissingParams: "URL login ignored: username/email and password are required.",
+        authUrlLoginStarted: "Automatic URL login in progress...",
         authUserFallback: "user",
         authLogoutDone: "Logout completed.",
         authLoginRequired: "Please login first.",
@@ -2478,6 +2484,83 @@ const defaultExpenseItems = [
       } finally {
         authFlowInProgress = false;
       }
+    }
+
+    function decodeUrlBase64(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      try {
+        const normalized = raw.replace(/-/g, "+").replace(/_/g, "/");
+        return decodeURIComponent(escape(atob(normalized)));
+      } catch (_) {
+        try {
+          return atob(raw);
+        } catch (_) {
+          return "";
+        }
+      }
+    }
+
+    function clearSensitiveAuthQueryParams() {
+      try {
+        const currentUrl = new URL(window.location.href);
+        const params = currentUrl.searchParams;
+        const keys = ["autologin", "authUser", "authEmail", "authPass", "authPass64"];
+        let changed = false;
+        keys.forEach((key) => {
+          if (params.has(key)) {
+            params.delete(key);
+            changed = true;
+          }
+        });
+        if (!changed) return;
+        const nextSearch = params.toString();
+        const nextUrl = `${currentUrl.pathname}${nextSearch ? `?${nextSearch}` : ""}${currentUrl.hash || ""}`;
+        window.history.replaceState({}, "", nextUrl);
+      } catch (_) {}
+    }
+
+    async function maybeAutoLoginFromUrl() {
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        const hasAnyAutoAuthParam = ["autologin", "authUser", "authEmail", "authPass", "authPass64"].some((key) => params.has(key));
+        if (!hasAnyAutoAuthParam) return;
+
+        const force = String(params.get("autologin") || "1").trim().toLowerCase();
+        if (!(force === "1" || force === "true" || force === "yes" || force === "on")) return;
+
+        const isHttps = window.location.protocol === "https:" || window.location.hostname === "localhost";
+        if (!isHttps) {
+          clearSensitiveAuthQueryParams();
+          setAuthStatus(tr("authUrlLoginHttpsOnly"), true);
+          return;
+        }
+
+        const username = normalizeUsername(params.get("authUser") || "");
+        const email = normalizeEmail(params.get("authEmail") || "");
+        const plainPassword = String(params.get("authPass") || "");
+        const encodedPassword = String(params.get("authPass64") || "");
+        const password = plainPassword || decodeUrlBase64(encodedPassword);
+
+        if ((!username && !email) || !password) {
+          clearSensitiveAuthQueryParams();
+          setAuthStatus(tr("authUrlLoginMissingParams"), true);
+          return;
+        }
+
+        const userEl = document.getElementById("keylockUser");
+        const emailEl = document.getElementById("keylockEmail");
+        const passEl = document.getElementById("keylockPass");
+        if (userEl) userEl.value = username;
+        if (emailEl) emailEl.value = email;
+        if (passEl) passEl.value = password;
+
+        clearSensitiveAuthQueryParams();
+        setAuthMode("login");
+        setAuthStatus(tr("authUrlLoginStarted"), false);
+        await loginKeyLockUser();
+        if (passEl) passEl.value = "";
+      } catch (_) {}
     }
 
     async function logoutKeyLockUser() {
@@ -6069,6 +6152,7 @@ ${scenarioLab.length ? `
     void initVisitorCounters();
     setAuthMode("login");
     updateAuthUi();
+    void maybeAutoLoginFromUrl();
     renderCloudHistoryPanel();
     applyUiViewStateToDom();
     updateFirstHomeMortgageUi();
