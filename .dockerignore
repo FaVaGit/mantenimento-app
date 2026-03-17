@@ -5,6 +5,7 @@ npm-debug.log
 deploy
 .env
 .env.*
+!.env.example
 *.log
 dist
 coverage
