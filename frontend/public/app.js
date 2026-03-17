@@ -1611,6 +1611,32 @@ const defaultExpenseItems = [
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
     }
 
+    function userHasServerDonorEntitlement(user) {
+      const safeUser = user && typeof user === "object" ? user : {};
+      const userMeta = safeUser.user_metadata && typeof safeUser.user_metadata === "object"
+        ? safeUser.user_metadata
+        : {};
+      const appMeta = safeUser.app_metadata && typeof safeUser.app_metadata === "object"
+        ? safeUser.app_metadata
+        : {};
+
+      const truthy = (value) => {
+        if (value === true || value === 1) return true;
+        const normalized = String(value || "").trim().toLowerCase();
+        return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+      };
+
+      const roleValue = String(userMeta.role || appMeta.role || "").trim().toLowerCase();
+      if (roleValue === "donor" || roleValue === "premium") return true;
+
+      return truthy(userMeta.is_donor)
+        || truthy(userMeta.isDonor)
+        || truthy(userMeta.premium)
+        || truthy(appMeta.is_donor)
+        || truthy(appMeta.isDonor)
+        || truthy(appMeta.premium);
+    }
+
     const PRIMARY_PSEUDO_EMAIL_DOMAIN = "keylock-auth.app";
     function buildPseudoEmailCandidates(username) {
       const base = normalizeUsername(username);
@@ -1710,7 +1736,7 @@ const defaultExpenseItems = [
       authSession.email = normalizeEmail(user && user.email ? user.email : "");
       authSession.userId = user.id;
       authSession.keyBits = await deriveSessionKeyBits(password, user.id);
-      authSession.isDonor = localStorage.getItem(`m_donor_${user.id}`) === "1";
+      authSession.isDonor = userHasServerDonorEntitlement(user);
       updateAuthUi();
       return msg("authLoginAs", { username });
     }
@@ -2605,7 +2631,7 @@ const defaultExpenseItems = [
         authSession.keyBits = profileKeyBytes && profileKeyBytes.length === 32
           ? profileKeyBytes
           : await deriveSessionKeyBits(authToken, user.id);
-        authSession.isDonor = localStorage.getItem(`m_donor_${user.id}`) === "1";
+        authSession.isDonor = userHasServerDonorEntitlement(user);
         updateAuthUi();
         await loadScenarioForLoggedUser({ silentNoData: true, fromLogin: true });
 
