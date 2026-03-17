@@ -3719,7 +3719,7 @@ const defaultExpenseItems = [
         }
       }
 
-      const primaCasaLocativeConsidered = primaCasaAssignmentConsidered && primaCasaValoreLocativo > 0;
+      const primaCasaLocativeConsidered = primaCasaValoreLocativo > 0 && primaCasaAssegnataA !== "";
       let primaCasaLocativeTransfer1to2 = 0;
       let primaCasaLocativeTransfer2to1 = 0;
       if (primaCasaLocativeConsidered) {
