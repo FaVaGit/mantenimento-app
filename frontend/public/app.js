@@ -3457,15 +3457,17 @@ const defaultExpenseItems = [
         const housingUtilityNonColl = collocatario === 1 ? housingUtility2 : housingUtility1;
 
         const baseDuplicazione = speseConvivenza > 0 ? (speseTot - speseConvivenza) : null;
+        // OECD-modified equivalence logic suggests split-household extra burden is material but not full duplication.
+        const HOUSING_UTILITY_ADJ_FACTOR = 0.35;
         const separationAdjustmentHousingUtilities = baseDuplicazione !== null && baseDuplicazione <= 0.005
-          ? Math.max(0, housingUtilityNonColl)
+          ? Math.max(0, housingUtilityNonColl * HOUSING_UTILITY_ADJ_FACTOR)
           : 0;
-        const speseConvivenzaEffettive = speseConvivenza > 0
-          ? Math.max(0, speseConvivenza - separationAdjustmentHousingUtilities)
+        const speseConvivenzaEffettive = speseConvivenza > 0 ? speseConvivenza : null;
+        const costoSeparazioneMensile = baseDuplicazione !== null
+          ? Math.max(0, baseDuplicazione + separationAdjustmentHousingUtilities)
           : null;
-        const costoSeparazioneMensile = speseConvivenzaEffettive !== null ? (speseTot - speseConvivenzaEffettive) : null;
         const nettoInsiemeCombinato = speseConvivenzaEffettive !== null ? (r1 + r2 - speseConvivenzaEffettive) : null;
-        const nettoSeparatoTotale = post1 + post2;
+        const nettoSeparatoTotale = (post1 + post2) - separationAdjustmentHousingUtilities;
         const perditaMensile = nettoInsiemeCombinato !== null ? nettoInsiemeCombinato - nettoSeparatoTotale : null;
         const perditaAnnua = perditaMensile !== null ? perditaMensile * 12 : null;
         const totReddito = Math.max(0.001, r1 + r2);
