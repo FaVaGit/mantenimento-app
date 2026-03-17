@@ -358,13 +358,13 @@
                 </label>
                 <input id="primaCasaMutuoEnabled" type="checkbox" />
               </div>
-              <div class="field" style="display: none;">
+              <div class="field">
                 <label for="primaCasaValoreLocativo" class="label-row"><span id="lblPrimaCasaValoreLocativo">Casa (valore locativo) ({currency})</span>
                   <span class="hint" id="hintPrimaCasaValoreLocativo" title="Valore locativo mensile della casa assegnata, usato per valorizzare il beneficio economico implicito.">i</span>
                 </label>
                 <input id="primaCasaValoreLocativo" type="number" min="0" step="50" value="1000" />
               </div>
-              <div class="field" style="display: none;">
+              <div class="field">
                 <label for="primaCasaAssegnataA" class="label-row"><span id="lblPrimaCasaAssegnataA">Casa assegnata a</span>
                   <span class="hint" id="hintPrimaCasaAssegnataA" title="Seleziona il coniuge a cui e ceduta la prima casa.">i</span>
                 </label>
@@ -381,6 +381,9 @@
                 <input id="primaCasaMutuoImporto" type="number" min="0" step="50" value="0" />
               </div>
               <div class="field">
+                <label for="primaCasaMutuoPerc1" class="label-row"><span id="lblPrimaCasaMutuoPerc1">Quota mutuo a carico Coniuge 1 (%)</span>
+                  <span class="hint" id="hintPrimaCasaMutuoPerc1" title="Percentuale della rata mutuo pagata da Coniuge 1. La quota dell'altro coniuge e complementare a 100%.">i</span>
+                </label>
                 <div class="mortgage-split-slider" id="primaCasaMutuoSliderWrap">
                   <div class="mortgage-split-side mortgage-split-side-left" id="primaCasaSplitLeft">
                     <div class="mortgage-split-name" id="primaCasaSplitLeftName">Coniuge 1</div>
