@@ -805,6 +805,7 @@ const defaultExpenseItems = [
       month: "",
       byMonth: {}
     };
+    let speseConvivenzaAutoMode = true;
     let currentLang = "it";
     let currentCurrency = "EUR";
       const CALC_API_BASE_STORAGE_KEY = "keylock_calc_api_base";
@@ -3225,6 +3226,27 @@ const defaultExpenseItems = [
       return base + extra;
     }
 
+    function getSuggestedSpeseConvivenza() {
+      const suggested = sumSpese("c1") + sumSpese("c2");
+      return Math.max(0, Math.round(Number(suggested || 0)));
+    }
+
+    function maybeAutoFillSpeseConvivenza() {
+      if (!speseConvivenzaAutoMode) return;
+      const input = document.getElementById("speseConvivenza");
+      if (!input) return;
+
+      const current = num("speseConvivenza");
+      if (current > 0.005) {
+        speseConvivenzaAutoMode = false;
+        return;
+      }
+
+      const suggested = getSuggestedSpeseConvivenza();
+      if (suggested <= 0) return;
+      input.value = String(suggested);
+    }
+
     /**
      * Stima il netto mensile da reddito lordo annuale (Certificazione Unica).
      * Applica: contributi INPS dipendente (9,19%), IRPEF 2025, detrazioni da
@@ -4790,6 +4812,7 @@ const defaultExpenseItems = [
             if (!input) return;
             const suggested = Math.max(0, Math.round(Number(m.speseTot || 0)));
             input.value = String(suggested);
+            speseConvivenzaAutoMode = false;
             input.focus();
             renderAll();
           });
@@ -4853,6 +4876,7 @@ const defaultExpenseItems = [
     }
 
     function renderAll() {
+      maybeAutoFillSpeseConvivenza();
       const m = computeModel();
       updateExtraordinaryModuleUi();
       updateExpensePartials();
@@ -5760,7 +5784,8 @@ ${scenarioLab.length ? `
         primaCasaMutuoPerc1: num("primaCasaMutuoPerc1"),
         straordAnn1: num("straordAnn1"),
         straordAnn2: num("straordAnn2"),
-        speseConvivenza: num("speseConvivenza")
+        speseConvivenza: num("speseConvivenza"),
+        speseConvivenzaAuto: speseConvivenzaAutoMode ? 1 : 0
       };
       const spese = expenseItems.map((_, i) => ({
         c1: num(`c1_${i}`),
@@ -5806,6 +5831,11 @@ ${scenarioLab.length ? `
           el.value = v;
         }
       });
+      if (state.base && Object.prototype.hasOwnProperty.call(state.base, "speseConvivenzaAuto")) {
+        speseConvivenzaAutoMode = Number(state.base.speseConvivenzaAuto || 0) > 0;
+      } else {
+        speseConvivenzaAutoMode = Math.max(0, Number(state.base && state.base.speseConvivenza || 0)) <= 0.005;
+      }
       if (Array.isArray(state.expenseItems) && state.expenseItems.length) {
         expenseItems = state.expenseItems.map((item, idx) => normalizeExpenseItem(item, idx));
       } else {
@@ -5875,6 +5905,7 @@ ${scenarioLab.length ? `
       if (firstHomeEnabled) firstHomeEnabled.checked = !!firstHomeEnabled.defaultChecked;
       if (firstHomeAssigned) firstHomeAssigned.value = "";
       permanenceCalendarState.byMonth = {};
+      speseConvivenzaAutoMode = true;
       selectedScenarioIdx = -1;
       uiViewState.spiegOpen = true;
       uiViewState.formulaOpen = false;
@@ -6027,6 +6058,13 @@ ${scenarioLab.length ? `
         refreshExpenseDetailButtonState();
       }
     });
+
+    const speseConvivenzaInput = document.getElementById("speseConvivenza");
+    if (speseConvivenzaInput) {
+      speseConvivenzaInput.addEventListener("input", () => {
+        speseConvivenzaAutoMode = false;
+      });
+    }
 
     document.getElementById("btnZoomOut").addEventListener("click", () => {
       const current = normalizeUiZoom(getComputedStyle(document.documentElement).getPropertyValue("--ui-zoom"));
