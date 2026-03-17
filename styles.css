@@ -1592,6 +1592,20 @@
       font-size: 0.67rem;
     }
 
+    .spese-detail-note {
+      width: 100%;
+      margin-top: 6px;
+      border: 1px solid #bfd5d0;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #214b47;
+      font-size: 0.72rem;
+      line-height: 1.3;
+      padding: 6px 7px;
+      resize: vertical;
+      min-height: 46px;
+    }
+
     .spese-detail-counter {
       margin-top: 3px;
       font-size: 0.66rem;

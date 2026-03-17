@@ -31,6 +31,7 @@ const defaultExpenseItems = [
     const EXPENSE_DETAIL_MAX_CHARS = 560;
     const EXPENSE_DETAIL_MAX_LINES = 10;
     const EXPENSE_DETAIL_MAX_ROWS = 8;
+    const EXPENSE_DETAIL_NOTE_SEPARATOR = "\n---\n";
 
     const QUOTA_MANTENIMENTO_PERC = 35;
 
@@ -256,6 +257,7 @@ const defaultExpenseItems = [
         expenseDetailColDue: "Scadenza",
         expenseDetailAddRow: "Aggiungi riga",
         expenseDetailRemoveRow: "Rimuovi riga",
+        expenseDetailFreeTextPlaceholder: "Note libere aggiuntive...",
         expenseDetailCharsRemaining: "Caratteri rimanenti: {count}",
         expenseRemoveTitle: "Rimuovi voce spesa",
         expenseRemoveBtn: "Rimuovi",
@@ -623,6 +625,7 @@ const defaultExpenseItems = [
         expenseDetailColDue: "Due date",
         expenseDetailAddRow: "Add row",
         expenseDetailRemoveRow: "Remove row",
+        expenseDetailFreeTextPlaceholder: "Additional free notes...",
         expenseDetailCharsRemaining: "Remaining characters: {count}",
         expenseRemoveTitle: "Remove expense item",
         expenseRemoveBtn: "Remove",
@@ -1471,25 +1474,48 @@ const defaultExpenseItems = [
       syncExpenseDetailTableFromStore(textarea);
     }
 
-    function parseExpenseDetailRows(raw) {
-      const lines = String(raw || "")
+    function parseExpenseDetailPayload(raw) {
+      const source = String(raw || "").trim();
+      let tablePart = source;
+      let notePart = "";
+      const sepIdx = source.indexOf(EXPENSE_DETAIL_NOTE_SEPARATOR);
+      if (sepIdx >= 0) {
+        tablePart = source.slice(0, sepIdx).trim();
+        notePart = source.slice(sepIdx + EXPENSE_DETAIL_NOTE_SEPARATOR.length).trim();
+      }
+
+      const tableLines = tablePart
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean);
-      if (!lines.length) return [{ what: "", amount: "", due: "" }];
-      return lines
-        .map((line) => {
-          const cols = line.split("|").map((part) => part.trim());
-          if (cols.length >= 2) {
-            return {
-              what: cols[0] || "",
-              amount: cols[1] || "",
-              due: cols.slice(2).join(" | ") || ""
-            };
-          }
-          return { what: line, amount: "", due: "" };
-        })
-        .slice(0, EXPENSE_DETAIL_MAX_ROWS);
+      const rows = [];
+      const looseNoteLines = [];
+      tableLines.forEach((line) => {
+        const cols = line.split("|").map((part) => part.trim());
+        if (cols.length >= 2) {
+          rows.push({
+            what: cols[0] || "",
+            amount: cols[1] || "",
+            due: cols.slice(2).join(" | ") || ""
+          });
+        } else {
+          looseNoteLines.push(line);
+        }
+      });
+
+      const resolvedNote = [notePart, looseNoteLines.join("\n")]
+        .filter(Boolean)
+        .join(notePart && looseNoteLines.length ? "\n" : "")
+        .trim();
+
+      return {
+        rows: (rows.length ? rows : [{ what: "", amount: "", due: "" }]).slice(0, EXPENSE_DETAIL_MAX_ROWS),
+        note: resolvedNote
+      };
+    }
+
+    function parseExpenseDetailRows(raw) {
+      return parseExpenseDetailPayload(raw).rows;
     }
 
     function sanitizeExpenseDetailCell(value) {
@@ -1510,7 +1536,14 @@ const defaultExpenseItems = [
       return compact.map((row) => `${row.what} | ${row.amount} | ${row.due}`.trim()).join("\n");
     }
 
-    function buildExpenseDetailTableHtml(textareaId, rows) {
+    function serializeExpenseDetailPayload(rows, note) {
+      const tablePart = serializeExpenseDetailRows(rows);
+      const safeNote = String(note || "").trim();
+      if (!safeNote) return tablePart;
+      return `${tablePart}${tablePart ? EXPENSE_DETAIL_NOTE_SEPARATOR : ""}${safeNote}`;
+    }
+
+    function buildExpenseDetailTableHtml(textareaId, rows, note = "") {
       const safeRows = (Array.isArray(rows) && rows.length ? rows : [{ what: "", amount: "", due: "" }])
         .slice(0, EXPENSE_DETAIL_MAX_ROWS);
       const rowsHtml = safeRows.map((row) => {
@@ -1535,6 +1568,7 @@ const defaultExpenseItems = [
           <tbody>${rowsHtml}</tbody>
         </table>
         <button type="button" class="btn-secondary spese-detail-add-row" data-row-add="${textareaId}">${escapeHtml(tr("expenseDetailAddRow"))}</button>
+        <textarea class="spese-detail-note" data-detail-note-for="${textareaId}" rows="2" maxlength="360" placeholder="${escapeHtml(tr("expenseDetailFreeTextPlaceholder"))}">${escapeHtml(note || "")}</textarea>
       </div>`;
     }
 
@@ -1552,7 +1586,9 @@ const defaultExpenseItems = [
       const textareaId = String(tableWrap.getAttribute("data-detail-table") || "");
       const textarea = textareaId ? document.getElementById(textareaId) : null;
       if (!textarea) return;
-      const serialized = serializeExpenseDetailRows(readExpenseDetailRowsFromTable(tableWrap));
+      const noteEl = tableWrap.querySelector(`textarea[data-detail-note-for='${textareaId}']`);
+      const note = String(noteEl && noteEl.value ? noteEl.value : "");
+      const serialized = serializeExpenseDetailPayload(readExpenseDetailRowsFromTable(tableWrap), note);
       textarea.value = serialized.slice(0, EXPENSE_DETAIL_MAX_CHARS);
       updateExpenseDetailCounter(textarea);
     }
@@ -1562,10 +1598,12 @@ const defaultExpenseItems = [
       const host = document.getElementById(`${textarea.id}TableHost`);
       if (!host) return;
       const existing = host.querySelector(`[data-detail-table='${textarea.id}']`);
-      const existingSerialized = serializeExpenseDetailRows(existing ? readExpenseDetailRowsFromTable(existing) : []);
+      const existingNote = existing ? String(existing.querySelector(`textarea[data-detail-note-for='${textarea.id}']`)?.value || "") : "";
+      const existingSerialized = serializeExpenseDetailPayload(existing ? readExpenseDetailRowsFromTable(existing) : [], existingNote);
       const storeSerialized = String(textarea.value || "").trim();
       if (existing && existingSerialized === storeSerialized) return;
-      host.innerHTML = buildExpenseDetailTableHtml(textarea.id, parseExpenseDetailRows(storeSerialized));
+      const payload = parseExpenseDetailPayload(storeSerialized);
+      host.innerHTML = buildExpenseDetailTableHtml(textarea.id, payload.rows, payload.note);
       syncExpenseDetailStoreFromTable(host.querySelector(`[data-detail-table='${textarea.id}']`));
     }
 
@@ -6446,10 +6484,11 @@ ${scenarioLab.length ? `
         const textareaId = String(addRowBtn.getAttribute("data-row-add") || "");
         const textarea = textareaId ? document.getElementById(textareaId) : null;
         if (!textarea) return;
-        const rows = parseExpenseDetailRows(textarea.value);
+        const payload = parseExpenseDetailPayload(textarea.value);
+        const rows = payload.rows;
         if (rows.length < EXPENSE_DETAIL_MAX_ROWS) {
           rows.push({ what: "", amount: "", due: "" });
-          textarea.value = serializeExpenseDetailRows(rows);
+          textarea.value = serializeExpenseDetailPayload(rows, payload.note);
           syncExpenseDetailTableFromStore(textarea);
           refreshExpenseDetailButtonState();
         }
@@ -6488,6 +6527,12 @@ ${scenarioLab.length ? `
         return;
       }
       if (e.target && e.target.matches(".spese-detail-cell-input")) {
+        const tableWrap = e.target.closest("[data-detail-table]");
+        syncExpenseDetailStoreFromTable(tableWrap);
+        refreshExpenseDetailButtonState();
+        return;
+      }
+      if (e.target && e.target.matches(".spese-detail-note")) {
         const tableWrap = e.target.closest("[data-detail-table]");
         syncExpenseDetailStoreFromTable(tableWrap);
         refreshExpenseDetailButtonState();
