@@ -1,9 +1,9 @@
 const defaultExpenseItems = [
       { label: "🏠 Affitto", help: "Canone mensile di locazione dell'abitazione." },
-      { label: "🏡 Casa (valore locativo)", help: "Valore locativo teorico della casa in uso, se rilevante." },
       { label: "💡 Utenze", help: "Luce, gas, acqua, internet e altre utenze domestiche." },
       { label: "🛒 Cibo/Alimenti", help: "Spesa alimentare mensile imputabile al nucleo familiare." },
       { label: "👕 Abbigliamento", help: "Spese medie mensili per abbigliamento dei figli." },
+      { label: "💳 Finanziamenti in corso (extra mutuo)", help: "Rate mensili di finanziamenti diversi dal mutuo." },
       { label: "💳 Finanziamenti in corso (extra mutuo)", help: "Rate mensili di finanziamenti diversi dal mutuo." },
       { label: "🚗 Spese macchina", help: "Carburante, assicurazione, bollo, manutenzione ordinaria." },
       { label: "🏢 Amministrazione condominio", help: "Quote condominiali ordinarie e costi amministrativi ricorrenti." },
@@ -279,11 +279,13 @@ const defaultExpenseItems = [
         extraAnnHint2: "Quota annuale straordinaria stimata a carico di {spouse} (es. sanitarie non ricorrenti, scolastiche extra, attività non ordinarie).",
         extraMonthlyEstimate: "Quota mensile stimata: {amount}",
         firstHomeBoxTitle: "🏡 Mutuo prima casa ceduta",
-        firstHomeBoxNote: "Dichiara se esiste un mutuo sulla prima casa dei coniugi ceduta a uno dei due: il modello considera il trasferimento implicito quando la casa e assegnata al collocatario.",
-        firstHomeMortgageEnabledLabel: "Mutuo su prima casa dei coniugi",
-        firstHomeMortgageEnabledHint: "Attiva per includere il mutuo della prima casa ceduta nei benefici compensativi.",
+        firstHomeBoxNote: "Dichiara i benefici economici della prima casa assegnata: il modello considera sia il mutuo ceduto sia il valore locativo quando la casa e assegnata al collocatario.",
+        firstHomeMortgageEnabledLabel: "Benefici prima casa dei coniugi",
+        firstHomeMortgageEnabledHint: "Attiva per includere tra i benefici compensativi il mutuo ceduto e/o il valore locativo della casa assegnata.",
         firstHomeMortgageAmountLabel: "Rata mutuo mensile ({currency})",
         firstHomeMortgageAmountHint: "Importo mensile complessivo della rata del mutuo prima casa.",
+        firstHomeRentalValueLabel: "Casa (valore locativo) ({currency})",
+        firstHomeRentalValueHint: "Valore locativo mensile della casa assegnata, usato per valorizzare il beneficio economico implicito.",
         firstHomeAssignedToLabel: "Casa assegnata a",
         firstHomeAssignedToHint: "Seleziona il coniuge a cui e ceduta la prima casa.",
         firstHomeAssignedToNone: "Nessuna cessione",
@@ -295,6 +297,7 @@ const defaultExpenseItems = [
         calcNoTransferWithBenefits: "Nessun trasferimento monetario suggerito. Benefici gia allocati: {benefits}.",
         calcBenefitFamilyAllowance: "Assegno familiare INPS percepito da {spouse}",
         calcBenefitPrimaryHomeMortgage: "Quota mutuo prima casa ceduta al collocatario ({payer} -> {receiver})",
+        calcBenefitPrimaryHomeAssignment: "Assegnazione casa familiare (valore locativo) ({payer} -> {receiver})",
         pdfCompBenefitsSection: "Benefici compensativi gia allocati",
         pdfCompBenefitsItem: "Beneficio",
         pdfCompBenefitsAmount: "Valore {currency}/mese",
@@ -304,6 +307,7 @@ const defaultExpenseItems = [
         pdfPrimaryHomeNotDeclared: "Non dichiarato",
         pdfPrimaryHomeAssignedTo: "Assegnata a",
         pdfPrimaryHomeMonthlyAmount: "Rata mensile",
+        pdfPrimaryHomeRentalValue: "Casa (valore locativo)",
         pdfPrimaryHomeSplit: "Ripartizione mutuo",
         pdfPrimaryHomeAppliedOnlyColl: "Considerato solo se casa ceduta al collocatario.",
         pdfExtraordinaryRow: "Spese straordinarie (quota mensile da annuo)",
@@ -637,11 +641,13 @@ const defaultExpenseItems = [
         extraAnnHint2: "Estimated yearly extraordinary share for {spouse} (e.g., non-recurring medical, extra school, non-ordinary activities).",
         extraMonthlyEstimate: "Estimated monthly share: {amount}",
         firstHomeBoxTitle: "🏡 Assigned primary home mortgage",
-        firstHomeBoxNote: "Declare whether there is a mortgage on the spouses' primary home assigned to one spouse: the model counts the implicit transfer when the home is assigned to the custodial parent.",
-        firstHomeMortgageEnabledLabel: "Mortgage on spouses' primary home",
-        firstHomeMortgageEnabledHint: "Enable to include the assigned primary-home mortgage in compensative benefits.",
+        firstHomeBoxNote: "Declare the economic benefits linked to the assigned primary home: the model counts both the transferred mortgage and the rental value when the home is assigned to the custodial parent.",
+        firstHomeMortgageEnabledLabel: "Primary-home benefits",
+        firstHomeMortgageEnabledHint: "Enable to include in compensative benefits the transferred mortgage and/or the rental value of the assigned home.",
         firstHomeMortgageAmountLabel: "Monthly mortgage payment ({currency})",
         firstHomeMortgageAmountHint: "Total monthly amount of the primary-home mortgage payment.",
+        firstHomeRentalValueLabel: "Home (rental value) ({currency})",
+        firstHomeRentalValueHint: "Monthly rental value of the assigned home, used to quantify the implicit economic benefit.",
         firstHomeAssignedToLabel: "Home assigned to",
         firstHomeAssignedToHint: "Select which spouse receives assignment of the primary home.",
         firstHomeAssignedToNone: "No assignment",
@@ -653,6 +659,7 @@ const defaultExpenseItems = [
         calcNoTransferWithBenefits: "No monetary transfer suggested. Already allocated benefits: {benefits}.",
         calcBenefitFamilyAllowance: "INPS family allowance received by {spouse}",
         calcBenefitPrimaryHomeMortgage: "Primary-home mortgage share assigned to custodial parent ({payer} -> {receiver})",
+        calcBenefitPrimaryHomeAssignment: "Assigned family home (rental value) ({payer} -> {receiver})",
         pdfCompBenefitsSection: "Compensative benefits already allocated",
         pdfCompBenefitsItem: "Benefit",
         pdfCompBenefitsAmount: "Value {currency}/month",
@@ -662,6 +669,7 @@ const defaultExpenseItems = [
         pdfPrimaryHomeNotDeclared: "Not declared",
         pdfPrimaryHomeAssignedTo: "Assigned to",
         pdfPrimaryHomeMonthlyAmount: "Monthly payment",
+        pdfPrimaryHomeRentalValue: "Home (rental value)",
         pdfPrimaryHomeSplit: "Mortgage split",
         pdfPrimaryHomeAppliedOnlyColl: "Counted only when the home is assigned to the custodial parent.",
         pdfExtraordinaryRow: "Extraordinary expenses (monthly share from yearly)",
@@ -1214,6 +1222,8 @@ const defaultExpenseItems = [
       const hintPrimaCasaMutuoEnabled = document.getElementById("hintPrimaCasaMutuoEnabled");
       const lblPrimaCasaMutuoImporto = document.getElementById("lblPrimaCasaMutuoImporto");
       const hintPrimaCasaMutuoImporto = document.getElementById("hintPrimaCasaMutuoImporto");
+      const lblPrimaCasaValoreLocativo = document.getElementById("lblPrimaCasaValoreLocativo");
+      const hintPrimaCasaValoreLocativo = document.getElementById("hintPrimaCasaValoreLocativo");
       const lblPrimaCasaAssegnataA = document.getElementById("lblPrimaCasaAssegnataA");
       const hintPrimaCasaAssegnataA = document.getElementById("hintPrimaCasaAssegnataA");
       const lblPrimaCasaMutuoPerc1 = document.getElementById("lblPrimaCasaMutuoPerc1");
@@ -1277,6 +1287,8 @@ const defaultExpenseItems = [
       if (hintPrimaCasaMutuoEnabled) hintPrimaCasaMutuoEnabled.title = tr("firstHomeMortgageEnabledHint");
       if (lblPrimaCasaMutuoImporto) lblPrimaCasaMutuoImporto.textContent = msg("firstHomeMortgageAmountLabel", { currency: currentCurrency });
       if (hintPrimaCasaMutuoImporto) hintPrimaCasaMutuoImporto.title = tr("firstHomeMortgageAmountHint");
+      if (lblPrimaCasaValoreLocativo) lblPrimaCasaValoreLocativo.textContent = msg("firstHomeRentalValueLabel", { currency: currentCurrency });
+      if (hintPrimaCasaValoreLocativo) hintPrimaCasaValoreLocativo.title = tr("firstHomeRentalValueHint");
       if (lblPrimaCasaAssegnataA) lblPrimaCasaAssegnataA.textContent = tr("firstHomeAssignedToLabel");
       if (hintPrimaCasaAssegnataA) hintPrimaCasaAssegnataA.title = tr("firstHomeAssignedToHint");
       if (lblPrimaCasaMutuoPerc1) lblPrimaCasaMutuoPerc1.textContent = msg("firstHomeSplitLabel", { spouse: c1n() });
@@ -3589,6 +3601,7 @@ const defaultExpenseItems = [
         aFam2: num("assegnoFam2"),
         primaCasaMutuoEnabled: firstHome.enabled ? 1 : 0,
         primaCasaMutuoImporto: firstHome.amount,
+        primaCasaValoreLocativo: firstHome.rentalValue,
         primaCasaAssegnataA: firstHome.assignedTo,
         primaCasaMutuoPerc1: firstHome.share1,
         straordAnn1: num("straordAnn1"),
@@ -3630,6 +3643,7 @@ const defaultExpenseItems = [
       const aFam2 = Number(payload.aFam2 || 0);
       const primaCasaMutuoEnabled = Number(payload.primaCasaMutuoEnabled || 0) > 0;
       const primaCasaMutuoImporto = Math.max(0, Number(payload.primaCasaMutuoImporto || 0));
+      const primaCasaValoreLocativo = Math.max(0, Number(payload.primaCasaValoreLocativo || 0));
       const primaCasaAssegnataA = (String(payload.primaCasaAssegnataA || "") === "1" || String(payload.primaCasaAssegnataA || "") === "2")
         ? String(payload.primaCasaAssegnataA)
         : "";
@@ -3691,9 +3705,10 @@ const defaultExpenseItems = [
       const assegnoBaseDa1a2 = assegnoDa1a2;
       const assegnoBaseDa2a1 = assegnoDa2a1;
 
-      const primaCasaConsidered = primaCasaMutuoEnabled && primaCasaMutuoImporto > 0
+      const primaCasaAssignmentConsidered = primaCasaMutuoEnabled
         && primaCasaAssegnataA !== ""
         && Number(primaCasaAssegnataA) === collocatario;
+      const primaCasaConsidered = primaCasaAssignmentConsidered && primaCasaMutuoImporto > 0;
       let primaCasaTransfer1to2 = 0;
       let primaCasaTransfer2to1 = 0;
       if (primaCasaConsidered) {
@@ -3704,14 +3719,27 @@ const defaultExpenseItems = [
         }
       }
 
-      assegnoDa1a2 = Math.max(0, assegnoDa1a2 - primaCasaTransfer1to2);
-      assegnoDa2a1 = Math.max(0, assegnoDa2a1 - primaCasaTransfer2to1);
+      const primaCasaLocativeConsidered = primaCasaAssignmentConsidered && primaCasaValoreLocativo > 0;
+      let primaCasaLocativeTransfer1to2 = 0;
+      let primaCasaLocativeTransfer2to1 = 0;
+      if (primaCasaLocativeConsidered) {
+        if (primaCasaAssegnataA === "1") {
+          primaCasaLocativeTransfer2to1 = primaCasaValoreLocativo;
+        } else if (primaCasaAssegnataA === "2") {
+          primaCasaLocativeTransfer1to2 = primaCasaValoreLocativo;
+        }
+      }
+
+      assegnoDa1a2 = Math.max(0, assegnoDa1a2 - primaCasaTransfer1to2 - primaCasaLocativeTransfer1to2);
+      assegnoDa2a1 = Math.max(0, assegnoDa2a1 - primaCasaTransfer2to1 - primaCasaLocativeTransfer2to1);
 
       const compensativeBenefits = [];
       if (aFam1 > 0.005) compensativeBenefits.push({ type: "family", to: 1, amount: aFam1 });
       if (aFam2 > 0.005) compensativeBenefits.push({ type: "family", to: 2, amount: aFam2 });
       if (primaCasaTransfer1to2 > 0.005) compensativeBenefits.push({ type: "primary-home-mortgage", from: 1, to: 2, amount: primaCasaTransfer1to2 });
       if (primaCasaTransfer2to1 > 0.005) compensativeBenefits.push({ type: "primary-home-mortgage", from: 2, to: 1, amount: primaCasaTransfer2to1 });
+      if (primaCasaLocativeTransfer1to2 > 0.005) compensativeBenefits.push({ type: "primary-home-assignment", from: 1, to: 2, amount: primaCasaLocativeTransfer1to2 });
+      if (primaCasaLocativeTransfer2to1 > 0.005) compensativeBenefits.push({ type: "primary-home-assignment", from: 2, to: 1, amount: primaCasaLocativeTransfer2to1 });
 
       const post1 = disp1 - assegnoDa1a2 + assegnoDa2a1;
       const post2 = disp2 - assegnoDa2a1 + assegnoDa1a2;
@@ -3767,9 +3795,10 @@ const defaultExpenseItems = [
         quotaDiretta1, quotaDiretta2,
         saldo1, saldo2,
         assegnoBaseDa1a2, assegnoBaseDa2a1,
-        primaCasaMutuoEnabled, primaCasaMutuoImporto, primaCasaAssegnataA,
+        primaCasaMutuoEnabled, primaCasaMutuoImporto, primaCasaValoreLocativo, primaCasaAssegnataA,
         primaCasaMutuoPerc1, primaCasaMutuoPerc2,
-        primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,
+        primaCasaAssignmentConsidered, primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,
+        primaCasaLocativeConsidered, primaCasaLocativeTransfer1to2, primaCasaLocativeTransfer2to1,
         compensativeBenefits,
         assegnoDa1a2, assegnoDa2a1,
         post1, post2,
@@ -3871,16 +3900,18 @@ const defaultExpenseItems = [
     function getFirstHomeMortgageInput() {
       const enabled = !!document.getElementById("primaCasaMutuoEnabled")?.checked;
       const amount = Math.max(0, num("primaCasaMutuoImporto"));
+      const rentalValue = Math.max(0, num("primaCasaValoreLocativo"));
       const assignedToRaw = String(document.getElementById("primaCasaAssegnataA")?.value || "").trim();
       const assignedTo = (assignedToRaw === "1" || assignedToRaw === "2") ? assignedToRaw : "";
       const share1 = Math.min(100, Math.max(0, num("primaCasaMutuoPerc1")));
       const share2 = 100 - share1;
-      return { enabled, amount, assignedTo, share1, share2 };
+      return { enabled, amount, rentalValue, assignedTo, share1, share2 };
     }
 
     function updateFirstHomeMortgageUi() {
       const enabledEl = document.getElementById("primaCasaMutuoEnabled");
       const amountEl = document.getElementById("primaCasaMutuoImporto");
+      const rentalValueEl = document.getElementById("primaCasaValoreLocativo");
       const assignedEl = document.getElementById("primaCasaAssegnataA");
       const shareEl = document.getElementById("primaCasaMutuoPerc1");
       const splitInfoEl = document.getElementById("primaCasaMutuoSplitInfo");
@@ -3896,6 +3927,7 @@ const defaultExpenseItems = [
 
       const isEnabled = !!enabledEl.checked;
       amountEl.disabled = !isEnabled;
+      if (rentalValueEl) rentalValueEl.disabled = !isEnabled;
       assignedEl.disabled = !isEnabled;
       shareEl.disabled = !isEnabled;
       if (splitWrapEl) splitWrapEl.classList.toggle("is-disabled", !isEnabled);
@@ -4613,6 +4645,29 @@ const defaultExpenseItems = [
         return `<span class="spieg-help-wrap"><button type="button" class="spieg-help-btn" aria-label="${tooltipLabel}">i</button><span class="spieg-help-tip">${safeText}</span></span>`;
       };
 
+      let benefitSectionHtml = "";
+      if (compBenefits.length) {
+        const rawBenefs = Array.isArray(m.compensativeBenefits)
+          ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
+          : [];
+        const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1", "primary-home-assignment": "\uD83C\uDFE0" };
+        const cardsHtml = compBenefits
+          .map((row, i) => {
+            const icon = (rawBenefs[i] && typeIcons[rawBenefs[i].type]) || "\u2726";
+            return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
+          })
+          .join("");
+        const total = compBenefits.reduce((s, r) => s + r.amount, 0);
+        const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
+        benefitSectionHtml = `
+          <div class="spieg-benefits-section">
+            <div class="spieg-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
+            <ul class="spieg-benefits-cards">${cardsHtml}</ul>
+            <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(total)}</strong></div>
+          </div>
+        `;
+      }
+
       let resultHtml;
       let resultDetail;
       if (isAssegno1) {
@@ -4620,6 +4675,7 @@ const defaultExpenseItems = [
           <div class="spieg-result-flow">${n1} &rarr; ${n2}</div>
           <div class="spieg-result-formula">${n1}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)}</div>
           <div class="spieg-result-amount ok">${eur(m.assegnoDa1a2)}</div>
+          ${benefitSectionHtml}
         `;
         resultDetail = tr("spiegDetailResultTransfer");
       } else if (isAssegno2) {
@@ -4627,30 +4683,14 @@ const defaultExpenseItems = [
           <div class="spieg-result-flow">${n2} &rarr; ${n1}</div>
           <div class="spieg-result-formula">${n2}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)}</div>
           <div class="spieg-result-amount ok">${eur(m.assegnoDa2a1)}</div>
+          ${benefitSectionHtml}
         `;
         resultDetail = tr("spiegDetailResultTransfer");
       } else {
-        const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
-        if (benefitRows.length) {
-          const rawBenefs = Array.isArray(m.compensativeBenefits)
-            ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
-            : [];
-          const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
-          const cardsHtml = benefitRows
-            .map((row, i) => {
-              const icon = (rawBenefs[i] && typeIcons[rawBenefs[i].type]) || "\u2726";
-              return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
-            })
-            .join("");
-          const total = benefitRows.reduce((s, r) => s + r.amount, 0);
-          const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
+        if (benefitSectionHtml) {
           resultHtml = `
             <div class="spieg-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>
-            <div class="spieg-benefits-section">
-              <div class="spieg-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
-              <ul class="spieg-benefits-cards">${cardsHtml}</ul>
-              <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(total)}</strong></div>
-            </div>
+            ${benefitSectionHtml}
           `;
         } else {
           resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>`;
@@ -4734,6 +4774,11 @@ const defaultExpenseItems = [
             const receiver = Number(row.to) === 2 ? name2 : name1;
             return { label: msg("calcBenefitPrimaryHomeMortgage", { payer, receiver }), amount };
           }
+          if (row.type === "primary-home-assignment") {
+            const payer = Number(row.from) === 2 ? name2 : name1;
+            const receiver = Number(row.to) === 2 ? name2 : name1;
+            return { label: msg("calcBenefitPrimaryHomeAssignment", { payer, receiver }), amount };
+          }
           return { label: tr("calcCompBenefitsLabel"), amount };
         });
     }
@@ -4814,6 +4859,30 @@ const defaultExpenseItems = [
         ${m.incomeMode === "cu" ? `<br /><strong>${tr("calcIncomeBaseNote")}</strong> ${tr("cuNetNoteText")}` : ""}
       `;
 
+      const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
+      let benefitCardsHtml = "";
+      if (benefitRows.length) {
+        const rawBenefs = Array.isArray(m.compensativeBenefits)
+          ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
+          : [];
+        const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1", "primary-home-assignment": "\uD83C\uDFE0" };
+        const cardsHtml = benefitRows
+          .map((row, i) => {
+            const icon = (rawBenefs[i] && typeIcons[rawBenefs[i].type]) || "\u2726";
+            return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
+          })
+          .join("");
+        const total = benefitRows.reduce((s, r) => s + r.amount, 0);
+        const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
+        benefitCardsHtml = `
+          <div class="result-benefits-box">
+            <div class="spieg-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
+            <ul class="spieg-benefits-cards">${cardsHtml}</ul>
+            <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(total)}</strong></div>
+          </div>
+        `;
+      }
+
       let mainHtml;
       if (m.assegnoDa1a2 > 0.005) {
         const perChild = m.figli > 1 ? `<div class="result-transfer-child">${eur(m.assegnoDa1a2 / m.figli)}&thinsp;${escapeHtml(currentLang === "en" ? "per child" : "per figlio")}</div>` : "";
@@ -4825,6 +4894,7 @@ const defaultExpenseItems = [
           </div>
           <div class="result-transfer-value">${eur(m.assegnoDa1a2)}<span class="result-transfer-per">&thinsp;${escapeHtml(tr("pdfPerMonth"))}</span></div>
           ${perChild}
+          ${benefitCardsHtml}
         `;
       } else if (m.assegnoDa2a1 > 0.005) {
         const perChild = m.figli > 1 ? `<div class="result-transfer-child">${eur(m.assegnoDa2a1 / m.figli)}&thinsp;${escapeHtml(currentLang === "en" ? "per child" : "per figlio")}</div>` : "";
@@ -4836,31 +4906,9 @@ const defaultExpenseItems = [
           </div>
           <div class="result-transfer-value">${eur(m.assegnoDa2a1)}<span class="result-transfer-per">&thinsp;${escapeHtml(tr("pdfPerMonth"))}</span></div>
           ${perChild}
+          ${benefitCardsHtml}
         `;
       } else {
-        const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
-        let benefitCardsHtml = "";
-        if (benefitRows.length) {
-          const rawBenefs = Array.isArray(m.compensativeBenefits)
-            ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
-            : [];
-          const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
-          const cardsHtml = benefitRows
-            .map((row, i) => {
-              const icon = (rawBenefs[i] && typeIcons[rawBenefs[i].type]) || "\u2726";
-              return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
-            })
-            .join("");
-          const total = benefitRows.reduce((s, r) => s + r.amount, 0);
-          const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
-          benefitCardsHtml = `
-            <div class="result-benefits-box">
-              <div class="spieg-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
-              <ul class="spieg-benefits-cards">${cardsHtml}</ul>
-              <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(total)}</strong></div>
-            </div>
-          `;
-        }
         mainHtml = `<div class="spieg-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>${benefitCardsHtml}`;
       }
       resultMain.innerHTML = mainHtml;
@@ -5094,40 +5142,49 @@ const defaultExpenseItems = [
         ? `
         <tr><td>${tr("pdfPrimaryHomeAssignedTo")}</td><td>${primaryHomeAssignedLabel}</td></tr>
         <tr><td>${tr("pdfPrimaryHomeMonthlyAmount")}</td><td>${eur(m.primaCasaMutuoImporto || 0)}</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeRentalValue")}</td><td>${eur(m.primaCasaValoreLocativo || 0)}</td></tr>
         <tr><td>${tr("pdfPrimaryHomeSplit")}</td><td>${c1NameEsc} ${(m.primaCasaMutuoPerc1 || 0).toFixed(0)}% · ${c2NameEsc} ${(m.primaCasaMutuoPerc2 || 0).toFixed(0)}%</td></tr>
         <tr><td>${tr("pdfPrimaryHomeAppliedOnlyColl")}</td><td>${m.primaCasaConsidered ? "OK" : tr("pdfPrimaryHomeNotDeclared")}</td></tr>`
         : `<tr><td>${tr("pdfPrimaryHomeMortgage")}</td><td>${tr("pdfPrimaryHomeNotDeclared")}</td></tr>`;
 
       let explainResultHtml = `<div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>`;
+      let pdfBenefitSectionHtml = "";
+      if (compBenefits.length) {
+        const rawBenefs = Array.isArray(m.compensativeBenefits)
+          ? m.compensativeBenefits.filter((row) => row && Number(row.amount || 0) > 0.005)
+          : [];
+        const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1", "primary-home-assignment": "\uD83C\uDFE0" };
+        const cardsHtml = compBenefits.map((row, idx) => {
+          const icon = (rawBenefs[idx] && typeIcons[rawBenefs[idx].type]) || "\u2726";
+          return `<li class="pdf-explain-benefit-card"><span class="pdf-explain-benefit-icon">${icon}</span><span class="pdf-explain-benefit-label">${escapeHtml(row.label)}</span><strong class="pdf-explain-benefit-amount">${eur(row.amount)}</strong></li>`;
+        }).join("");
+        const benefitsTotal = compBenefits.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+        pdfBenefitSectionHtml = `
+          <div class="pdf-explain-benefits-section">
+            <div class="pdf-explain-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
+            <ul class="pdf-explain-benefits-cards">${cardsHtml}</ul>
+            <div class="pdf-explain-benefits-total"><span>${escapeHtml(tr("pdfCompBenefitsTotal"))}</span><strong>${eur(benefitsTotal)}</strong></div>
+          </div>
+        `;
+      }
       if (m.assegnoDa1a2 > 0.005) {
         explainResultHtml = `
           <div class="pdf-explain-flow">${c1NameEsc} &rarr; ${c2NameEsc}</div>
           <div class="pdf-explain-formula">${c1NameEsc}: ${eur(m.quotaTeorica1)} &minus; ${eur(m.quotaDiretta1)}</div>
           <div class="pdf-explain-amount">${eur(m.assegnoDa1a2)}</div>
+          ${pdfBenefitSectionHtml}
         `;
       } else if (m.assegnoDa2a1 > 0.005) {
         explainResultHtml = `
           <div class="pdf-explain-flow">${c2NameEsc} &rarr; ${c1NameEsc}</div>
           <div class="pdf-explain-formula">${c2NameEsc}: ${eur(m.quotaTeorica2)} &minus; ${eur(m.quotaDiretta2)}</div>
           <div class="pdf-explain-amount">${eur(m.assegnoDa2a1)}</div>
+          ${pdfBenefitSectionHtml}
         `;
       } else if (compBenefits.length) {
-        const rawBenefs = Array.isArray(m.compensativeBenefits)
-          ? m.compensativeBenefits.filter((row) => row && Number(row.amount || 0) > 0.005)
-          : [];
-        const typeIcons = { family: "\uD83C\uDFDB", "primary-home-mortgage": "\uD83C\uDFE1" };
-        const cardsHtml = compBenefits.map((row, idx) => {
-          const icon = (rawBenefs[idx] && typeIcons[rawBenefs[idx].type]) || "\u2726";
-          return `<li class="pdf-explain-benefit-card"><span class="pdf-explain-benefit-icon">${icon}</span><span class="pdf-explain-benefit-label">${escapeHtml(row.label)}</span><strong class="pdf-explain-benefit-amount">${eur(row.amount)}</strong></li>`;
-        }).join("");
-        const benefitsTotal = compBenefits.reduce((sum, row) => sum + Number(row.amount || 0), 0);
         explainResultHtml = `
           <div class="pdf-explain-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>
-          <div class="pdf-explain-benefits-section">
-            <div class="pdf-explain-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
-            <ul class="pdf-explain-benefits-cards">${cardsHtml}</ul>
-            <div class="pdf-explain-benefits-total"><span>${escapeHtml(tr("pdfCompBenefitsTotal"))}</span><strong>${eur(benefitsTotal)}</strong></div>
-          </div>
+          ${pdfBenefitSectionHtml}
         `;
       }
 
@@ -6001,6 +6058,7 @@ ${scenarioLab.length ? `
         assegnoFam2: num("assegnoFam2"),
         primaCasaMutuoEnabled: document.getElementById("primaCasaMutuoEnabled")?.checked ? 1 : 0,
         primaCasaMutuoImporto: num("primaCasaMutuoImporto"),
+        primaCasaValoreLocativo: num("primaCasaValoreLocativo"),
         primaCasaAssegnataA: String(document.getElementById("primaCasaAssegnataA")?.value || ""),
         primaCasaMutuoPerc1: num("primaCasaMutuoPerc1"),
         straordAnn1: num("straordAnn1"),
@@ -6398,7 +6456,7 @@ ${scenarioLab.length ? `
           syncPermanenza("perm1");
         } else if (e.target.id === "perm2") {
           syncPermanenza("perm2");
-        } else if (e.target.id === "primaCasaMutuoPerc1" || e.target.id === "primaCasaMutuoImporto") {
+        } else if (e.target.id === "primaCasaMutuoPerc1" || e.target.id === "primaCasaMutuoImporto" || e.target.id === "primaCasaValoreLocativo") {
           updateFirstHomeMortgageUi();
         } else if (e.target.id === "reddito1" || e.target.id === "reddito2") {
           const activeMode = document.getElementById("incomeMode")?.value || "monthly";
