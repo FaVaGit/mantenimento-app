@@ -201,6 +201,7 @@ const defaultExpenseItems = [
         pdfTotalExpenses: "Totale spese",
         pdfEstimatedChildrenNeeds: "Fabbisogno figli stimato",
         pdfAmountPerChild: "Importo per figlio",
+        pdfAmountPerChildCovered: "✓ Già allocati nei benefici compensativi",
         pdfTheoreticalShare: "Quota teorica",
         pdfDirectShareC1C2: "Quota diretta C1 / C2",
         pdfScenarioSection: "Scenario Lab",
@@ -573,6 +574,7 @@ const defaultExpenseItems = [
         pdfTotalExpenses: "Total expenses",
         pdfEstimatedChildrenNeeds: "Estimated children needs",
         pdfAmountPerChild: "Amount per child",
+        pdfAmountPerChildCovered: "✓ Already allocated in compensatory benefits",
         pdfTheoreticalShare: "Theoretical share",
         pdfDirectShareC1C2: "Direct share C1 / C2",
         pdfScenarioSection: "Scenario Lab",
@@ -5108,7 +5110,7 @@ const defaultExpenseItems = [
         [`${tr("pdfTheoreticalShare")} ${c2n()}`, eur(m.quotaTeorica2), "ok"],
         [`${tr("pdfPostSupport")} ${c1n()}`, eur(m.post1), m.post1 >= 0 ? "ok" : "bad"],
         [`${tr("pdfPostSupport")} ${c2n()}`, eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
-        [tr("pdfAmountPerChild"), eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
+        [tr("pdfAmountPerChild"), Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli) : tr("pdfAmountPerChildCovered"), Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? "warn" : "ok"]
       ];
 
       const kpiBenefitLines = getCompensativeBenefitRows(m, c1n(), c2n())
@@ -5986,7 +5988,7 @@ const defaultExpenseItems = [
   <div class="three-col">
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTotalExpenses")}</div><div class="kpi-val warn">${eur(m.speseTot)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfEstimatedChildrenNeeds")}</div><div class="kpi-val warn">${eur(m.fabbisognoFigli)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfAmountPerChild")}</div><div class="kpi-val warn">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfAmountPerChild")}</div><div class="kpi-val ${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? 'warn' : 'ok'}">${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli) : escapeHtml(tr("pdfAmountPerChildCovered"))}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTheoreticalShare")} ${c1n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica1)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTheoreticalShare")} ${c2n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica2)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfSuggestedSupport")}</div>

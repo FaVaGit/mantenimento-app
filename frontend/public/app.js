@@ -201,6 +201,7 @@ const defaultExpenseItems = [
         pdfTotalExpenses: "Totale spese",
         pdfEstimatedChildrenNeeds: "Fabbisogno figli stimato",
         pdfAmountPerChild: "Importo per figlio",
+        pdfAmountPerChildCovered: "✓ Già allocati nei benefici compensativi",
         pdfTheoreticalShare: "Quota teorica",
         pdfDirectShareC1C2: "Quota diretta C1 / C2",
         pdfScenarioSection: "Scenario Lab",
@@ -294,7 +295,7 @@ const defaultExpenseItems = [
         firstHomeLocativeValueHint: "Valore locativo mensile della casa assegnata, usato per valorizzare il beneficio economico implicito.",
         firstHomeMortgageAmountLabel: "Rata mutuo mensile ({currency})",
         firstHomeMortgageAmountHint: "Importo mensile complessivo della rata del mutuo prima casa.",
-        firstHomeMortgageExpiryLabel: "Scadenza mutuo",
+        firstHomeMortgageExpiryLabel: "Scadenza",
         firstHomeMortgageExpiryHint: "Data prevista di estinzione del mutuo prima casa.",
         firstHomeAssignedToLabel: "Casa assegnata a",
         firstHomeAssignedToHint: "Seleziona il coniuge a cui e ceduta la prima casa.",
@@ -318,7 +319,7 @@ const defaultExpenseItems = [
         pdfPrimaryHomeNotDeclared: "Non dichiarato",
         pdfPrimaryHomeAssignedTo: "Assegnata a",
         pdfPrimaryHomeMonthlyAmount: "Rata mensile",
-        pdfPrimaryHomeExpiryDate: "Scadenza mutuo",
+        pdfPrimaryHomeExpiryDate: "Scadenza",
         pdfPrimaryHomeSplit: "Ripartizione mutuo",
         pdfPrimaryHomeAppliedOnlyColl: "Considerato solo se casa ceduta al collocatario.",
         pdfExtraordinaryRow: "Spese straordinarie (quota mensile da annuo)",
@@ -573,6 +574,7 @@ const defaultExpenseItems = [
         pdfTotalExpenses: "Total expenses",
         pdfEstimatedChildrenNeeds: "Estimated children needs",
         pdfAmountPerChild: "Amount per child",
+        pdfAmountPerChildCovered: "✓ Already allocated in compensatory benefits",
         pdfTheoreticalShare: "Theoretical share",
         pdfDirectShareC1C2: "Direct share C1 / C2",
         pdfScenarioSection: "Scenario Lab",
@@ -666,7 +668,7 @@ const defaultExpenseItems = [
         firstHomeLocativeValueHint: "Monthly rental value of the assigned home, used to value the implicit economic benefit.",
         firstHomeMortgageAmountLabel: "Monthly mortgage payment ({currency})",
         firstHomeMortgageAmountHint: "Total monthly amount of the primary-home mortgage payment.",
-        firstHomeMortgageExpiryLabel: "Mortgage expiry date",
+        firstHomeMortgageExpiryLabel: "Expiry",
         firstHomeMortgageExpiryHint: "Expected payoff date of the primary-home mortgage.",
         firstHomeAssignedToLabel: "Home assigned to",
         firstHomeAssignedToHint: "Select which spouse receives assignment of the primary home.",
@@ -690,7 +692,7 @@ const defaultExpenseItems = [
         pdfPrimaryHomeNotDeclared: "Not declared",
         pdfPrimaryHomeAssignedTo: "Assigned to",
         pdfPrimaryHomeMonthlyAmount: "Monthly payment",
-        pdfPrimaryHomeExpiryDate: "Mortgage expiry date",
+        pdfPrimaryHomeExpiryDate: "Expiry",
         pdfPrimaryHomeSplit: "Mortgage split",
         pdfPrimaryHomeAppliedOnlyColl: "Counted only when the home is assigned to the custodial parent.",
         pdfExtraordinaryRow: "Extraordinary expenses (monthly share from yearly)",
@@ -5108,7 +5110,7 @@ const defaultExpenseItems = [
         [`${tr("pdfTheoreticalShare")} ${c2n()}`, eur(m.quotaTeorica2), "ok"],
         [`${tr("pdfPostSupport")} ${c1n()}`, eur(m.post1), m.post1 >= 0 ? "ok" : "bad"],
         [`${tr("pdfPostSupport")} ${c2n()}`, eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
-        [tr("pdfAmountPerChild"), eur((Math.max(m.assegnoDa1a2, m.assegnoDa2a1)) / m.figli), "warn"]
+        [tr("pdfAmountPerChild"), Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli) : tr("pdfAmountPerChildCovered"), Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? "warn" : "ok"]
       ];
 
       const kpiBenefitLines = getCompensativeBenefitRows(m, c1n(), c2n())
@@ -5986,7 +5988,7 @@ const defaultExpenseItems = [
   <div class="three-col">
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTotalExpenses")}</div><div class="kpi-val warn">${eur(m.speseTot)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfEstimatedChildrenNeeds")}</div><div class="kpi-val warn">${eur(m.fabbisognoFigli)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfAmountPerChild")}</div><div class="kpi-val warn">${eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli)}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfAmountPerChild")}</div><div class="kpi-val ${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? 'warn' : 'ok'}">${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli) : escapeHtml(tr("pdfAmountPerChildCovered"))}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTheoreticalShare")} ${c1n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica1)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTheoreticalShare")} ${c2n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica2)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfSuggestedSupport")}</div>
