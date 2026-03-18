@@ -971,16 +971,16 @@
 
     .first-home-mortgage-table th {
       text-align: left;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: #2a5954;
       font-weight: 800;
-      padding: 8px 10px 6px;
+      padding: 7px 8px 6px;
       background: linear-gradient(180deg, rgba(232, 246, 243, 0.95), rgba(242, 249, 247, 0.92));
       border-bottom: 1px solid rgba(27, 141, 127, 0.12);
     }
 
     .first-home-mortgage-table td {
-      padding: 8px;
+      padding: 7px;
       border-top: 1px solid rgba(27, 141, 127, 0.08);
     }
 
@@ -998,6 +998,10 @@
     }
 
     .first-home-mortgage-table input {
+      width: 100%;
+    }
+
+    .first-home-mortgage-table select {
       width: 100%;
     }
 
