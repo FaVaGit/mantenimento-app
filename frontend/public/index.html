@@ -352,12 +352,6 @@
             <div class="extra-box-title" id="firstHomeBoxTitle">Mutuo prima casa ceduta</div>
             <div class="extra-box-note" id="firstHomeBoxNote">Dichiara se esiste un mutuo sulla prima casa dei coniugi ceduta a uno dei due: il modello considera il trasferimento implicito quando la casa e assegnata al collocatario.</div>
             <div class="extra-grid">
-              <div class="field">
-                <label for="primaCasaMutuoEnabled" class="label-row"><span id="lblPrimaCasaMutuoEnabled">Mutuo su prima casa dei coniugi</span>
-                  <span class="hint" id="hintPrimaCasaMutuoEnabled" title="Attiva per includere il mutuo della prima casa ceduta nei benefici compensativi.">i</span>
-                </label>
-                <input id="primaCasaMutuoEnabled" type="checkbox" />
-              </div>
               <div class="field first-home-mortgage-table-field">
                 <div class="first-home-mortgage-table-wrap">
                   <table class="first-home-mortgage-table" aria-label="Dati mutuo prima casa">
@@ -383,6 +377,11 @@
                             <span class="hint" id="hintPrimaCasaAssegnataA" title="Seleziona il coniuge a cui e ceduta la prima casa.">i</span>
                           </span>
                         </th>
+                        <th class="first-home-mortgage-table-check-col">
+                          <span class="label-row"><span id="lblPrimaCasaMutuoEnabled">Mutuo su prima casa dei coniugi</span>
+                            <span class="hint" id="hintPrimaCasaMutuoEnabled" title="Attiva per includere il mutuo della prima casa ceduta nei benefici compensativi.">i</span>
+                          </span>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -397,6 +396,7 @@
                             <option value="2">Coniuge 2</option>
                           </select>
                         </td>
+                        <td class="first-home-mortgage-table-check-cell"><input id="primaCasaMutuoEnabled" type="checkbox" /></td>
                       </tr>
                     </tbody>
                   </table>
@@ -652,7 +652,7 @@
   <script src="supabase.min.js"></script>
   <script src="fabric.min.js"></script>
   <script src="html2pdf.bundle.min.js"></script>
-    <script src="app.js?v=2.4.13"></script>
+    <script src="app.js?v=2.4.14"></script>
 </body>
 </html>
 

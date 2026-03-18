@@ -954,15 +954,15 @@
     }
 
     .first-home-mortgage-table-wrap {
-      overflow-x: visible;
+      overflow-x: auto;
       padding-bottom: 2px;
     }
 
     .first-home-mortgage-table {
-      width: 100%;
-      min-width: 0;
+      width: max-content;
+      min-width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: auto;
       border: 1px solid rgba(27, 141, 127, 0.16);
       border-radius: 12px;
       overflow: hidden;
@@ -993,7 +993,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       line-height: 1.15;
     }
 
@@ -1003,6 +1003,34 @@
 
     .first-home-mortgage-table select {
       width: 100%;
+    }
+
+    .first-home-mortgage-table #primaCasaValoreLocativo,
+    .first-home-mortgage-table #primaCasaMutuoImporto {
+      min-width: 116px;
+    }
+
+    .first-home-mortgage-table #primaCasaMutuoScadenza {
+      min-width: 132px;
+    }
+
+    .first-home-mortgage-table #primaCasaAssegnataA {
+      min-width: 220px;
+    }
+
+    .first-home-mortgage-table-check-col {
+      width: 132px;
+    }
+
+    .first-home-mortgage-table-check-cell {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .first-home-mortgage-table-check-cell input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      margin: 0;
     }
 
     .extra-box-first-home .field {
