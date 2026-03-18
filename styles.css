@@ -954,28 +954,51 @@
     }
 
     .first-home-mortgage-table-wrap {
-      overflow-x: auto;
+      overflow-x: visible;
       padding-bottom: 2px;
     }
 
     .first-home-mortgage-table {
       width: 100%;
-      min-width: 560px;
-      border-collapse: separate;
-      border-spacing: 6px;
+      min-width: 0;
+      border-collapse: collapse;
       table-layout: fixed;
+      border: 1px solid rgba(27, 141, 127, 0.16);
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.55);
     }
 
     .first-home-mortgage-table th {
       text-align: left;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       color: #2a5954;
       font-weight: 800;
-      padding: 0 2px;
+      padding: 8px 10px 6px;
+      background: linear-gradient(180deg, rgba(232, 246, 243, 0.95), rgba(242, 249, 247, 0.92));
+      border-bottom: 1px solid rgba(27, 141, 127, 0.12);
     }
 
     .first-home-mortgage-table td {
-      padding: 0;
+      padding: 8px;
+      border-top: 1px solid rgba(27, 141, 127, 0.08);
+    }
+
+    .first-home-mortgage-table th + th,
+    .first-home-mortgage-table td + td {
+      border-left: 1px solid rgba(27, 141, 127, 0.08);
+    }
+
+    .first-home-mortgage-table .label-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      line-height: 1.15;
+    }
+
+    .first-home-mortgage-table input {
+      width: 100%;
     }
 
     .extra-box-first-home .field {
