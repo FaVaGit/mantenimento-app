@@ -4888,6 +4888,13 @@ const defaultExpenseItems = [
         resultDetail = tr("spiegDetailResultTransfer");
       } else {
         const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
+        const benefitTotal = getCompensativeBenefitsTotal(benefitRows);
+        const coveredPerChildAmount = m.figli > 0 ? eur(benefitTotal / m.figli) : eur(benefitTotal);
+        const coveredPerChildBreakdown = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmount, children: m.figli || 0 });
+        const existingSupportFlows = getExistingMonthlySupportFlows(m, c1n(), c2n());
+        const existingSupportHtml = existingSupportFlows.length
+          ? `<div class="result-covered-extra"><span class="result-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="result-covered-extra-value">${existingSupportFlows.map((flow) => `${escapeHtml(flow.from)} &rarr; ${escapeHtml(flow.to)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
+          : "";
         if (benefitRows.length) {
           const rawBenefs = Array.isArray(m.compensativeBenefits)
             ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
@@ -4899,18 +4906,27 @@ const defaultExpenseItems = [
               return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
             })
             .join("");
-          const total = getCompensativeBenefitsTotal(benefitRows);
           const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
           resultHtml = `
-            <div class="spieg-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>
+            <div class="result-covered-summary">
+              <span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span>
+              <span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdown)}</span>
+              ${existingSupportHtml}
+            </div>
             <div class="spieg-benefits-section">
               <div class="spieg-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
               <ul class="spieg-benefits-cards">${cardsHtml}</ul>
-              <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(total)}</strong></div>
+              <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(benefitTotal)}</strong></div>
             </div>
           `;
         } else {
-          resultHtml = `<div class="spieg-result-empty ok">${tr("calcNoTransferSuggested")}</div>`;
+          resultHtml = `
+            <div class="result-covered-summary">
+              <span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span>
+              <span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdown)}</span>
+              ${existingSupportHtml}
+            </div>
+          `;
         }
         resultDetail = tr("spiegDetailResultNoTransfer");
       }
@@ -5008,6 +5024,15 @@ const defaultExpenseItems = [
         if (!row || row.includeInTotal === false) return sum;
         return sum + Number(row.amount || 0);
       }, 0);
+    }
+
+    function getExistingMonthlySupportFlows(m, name1 = c1n(), name2 = c2n()) {
+      const flows = [];
+      const paidBy1 = Number((m && m.aPag1) || 0);
+      const paidBy2 = Number((m && m.aPag2) || 0);
+      if (paidBy1 > 0.005) flows.push({ from: name1, to: name2, amount: paidBy1 });
+      if (paidBy2 > 0.005) flows.push({ from: name2, to: name1, amount: paidBy2 });
+      return flows;
     }
 
     function formatCompensativeBenefitsInline(m, name1 = c1n(), name2 = c2n()) {
@@ -5111,6 +5136,13 @@ const defaultExpenseItems = [
         `;
       } else {
         const benefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
+        const benefitTotal = getCompensativeBenefitsTotal(benefitRows);
+        const coveredPerChildAmountMain = m.figli > 0 ? eur(benefitTotal / m.figli) : eur(benefitTotal);
+        const coveredPerChildBreakdownMain = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmountMain, children: m.figli || 0 });
+        const existingSupportFlowsMain = getExistingMonthlySupportFlows(m, c1n(), c2n());
+        const existingSupportHtmlMain = existingSupportFlowsMain.length
+          ? `<div class="result-covered-extra"><span class="result-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="result-covered-extra-value">${existingSupportFlowsMain.map((flow) => `${escapeHtml(flow.from)} &rarr; ${escapeHtml(flow.to)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
+          : "";
         let benefitCardsHtml = "";
         if (benefitRows.length) {
           const rawBenefs = Array.isArray(m.compensativeBenefits)
@@ -5123,17 +5155,16 @@ const defaultExpenseItems = [
               return `<li class="spieg-benefit-card"><span class="spieg-benefit-icon">${icon}</span><span class="spieg-benefit-label">${escapeHtml(row.label)}</span><strong class="spieg-benefit-amount">${eur(row.amount)}</strong></li>`;
             })
             .join("");
-          const total = getCompensativeBenefitsTotal(benefitRows);
           const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
           benefitCardsHtml = `
             <div class="result-benefits-box">
               <div class="spieg-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
               <ul class="spieg-benefits-cards">${cardsHtml}</ul>
-              <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(total)}</strong></div>
+              <div class="spieg-benefits-total"><span>${escapeHtml(totalLabel)}</span><strong>${eur(benefitTotal)}</strong></div>
             </div>
           `;
         }
-        mainHtml = `<div class="spieg-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>${benefitCardsHtml}`;
+        mainHtml = `<div class="result-covered-summary"><span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span><span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdownMain)}</span>${existingSupportHtmlMain}</div>${benefitCardsHtml}`;
       }
       resultMain.innerHTML = mainHtml;
 
@@ -5374,6 +5405,13 @@ const defaultExpenseItems = [
       };
       const pdfCalHtml = buildPdfCalendarHtml();
       const compBenefits = getCompensativeBenefitRows(m, c1Name, c2Name);
+      const compBenefitsTotal = getCompensativeBenefitsTotal(compBenefits);
+      const coveredPerChildAmountPdf = m.figli > 0 ? eur(compBenefitsTotal / m.figli) : eur(compBenefitsTotal);
+      const coveredPerChildBreakdownPdf = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmountPdf, children: m.figli || 0 });
+      const existingSupportFlowsPdf = getExistingMonthlySupportFlows(m, c1Name, c2Name);
+      const existingSupportHtmlPdf = existingSupportFlowsPdf.length
+        ? `<div class="pdf-covered-extra"><span class="pdf-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="pdf-covered-extra-value">${existingSupportFlowsPdf.map((flow) => `${escapeHtml(flow.from)} &rarr; ${escapeHtml(flow.to)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
+        : "";
       const compBenefitsRowsHtml = compBenefits.length
         ? compBenefits.map((row) => `<tr><td>${escapeHtml(row.label)}</td><td class="num">${eur(row.amount)}</td></tr>`).join("")
         : `<tr><td colspan="2">${tr("pdfCompBenefitsNone")}</td></tr>`;
@@ -5391,7 +5429,13 @@ const defaultExpenseItems = [
         <tr><td>${tr("pdfPrimaryHomeAppliedOnlyColl")}</td><td>${m.primaCasaConsidered ? "OK" : tr("pdfPrimaryHomeNotDeclared")}</td></tr>`
         : `<tr><td>${tr("pdfPrimaryHomeMortgage")}</td><td>${tr("pdfPrimaryHomeNotDeclared")}</td></tr>`;
 
-      let explainResultHtml = `<div class="pdf-explain-result-empty">${tr("calcNoTransferSuggested")}</div>`;
+      let explainResultHtml = `
+        <div class="pdf-covered-summary">
+          <span class="pdf-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span>
+          <span class="pdf-covered-amount">${escapeHtml(coveredPerChildBreakdownPdf)}</span>
+          ${existingSupportHtmlPdf}
+        </div>
+      `;
       if (m.assegnoDa1a2 > 0.005) {
         explainResultHtml = `
           <div class="pdf-explain-flow">${c1NameEsc} &rarr; ${c2NameEsc}</div>
@@ -5413,13 +5457,16 @@ const defaultExpenseItems = [
           const icon = (rawBenefs[idx] && typeIcons[rawBenefs[idx].type]) || "\u2726";
           return `<li class="pdf-explain-benefit-card"><span class="pdf-explain-benefit-icon">${icon}</span><span class="pdf-explain-benefit-label">${escapeHtml(row.label)}</span><strong class="pdf-explain-benefit-amount">${eur(row.amount)}</strong></li>`;
         }).join("");
-        const benefitsTotal = getCompensativeBenefitsTotal(compBenefits);
         explainResultHtml = `
-          <div class="pdf-explain-no-transfer-badge">&#9878;&#65039;&ensp;${escapeHtml(tr("calcNoTransferSuggested"))}</div>
+          <div class="pdf-covered-summary">
+            <span class="pdf-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span>
+            <span class="pdf-covered-amount">${escapeHtml(coveredPerChildBreakdownPdf)}</span>
+            ${existingSupportHtmlPdf}
+          </div>
           <div class="pdf-explain-benefits-section">
             <div class="pdf-explain-benefits-label">&#127873;&ensp;${escapeHtml(tr("calcCompBenefitsLabel"))}</div>
             <ul class="pdf-explain-benefits-cards">${cardsHtml}</ul>
-            <div class="pdf-explain-benefits-total"><span>${escapeHtml(tr("pdfCompBenefitsTotal"))}</span><strong>${eur(benefitsTotal)}</strong></div>
+            <div class="pdf-explain-benefits-total"><span>${escapeHtml(tr("pdfCompBenefitsTotal"))}</span><strong>${eur(compBenefitsTotal)}</strong></div>
           </div>
         `;
       }
@@ -5721,6 +5768,12 @@ const defaultExpenseItems = [
   .kpi-val.kpi-covered-value { display: block; white-space: normal; }
   .kpi-covered-caption { display: block; font-size: 9.2pt; line-height: 1.2; }
   .kpi-covered-amount { display: block; margin-top: 4px; font-size: 17.2pt; font-weight: 900; line-height: 1; letter-spacing: 0.01em; }
+  .pdf-covered-summary { display: grid; gap: 3px; border: 1px solid #93d1bc; background: linear-gradient(140deg,#e7f6ef,#d4efdf); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
+  .pdf-covered-caption { display: block; font-size: 8.8pt; line-height: 1.2; color: #1f5e58; text-transform: uppercase; letter-spacing: 0.35px; font-weight: 800; }
+  .pdf-covered-amount { display: block; margin-top: 2px; font-size: 15.8pt; line-height: 1.05; color: #0f6158; font-weight: 900; }
+  .pdf-covered-extra { display: grid; gap: 1px; margin-top: 3px; }
+  .pdf-covered-extra-label { font-size: 7.4pt; color: #4f6d67; text-transform: uppercase; letter-spacing: 0.35px; font-weight: 800; }
+  .pdf-covered-extra-value { font-size: 8.6pt; color: #174741; line-height: 1.3; }
   .kpi-val.ok { color: #0b6e66; }
   .kpi-val.warn { color: #c77a11; }
   .kpi-val.bad { color: #c0392b; }
