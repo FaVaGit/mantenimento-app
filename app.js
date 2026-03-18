@@ -293,6 +293,8 @@ const defaultExpenseItems = [
         firstHomeLocativeValueHint: "Valore locativo mensile della casa assegnata, usato per valorizzare il beneficio economico implicito.",
         firstHomeMortgageAmountLabel: "Rata mutuo mensile ({currency})",
         firstHomeMortgageAmountHint: "Importo mensile complessivo della rata del mutuo prima casa.",
+        firstHomeMortgageExpiryLabel: "Scadenza mutuo",
+        firstHomeMortgageExpiryHint: "Data prevista di estinzione del mutuo prima casa.",
         firstHomeAssignedToLabel: "Casa assegnata a",
         firstHomeAssignedToHint: "Seleziona il coniuge a cui e ceduta la prima casa.",
         firstHomeAssignedToNone: "Nessuna cessione",
@@ -315,6 +317,7 @@ const defaultExpenseItems = [
         pdfPrimaryHomeNotDeclared: "Non dichiarato",
         pdfPrimaryHomeAssignedTo: "Assegnata a",
         pdfPrimaryHomeMonthlyAmount: "Rata mensile",
+        pdfPrimaryHomeExpiryDate: "Scadenza mutuo",
         pdfPrimaryHomeSplit: "Ripartizione mutuo",
         pdfPrimaryHomeAppliedOnlyColl: "Considerato solo se casa ceduta al collocatario.",
         pdfExtraordinaryRow: "Spese straordinarie (quota mensile da annuo)",
@@ -661,6 +664,8 @@ const defaultExpenseItems = [
         firstHomeLocativeValueHint: "Monthly rental value of the assigned home, used to value the implicit economic benefit.",
         firstHomeMortgageAmountLabel: "Monthly mortgage payment ({currency})",
         firstHomeMortgageAmountHint: "Total monthly amount of the primary-home mortgage payment.",
+        firstHomeMortgageExpiryLabel: "Mortgage expiry date",
+        firstHomeMortgageExpiryHint: "Expected payoff date of the primary-home mortgage.",
         firstHomeAssignedToLabel: "Home assigned to",
         firstHomeAssignedToHint: "Select which spouse receives assignment of the primary home.",
         firstHomeAssignedToNone: "No assignment",
@@ -683,6 +688,7 @@ const defaultExpenseItems = [
         pdfPrimaryHomeNotDeclared: "Not declared",
         pdfPrimaryHomeAssignedTo: "Assigned to",
         pdfPrimaryHomeMonthlyAmount: "Monthly payment",
+        pdfPrimaryHomeExpiryDate: "Mortgage expiry date",
         pdfPrimaryHomeSplit: "Mortgage split",
         pdfPrimaryHomeAppliedOnlyColl: "Counted only when the home is assigned to the custodial parent.",
         pdfExtraordinaryRow: "Extraordinary expenses (monthly share from yearly)",
@@ -1237,6 +1243,8 @@ const defaultExpenseItems = [
       const hintPrimaCasaValoreLocativo = document.getElementById("hintPrimaCasaValoreLocativo");
       const lblPrimaCasaMutuoImporto = document.getElementById("lblPrimaCasaMutuoImporto");
       const hintPrimaCasaMutuoImporto = document.getElementById("hintPrimaCasaMutuoImporto");
+      const lblPrimaCasaMutuoScadenza = document.getElementById("lblPrimaCasaMutuoScadenza");
+      const hintPrimaCasaMutuoScadenza = document.getElementById("hintPrimaCasaMutuoScadenza");
       const lblPrimaCasaAssegnataA = document.getElementById("lblPrimaCasaAssegnataA");
       const hintPrimaCasaAssegnataA = document.getElementById("hintPrimaCasaAssegnataA");
       const lblPrimaCasaMutuoPerc1 = document.getElementById("lblPrimaCasaMutuoPerc1");
@@ -1302,6 +1310,8 @@ const defaultExpenseItems = [
       if (hintPrimaCasaValoreLocativo) hintPrimaCasaValoreLocativo.title = tr("firstHomeLocativeValueHint");
       if (lblPrimaCasaMutuoImporto) lblPrimaCasaMutuoImporto.textContent = msg("firstHomeMortgageAmountLabel", { currency: currentCurrency });
       if (hintPrimaCasaMutuoImporto) hintPrimaCasaMutuoImporto.title = tr("firstHomeMortgageAmountHint");
+      if (lblPrimaCasaMutuoScadenza) lblPrimaCasaMutuoScadenza.textContent = tr("firstHomeMortgageExpiryLabel");
+      if (hintPrimaCasaMutuoScadenza) hintPrimaCasaMutuoScadenza.title = tr("firstHomeMortgageExpiryHint");
       if (lblPrimaCasaAssegnataA) lblPrimaCasaAssegnataA.textContent = tr("firstHomeAssignedToLabel");
       if (hintPrimaCasaAssegnataA) hintPrimaCasaAssegnataA.title = tr("firstHomeAssignedToHint");
       if (lblPrimaCasaMutuoPerc1) lblPrimaCasaMutuoPerc1.textContent = tr("firstHomeSplitLabel");
@@ -1422,6 +1432,18 @@ const defaultExpenseItems = [
         maximumFractionDigits: 0
       }).format(n);
       return `${short} ${currentCurrency}`;
+    }
+
+    function formatIsoDate(value) {
+      const iso = String(value || "").trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
+      const d = new Date(`${iso}T00:00:00`);
+      if (Number.isNaN(d.getTime())) return iso;
+      return new Intl.DateTimeFormat(getCurrentLocale(), {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(d);
     }
 
     function escapeHtml(value) {
@@ -3762,6 +3784,7 @@ const defaultExpenseItems = [
         primaCasaMutuoEnabled: firstHome.enabled ? 1 : 0,
         primaCasaValoreLocativo: num("primaCasaValoreLocativo"),
         primaCasaMutuoImporto: firstHome.amount,
+        primaCasaMutuoScadenza: firstHome.expiry,
         primaCasaAssegnataA: firstHome.assignedTo,
         primaCasaMutuoPerc1: firstHome.share1,
         straordAnn1: num("straordAnn1"),
@@ -3803,6 +3826,8 @@ const defaultExpenseItems = [
       const aFam2 = Number(payload.aFam2 || 0);
       const primaCasaMutuoEnabled = Number(payload.primaCasaMutuoEnabled || 0) > 0;
       const primaCasaMutuoImporto = Math.max(0, Number(payload.primaCasaMutuoImporto || 0));
+      const primaCasaMutuoScadenzaRaw = String(payload.primaCasaMutuoScadenza || "").trim();
+      const primaCasaMutuoScadenza = /^\d{4}-\d{2}-\d{2}$/.test(primaCasaMutuoScadenzaRaw) ? primaCasaMutuoScadenzaRaw : "";
       const primaCasaAssegnataA = (String(payload.primaCasaAssegnataA || "") === "1" || String(payload.primaCasaAssegnataA || "") === "2")
         ? String(payload.primaCasaAssegnataA)
         : "";
@@ -3942,7 +3967,7 @@ const defaultExpenseItems = [
         quotaDiretta1, quotaDiretta2,
         saldo1, saldo2,
         assegnoBaseDa1a2, assegnoBaseDa2a1,
-        primaCasaMutuoEnabled, primaCasaMutuoImporto, primaCasaAssegnataA, primaCasaValoreLocativo,
+        primaCasaMutuoEnabled, primaCasaMutuoImporto, primaCasaMutuoScadenza, primaCasaAssegnataA, primaCasaValoreLocativo,
         primaCasaMutuoPerc1, primaCasaMutuoPerc2,
         primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,
         compensativeBenefits,
@@ -4046,16 +4071,19 @@ const defaultExpenseItems = [
     function getFirstHomeMortgageInput() {
       const enabled = !!document.getElementById("primaCasaMutuoEnabled")?.checked;
       const amount = Math.max(0, num("primaCasaMutuoImporto"));
+      const expiryRaw = String(document.getElementById("primaCasaMutuoScadenza")?.value || "").trim();
+      const expiry = /^\d{4}-\d{2}-\d{2}$/.test(expiryRaw) ? expiryRaw : "";
       const assignedToRaw = String(document.getElementById("primaCasaAssegnataA")?.value || "").trim();
       const assignedTo = (assignedToRaw === "1" || assignedToRaw === "2") ? assignedToRaw : "";
       const share1 = Math.min(100, Math.max(0, num("primaCasaMutuoPerc1")));
       const share2 = 100 - share1;
-      return { enabled, amount, assignedTo, share1, share2 };
+      return { enabled, amount, expiry, assignedTo, share1, share2 };
     }
 
     function updateFirstHomeMortgageUi() {
       const enabledEl = document.getElementById("primaCasaMutuoEnabled");
       const amountEl = document.getElementById("primaCasaMutuoImporto");
+      const expiryEl = document.getElementById("primaCasaMutuoScadenza");
       const assignedEl = document.getElementById("primaCasaAssegnataA");
       const shareEl = document.getElementById("primaCasaMutuoPerc1");
       const splitInfoEl = document.getElementById("primaCasaMutuoSplitInfo");
@@ -4071,6 +4099,7 @@ const defaultExpenseItems = [
 
       const isEnabled = !!enabledEl.checked;
       amountEl.disabled = !isEnabled;
+      if (expiryEl) expiryEl.disabled = !isEnabled;
       assignedEl.disabled = !isEnabled;
       shareEl.disabled = !isEnabled;
       if (splitWrapEl) splitWrapEl.classList.toggle("is-disabled", !isEnabled);
@@ -4601,6 +4630,7 @@ const defaultExpenseItems = [
       setVal("assegnoFam2", Number(payload.aFam2 || 0));
       setChecked("primaCasaMutuoEnabled", Number(payload.primaCasaMutuoEnabled || 0) > 0);
       setVal("primaCasaMutuoImporto", Number(payload.primaCasaMutuoImporto || 0));
+      setVal("primaCasaMutuoScadenza", String(payload.primaCasaMutuoScadenza || ""));
       setVal("primaCasaAssegnataA", (String(payload.primaCasaAssegnataA || "") === "1" || String(payload.primaCasaAssegnataA || "") === "2") ? String(payload.primaCasaAssegnataA) : "");
       setVal("primaCasaMutuoPerc1", Math.min(100, Math.max(0, Number((payload.primaCasaMutuoPerc1 === undefined ? 50 : payload.primaCasaMutuoPerc1) || 0))));
       setVal("straordAnn1", Number(payload.straordAnn1 || 0));
@@ -4775,6 +4805,7 @@ const defaultExpenseItems = [
         ? `
         <tr><td>${tr("pdfPrimaryHomeAssignedTo")}</td><td>${primaryHomeAssignedLabel}</td></tr>
         <tr><td>${tr("pdfPrimaryHomeMonthlyAmount")}</td><td>${eur(m.primaCasaMutuoImporto || 0)}</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeExpiryDate")}</td><td>${escapeHtml(formatIsoDate(m.primaCasaMutuoScadenza) || tr("pdfPrimaryHomeNotDeclared"))}</td></tr>
         <tr><td>${tr("pdfPrimaryHomeSplit")}</td><td>${c1NameEsc} ${(m.primaCasaMutuoPerc1 || 0).toFixed(0)}% · ${c2NameEsc} ${(m.primaCasaMutuoPerc2 || 0).toFixed(0)}%</td></tr>
         <tr><td>${tr("pdfPrimaryHomeAppliedOnlyColl")}</td><td>${m.primaCasaConsidered ? "OK" : tr("pdfPrimaryHomeNotDeclared")}</td></tr>`
         : `<tr><td>${tr("pdfPrimaryHomeMortgage")}</td><td>${tr("pdfPrimaryHomeNotDeclared")}</td></tr>`;
@@ -5293,6 +5324,7 @@ const defaultExpenseItems = [
         ? `
         <tr><td>${tr("pdfPrimaryHomeAssignedTo")}</td><td>${primaryHomeAssignedLabel}</td></tr>
         <tr><td>${tr("pdfPrimaryHomeMonthlyAmount")}</td><td>${eur(m.primaCasaMutuoImporto || 0)}</td></tr>
+        <tr><td>${tr("pdfPrimaryHomeExpiryDate")}</td><td>${escapeHtml(formatIsoDate(m.primaCasaMutuoScadenza) || tr("pdfPrimaryHomeNotDeclared"))}</td></tr>
         <tr><td>${tr("pdfPrimaryHomeSplit")}</td><td>${c1NameEsc} ${(m.primaCasaMutuoPerc1 || 0).toFixed(0)}% · ${c2NameEsc} ${(m.primaCasaMutuoPerc2 || 0).toFixed(0)}%</td></tr>
         <tr><td>${tr("pdfPrimaryHomeAppliedOnlyColl")}</td><td>${m.primaCasaConsidered ? "OK" : tr("pdfPrimaryHomeNotDeclared")}</td></tr>`
         : `<tr><td>${tr("pdfPrimaryHomeMortgage")}</td><td>${tr("pdfPrimaryHomeNotDeclared")}</td></tr>`;
@@ -6201,6 +6233,7 @@ ${scenarioLab.length ? `
         primaCasaMutuoEnabled: document.getElementById("primaCasaMutuoEnabled")?.checked ? 1 : 0,
         primaCasaValoreLocativo: num("primaCasaValoreLocativo"),
         primaCasaMutuoImporto: num("primaCasaMutuoImporto"),
+        primaCasaMutuoScadenza: String(document.getElementById("primaCasaMutuoScadenza")?.value || ""),
         primaCasaAssegnataA: String(document.getElementById("primaCasaAssegnataA")?.value || ""),
         primaCasaMutuoPerc1: num("primaCasaMutuoPerc1"),
         straordAnn1: num("straordAnn1"),
@@ -6328,8 +6361,10 @@ ${scenarioLab.length ? `
       });
       const firstHomeEnabled = document.getElementById("primaCasaMutuoEnabled");
       const firstHomeAssigned = document.getElementById("primaCasaAssegnataA");
+      const firstHomeExpiry = document.getElementById("primaCasaMutuoScadenza");
       if (firstHomeEnabled) firstHomeEnabled.checked = !!firstHomeEnabled.defaultChecked;
       if (firstHomeAssigned) firstHomeAssigned.value = "";
+      if (firstHomeExpiry) firstHomeExpiry.value = firstHomeExpiry.defaultValue || "";
       permanenceCalendarState.byMonth = {};
       speseConvivenzaAutoMode = true;
       selectedScenarioIdx = -1;
@@ -6675,7 +6710,7 @@ ${scenarioLab.length ? `
         }
         updateModeUi();
         renderAll();
-      } else if (e.target && (e.target.id === "primaCasaMutuoEnabled" || e.target.id === "primaCasaAssegnataA")) {
+      } else if (e.target && (e.target.id === "primaCasaMutuoEnabled" || e.target.id === "primaCasaAssegnataA" || e.target.id === "primaCasaMutuoScadenza")) {
         updateFirstHomeMortgageUi();
         renderAll();
       }

@@ -35,6 +35,8 @@ function calculateModel(input) {
   const primaCasaMutuoEnabled = toNumber(input.primaCasaMutuoEnabled) > 0;
   const primaCasaValoreLocativo = Math.max(0, toNumber(input.primaCasaValoreLocativo));
   const primaCasaMutuoImporto = Math.max(0, toNumber(input.primaCasaMutuoImporto));
+  const primaCasaMutuoScadenzaRaw = String(input.primaCasaMutuoScadenza || '').trim();
+  const primaCasaMutuoScadenza = /^\d{4}-\d{2}-\d{2}$/.test(primaCasaMutuoScadenzaRaw) ? primaCasaMutuoScadenzaRaw : '';
   const primaCasaAssegnataA = String(input.primaCasaAssegnataA || '');
   const rawMutuoPerc1 = input.primaCasaMutuoPerc1 === undefined ? 50 : input.primaCasaMutuoPerc1;
   const primaCasaMutuoPerc1 = clamp(toNumber(rawMutuoPerc1), 0, 100);
@@ -163,7 +165,7 @@ function calculateModel(input) {
     quotaDiretta1, quotaDiretta2,
     saldo1, saldo2,
     assegnoBaseDa1a2, assegnoBaseDa2a1,
-    primaCasaMutuoEnabled, primaCasaValoreLocativo, primaCasaMutuoImporto,
+    primaCasaMutuoEnabled, primaCasaValoreLocativo, primaCasaMutuoImporto, primaCasaMutuoScadenza,
     primaCasaAssegnataA: assigned,
     primaCasaMutuoPerc1, primaCasaMutuoPerc2,
     primaCasaConsidered, primaCasaTransfer1to2, primaCasaTransfer2to1,

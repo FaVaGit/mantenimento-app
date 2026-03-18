@@ -949,6 +949,35 @@
       grid-column: 1 / -1;
     }
 
+    .extra-box-first-home .first-home-mortgage-table-field {
+      grid-column: 1 / -1;
+    }
+
+    .first-home-mortgage-table-wrap {
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .first-home-mortgage-table {
+      width: 100%;
+      min-width: 560px;
+      border-collapse: separate;
+      border-spacing: 6px;
+      table-layout: fixed;
+    }
+
+    .first-home-mortgage-table th {
+      text-align: left;
+      font-size: 0.8rem;
+      color: #2a5954;
+      font-weight: 800;
+      padding: 0 2px;
+    }
+
+    .first-home-mortgage-table td {
+      padding: 0;
+    }
+
     .extra-box-first-home .field {
       border-radius: 12px;
       padding: 8px 9px 7px;
@@ -966,6 +995,7 @@
     }
 
     .extra-box-first-home .field input[type="number"],
+    .extra-box-first-home .field input[type="date"],
     .extra-box-first-home .field select {
       border-width: 1.5px;
       box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
@@ -982,6 +1012,7 @@
     }
 
     .extra-box-first-home .field input[type="number"]:focus,
+    .extra-box-first-home .field input[type="date"]:focus,
     .extra-box-first-home .field select:focus {
       border-color: rgba(27, 141, 127, 0.4);
       box-shadow: 0 0 0 3px rgba(27, 141, 127, 0.14), 0 1px 0 rgba(255, 255, 255, 0.85) inset;
