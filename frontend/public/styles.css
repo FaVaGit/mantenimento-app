@@ -2774,6 +2774,31 @@
       min-width: 0;
     }
 
+    .kpi-item--stacked {
+      align-items: flex-start;
+    }
+
+    .kpi-item--stacked strong.kpi-covered-value {
+      display: block;
+      white-space: normal;
+      text-align: left;
+      width: 100%;
+    }
+
+    .kpi-covered-caption {
+      display: block;
+      font-size: 0.82rem;
+      line-height: 1.25;
+    }
+
+    .kpi-covered-amount {
+      display: block;
+      margin-top: 3px;
+      font-size: 1.18rem;
+      font-weight: 800;
+      line-height: 1.05;
+    }
+
     .kpi-item--longtext {
       flex-direction: column;
       align-items: flex-start;

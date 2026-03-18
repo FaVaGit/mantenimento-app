@@ -201,7 +201,8 @@ const defaultExpenseItems = [
         pdfTotalExpenses: "Totale spese",
         pdfEstimatedChildrenNeeds: "Fabbisogno figli stimato",
         pdfAmountPerChild: "Importo per figlio",
-        pdfAmountPerChildCovered: "✓ Già allocati nei benefici compensativi ({amount})",
+        pdfAmountPerChildCovered: "✓ Già allocati nei benefici compensativi",
+        pdfAmountPerChildCoveredBreakdown: "{amount} × {children}",
         pdfTheoreticalShare: "Quota teorica",
         pdfDirectShareC1C2: "Quota diretta C1 / C2",
         pdfScenarioSection: "Scenario Lab",
@@ -574,7 +575,8 @@ const defaultExpenseItems = [
         pdfTotalExpenses: "Total expenses",
         pdfEstimatedChildrenNeeds: "Estimated children needs",
         pdfAmountPerChild: "Amount per child",
-        pdfAmountPerChildCovered: "✓ Already allocated in compensatory benefits ({amount})",
+        pdfAmountPerChildCovered: "✓ Already allocated in compensatory benefits",
+        pdfAmountPerChildCoveredBreakdown: "{amount} × {children}",
         pdfTheoreticalShare: "Theoretical share",
         pdfDirectShareC1C2: "Direct share C1 / C2",
         pdfScenarioSection: "Scenario Lab",
@@ -4806,6 +4808,7 @@ const defaultExpenseItems = [
       const compBenefits = getCompensativeBenefitRows(m, c1Name, c2Name);
       const compBenefitsTotal = getCompensativeBenefitsTotal(compBenefits);
       const coveredPerChildAmountPdf = m.figli > 0 ? eur(compBenefitsTotal / m.figli) : eur(compBenefitsTotal);
+      const coveredPerChildBreakdownPdf = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmountPdf, children: m.figli || 0 });
       const compBenefitsRowsHtml = compBenefits.length
         ? compBenefits.map((row) => `<tr><td>${escapeHtml(row.label)}</td><td class="num">${eur(row.amount)}</td></tr>`).join("")
         : `<tr><td colspan="2">${tr("pdfCompBenefitsNone")}</td></tr>`;
@@ -5104,6 +5107,8 @@ const defaultExpenseItems = [
       const kpiBenefitRows = getCompensativeBenefitRows(m, c1n(), c2n());
       const kpiBenefitsTotal = getCompensativeBenefitsTotal(kpiBenefitRows);
       const coveredPerChildAmount = m.figli > 0 ? eur(kpiBenefitsTotal / m.figli) : eur(kpiBenefitsTotal);
+      const coveredPerChildBreakdown = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmount, children: m.figli || 0 });
+      const coveredPerChildHtml = `<span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span><span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdown)}</span>`;
 
       const items = [
         [tr("kpiActiveMode"), modeName, "warn"],
@@ -5116,7 +5121,7 @@ const defaultExpenseItems = [
         [`${tr("pdfTheoreticalShare")} ${c2n()}`, eur(m.quotaTeorica2), "ok"],
         [`${tr("pdfPostSupport")} ${c1n()}`, eur(m.post1), m.post1 >= 0 ? "ok" : "bad"],
         [`${tr("pdfPostSupport")} ${c2n()}`, eur(m.post2), m.post2 >= 0 ? "ok" : "bad"],
-        [tr("pdfAmountPerChild"), Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli) : msg("pdfAmountPerChildCovered", { amount: coveredPerChildAmount }), Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? "warn" : "ok"]
+        [tr("pdfAmountPerChild"), Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli) : coveredPerChildHtml, Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? "warn" : "ok", Math.max(m.assegnoDa1a2, m.assegnoDa2a1) <= 0]
       ];
 
       const kpiBenefitLines = kpiBenefitRows
@@ -5147,7 +5152,12 @@ const defaultExpenseItems = [
         if (isBenefitsRow) {
           el.innerHTML = `<span>${safeLabel}</span><p class="kpi-longtext-value ${cls}">${safeValue}</p>`;
         } else {
-          el.innerHTML = `<span>${safeLabel}</span><strong class="${cls}">${safeValue}</strong>`;
+          if (isHtml) {
+            el.classList.add("kpi-item--stacked");
+            el.innerHTML = `<span>${safeLabel}</span><strong class="${cls} kpi-covered-value">${safeValue}</strong>`;
+          } else {
+            el.innerHTML = `<span>${safeLabel}</span><strong class="${cls}">${safeValue}</strong>`;
+          }
         }
         kpi.appendChild(el);
       });
@@ -5673,6 +5683,9 @@ const defaultExpenseItems = [
     padding: 8px 10px; break-inside: avoid; }
   .kpi-lbl { font-size: 7.5pt; color: #4a7d77; text-transform: uppercase; letter-spacing: 0.4px; }
   .kpi-val { font-size: 13pt; font-weight: 700; margin-top: 2px; }
+  .kpi-val.kpi-covered-value { display: block; white-space: normal; }
+  .kpi-covered-caption { display: block; font-size: 8.2pt; line-height: 1.25; }
+  .kpi-covered-amount { display: block; margin-top: 3px; font-size: 14.8pt; font-weight: 800; line-height: 1.05; }
   .kpi-val.ok { color: #0b6e66; }
   .kpi-val.warn { color: #c77a11; }
   .kpi-val.bad { color: #c0392b; }
@@ -5994,7 +6007,7 @@ const defaultExpenseItems = [
   <div class="three-col">
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTotalExpenses")}</div><div class="kpi-val warn">${eur(m.speseTot)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfEstimatedChildrenNeeds")}</div><div class="kpi-val warn">${eur(m.fabbisognoFigli)}</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfAmountPerChild")}</div><div class="kpi-val ${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? 'warn' : 'ok'}">${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli) : escapeHtml(msg("pdfAmountPerChildCovered", { amount: coveredPerChildAmountPdf }))}</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">${tr("pdfAmountPerChild")}</div><div class="kpi-val ${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? 'warn' : 'ok'} ${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? '' : 'kpi-covered-value'}">${Math.max(m.assegnoDa1a2, m.assegnoDa2a1) > 0 ? eur(Math.max(m.assegnoDa1a2, m.assegnoDa2a1) / m.figli) : `<span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span><span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdownPdf)}</span>`}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTheoreticalShare")} ${c1n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica1)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfTheoreticalShare")} ${c2n()}</div><div class="kpi-val ok">${eur(m.quotaTeorica2)}</div></div>
     <div class="kpi-box"><div class="kpi-lbl">${tr("pdfSuggestedSupport")}</div>
