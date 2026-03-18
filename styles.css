@@ -495,12 +495,32 @@
       gap: 9px;
       align-content: start;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .spouse-support-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, #119084, #7cc6bb);
+      opacity: 0.85;
     }
 
     .spouse-support-card:focus-within {
       border-color: #98c6bc;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 0 0 2px rgba(15, 118, 109, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .spouse-support-card:hover {
+      border-color: #a8cec4;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 3px 10px rgba(17, 85, 76, 0.08);
+      transform: translateY(-1px);
     }
 
     .spouse-support-card .field {
@@ -588,6 +608,39 @@
       color: var(--muted);
     }
 
+    .income-summary-card {
+      border: 1px solid #c8ddd7;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(249, 253, 252, 0.98), rgba(239, 247, 244, 0.95));
+      padding: 9px 10px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .income-summary-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, #6ebdae, #b8ddd3);
+      opacity: 0.9;
+    }
+
+    .income-summary-card:hover,
+    .income-summary-card:focus-within {
+      border-color: #a9cdc4;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94), 0 3px 10px rgba(19, 92, 83, 0.09);
+      transform: translateY(-1px);
+    }
+
+    .income-summary-card > input {
+      margin-top: 2px;
+    }
+
     .income-monthly-meta {
       margin-top: 6px;
       padding: 8px 9px;
@@ -635,8 +688,26 @@
     }
 
     @media (max-width: 640px) {
+      .top-inputs {
+        grid-template-columns: 1fr;
+      }
+
       .income-monthly-meta-grid {
         grid-template-columns: 1fr;
+      }
+
+      .income-summary-card,
+      .spouse-support-card {
+        padding: 8px;
+        gap: 7px;
+      }
+
+      .spouse-support-card .field + .field {
+        padding-top: 7px;
+      }
+
+      .spouse-support-card .field label {
+        font-size: 0.84rem;
       }
     }
 
