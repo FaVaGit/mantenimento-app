@@ -1652,6 +1652,15 @@
       color: #204644;
     }
 
+    .spese-detail-col-amount,
+    .spese-detail-col-due {
+      width: 110px;
+    }
+
+    .spese-detail-col-actions {
+      width: 32px;
+    }
+
     .spese-detail-grid th {
       text-align: left;
       font-size: 0.68rem;
@@ -1661,7 +1670,7 @@
     }
 
     .spese-detail-grid td {
-      padding: 3px;
+      padding: 2px;
       vertical-align: middle;
     }
 
@@ -1672,22 +1681,24 @@
       background: #ffffff;
       color: #214b47;
       font-size: 0.72rem;
-      padding: 4px 6px;
+      padding: 3px 5px;
     }
 
     .spese-detail-actions-cell {
-      width: 30px;
+      width: 32px;
       text-align: center;
     }
 
     .spese-detail-row-remove {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       border: 1px solid #c4d7d2;
-      border-radius: 6px;
+      border-radius: 5px;
       background: #ffffff;
       color: #355b57;
       font-weight: 800;
+      font-size: 0.78rem;
+      line-height: 1;
       cursor: pointer;
     }
 

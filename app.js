@@ -257,6 +257,7 @@ const defaultExpenseItems = [
         expenseDetailColDue: "Scadenza",
         expenseDetailAddRow: "Aggiungi riga",
         expenseDetailRemoveRow: "Rimuovi riga",
+        expenseDetailRemoveRowHint: "Elimina questa riga",
         expenseDetailFreeTextPlaceholder: "Note libere aggiuntive...",
         expenseDetailCharsRemaining: "Caratteri rimanenti: {count}",
         expenseRemoveTitle: "Rimuovi voce spesa",
@@ -628,6 +629,7 @@ const defaultExpenseItems = [
         expenseDetailColDue: "Due date",
         expenseDetailAddRow: "Add row",
         expenseDetailRemoveRow: "Remove row",
+        expenseDetailRemoveRowHint: "Delete this row",
         expenseDetailFreeTextPlaceholder: "Additional free notes...",
         expenseDetailCharsRemaining: "Remaining characters: {count}",
         expenseRemoveTitle: "Remove expense item",
@@ -1568,17 +1570,24 @@ const defaultExpenseItems = [
     function buildExpenseDetailTableHtml(textareaId, rows, note = "") {
       const safeRows = (Array.isArray(rows) && rows.length ? rows : [{ what: "", amount: "", due: "" }])
         .slice(0, EXPENSE_DETAIL_MAX_ROWS);
+      const removeRowHint = escapeHtml(tr("expenseDetailRemoveRowHint") || tr("expenseDetailRemoveRow"));
       const rowsHtml = safeRows.map((row) => {
         const canRemove = safeRows.length > 1;
         return `<tr>
-          <td><input class="spese-detail-cell-input" data-col="what" type="text" maxlength="120" value="${escapeHtml(row.what || "")}" /></td>
-          <td><input class="spese-detail-cell-input" data-col="amount" type="text" maxlength="80" value="${escapeHtml(row.amount || "")}" /></td>
-          <td><input class="spese-detail-cell-input" data-col="due" type="text" maxlength="80" value="${escapeHtml(row.due || "")}" /></td>
-          <td class="spese-detail-actions-cell"><button type="button" class="spese-detail-row-remove" data-row-remove="1" ${canRemove ? "" : "disabled"} title="${escapeHtml(tr("expenseDetailRemoveRow"))}">-</button></td>
+          <td class="spese-detail-col-thing"><input class="spese-detail-cell-input" data-col="what" type="text" maxlength="120" value="${escapeHtml(row.what || "")}" /></td>
+          <td class="spese-detail-col-amount"><input class="spese-detail-cell-input" data-col="amount" type="text" maxlength="80" value="${escapeHtml(row.amount || "")}" /></td>
+          <td class="spese-detail-col-due"><input class="spese-detail-cell-input" data-col="due" type="text" maxlength="80" value="${escapeHtml(row.due || "")}" /></td>
+          <td class="spese-detail-actions-cell"><button type="button" class="spese-detail-row-remove" data-row-remove="1" ${canRemove ? "" : "disabled"} title="${removeRowHint}" aria-label="${removeRowHint}">×</button></td>
         </tr>`;
       }).join("");
       return `<div class="spese-detail-grid-wrap" data-detail-table="${textareaId}">
         <table class="spese-detail-grid" aria-label="${escapeHtml(tr("expenseDetailTitle"))}">
+          <colgroup>
+            <col class="spese-detail-col-thing" />
+            <col class="spese-detail-col-amount" />
+            <col class="spese-detail-col-due" />
+            <col class="spese-detail-col-actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>${escapeHtml(tr("expenseDetailColThing"))}</th>
