@@ -191,7 +191,7 @@ const defaultExpenseItems = [
         pdfMonthlySuffix: " mensile",
         pdfMonthlyConv: "Reddito netto mensile (÷12)",
         pdfSupportReceived: "Assegno percepito",
-        pdfSupportPaid: "Assegno pagato",
+        pdfSupportPaid: "Assegni pagati preesistenti",
         pdfDirectExpenses: "Spese dirette",
         pdfFamilyBenefits: "Assegni familiari / INPS",
         pdfExpenseSection: "Voci di Spesa",
@@ -569,7 +569,7 @@ const defaultExpenseItems = [
         pdfMonthlySuffix: " monthly",
         pdfMonthlyConv: "Monthly net income (÷12)",
         pdfSupportReceived: "Support received",
-        pdfSupportPaid: "Support paid",
+        pdfSupportPaid: "Pre-existing support paid",
         pdfDirectExpenses: "Direct expenses",
         pdfFamilyBenefits: "Family benefits / INPS",
         pdfExpenseSection: "Expense Items",
@@ -4893,7 +4893,7 @@ const defaultExpenseItems = [
         const coveredPerChildBreakdown = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmount, children: m.figli || 0 });
         const existingSupportFlows = getExistingMonthlySupportFlows(m, c1n(), c2n());
         const existingSupportHtml = existingSupportFlows.length
-          ? `<div class="result-covered-extra"><span class="result-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="result-covered-extra-value">${existingSupportFlows.map((flow) => `${escapeHtml(flow.from)} &rarr; ${escapeHtml(flow.to)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
+          ? `<div class="result-covered-extra"><span class="result-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="result-covered-extra-value">${existingSupportFlows.map((flow) => `${escapeHtml(flow.spouse)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
           : "";
         if (benefitRows.length) {
           const rawBenefs = Array.isArray(m.compensativeBenefits)
@@ -5030,8 +5030,8 @@ const defaultExpenseItems = [
       const flows = [];
       const paidBy1 = Number((m && m.aPag1) || 0);
       const paidBy2 = Number((m && m.aPag2) || 0);
-      if (paidBy1 > 0.005) flows.push({ from: name1, to: name2, amount: paidBy1 });
-      if (paidBy2 > 0.005) flows.push({ from: name2, to: name1, amount: paidBy2 });
+      if (paidBy1 > 0.005) flows.push({ spouse: name1, amount: paidBy1 });
+      if (paidBy2 > 0.005) flows.push({ spouse: name2, amount: paidBy2 });
       return flows;
     }
 
@@ -5141,7 +5141,7 @@ const defaultExpenseItems = [
         const coveredPerChildBreakdownMain = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmountMain, children: m.figli || 0 });
         const existingSupportFlowsMain = getExistingMonthlySupportFlows(m, c1n(), c2n());
         const existingSupportHtmlMain = existingSupportFlowsMain.length
-          ? `<div class="result-covered-extra"><span class="result-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="result-covered-extra-value">${existingSupportFlowsMain.map((flow) => `${escapeHtml(flow.from)} &rarr; ${escapeHtml(flow.to)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
+          ? `<div class="result-covered-extra"><span class="result-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="result-covered-extra-value">${existingSupportFlowsMain.map((flow) => `${escapeHtml(flow.spouse)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
           : "";
         let benefitCardsHtml = "";
         if (benefitRows.length) {
@@ -5410,7 +5410,7 @@ const defaultExpenseItems = [
       const coveredPerChildBreakdownPdf = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmountPdf, children: m.figli || 0 });
       const existingSupportFlowsPdf = getExistingMonthlySupportFlows(m, c1Name, c2Name);
       const existingSupportHtmlPdf = existingSupportFlowsPdf.length
-        ? `<div class="pdf-covered-extra"><span class="pdf-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="pdf-covered-extra-value">${existingSupportFlowsPdf.map((flow) => `${escapeHtml(flow.from)} &rarr; ${escapeHtml(flow.to)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
+        ? `<div class="pdf-covered-extra"><span class="pdf-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="pdf-covered-extra-value">${existingSupportFlowsPdf.map((flow) => `${escapeHtml(flow.spouse)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
         : "";
       const compBenefitsRowsHtml = compBenefits.length
         ? compBenefits.map((row) => `<tr><td>${escapeHtml(row.label)}</td><td class="num">${eur(row.amount)}</td></tr>`).join("")
