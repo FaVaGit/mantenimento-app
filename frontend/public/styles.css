@@ -486,14 +486,35 @@
     }
 
     .spouse-support-card {
-      border: 1px solid #cfded9;
-      border-radius: 11px;
-      background: linear-gradient(180deg, rgba(247, 252, 250, 0.95), rgba(239, 247, 244, 0.92));
-      padding: 8px;
+      border: 1px solid #c5d9d3;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(248, 252, 251, 0.98), rgba(238, 246, 243, 0.94));
+      padding: 9px 10px;
       display: grid;
       grid-template-columns: 1fr;
-      gap: 8px;
+      gap: 9px;
       align-content: start;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .spouse-support-card:focus-within {
+      border-color: #98c6bc;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 0 0 2px rgba(15, 118, 109, 0.08);
+    }
+
+    .spouse-support-card .field {
+      gap: 4px;
+    }
+
+    .spouse-support-card .field + .field {
+      border-top: 1px dashed #cddfd9;
+      padding-top: 8px;
+    }
+
+    .spouse-support-card .field label {
+      font-size: 0.86rem;
+      color: #45615d;
     }
     
     .shared-grid {
