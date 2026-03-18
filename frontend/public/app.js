@@ -355,8 +355,8 @@ const defaultExpenseItems = [
         calcLegalRule4: "4) L'assegno e il saldo positivo del coniuge debitore verso l'altro.",
         calcGeneralTitle: "Impostazione generale del calcolo",
         calcActiveMode: "Modalita attiva",
-        calcGeneral1: "Disponibilita netta C1 = reddito netto C1 + assegni percepiti C1 + assegni familiari C1 - spese C1. (Gli assegni pagati da C1 per obblighi pregressi non riducono la base di calcolo.)",
-        calcGeneral2: "Disponibilita netta C2 = reddito netto C2 + assegni percepiti C2 + assegni familiari C2 - spese C2. (Gli assegni pagati da C2 per obblighi pregressi non riducono la base di calcolo.)",
+        calcGeneral1: "Disponibilita netta C1 = reddito netto C1 + assegni percepiti C1 + assegni familiari C1 - assegni pagati C1 - spese C1.",
+        calcGeneral2: "Disponibilita netta C2 = reddito netto C2 + assegni percepiti C2 + assegni familiari C2 - assegni pagati C2 - spese C2.",
         calcGeneral3: "Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.",
         calcGeneral4: "Fabbisogno figli stimato = totale spese inserite x 35%.",
         calcInputMeaningTitle: "Significato delle principali voci richieste in input",
@@ -3893,8 +3893,8 @@ const defaultExpenseItems = [
       const spese2 = speseBase2 + quotaMutuoSpese2;
       const speseTot = spese1 + spese2;
 
-      const disp1 = r1 + aPerc1 + aFam1 - spese1;
-      const disp2 = r2 + aPerc2 + aFam2 - spese2;
+      const disp1 = r1 + aPerc1 + aFam1 - aPag1 - spese1;
+      const disp2 = r2 + aPerc2 + aFam2 - aPag2 - spese2;
 
       const dispPos1 = Math.max(0, disp1);
       const dispPos2 = Math.max(0, disp2);
@@ -4907,6 +4907,7 @@ const defaultExpenseItems = [
           const totalLabel = currentLang === "en" ? "Total allocated benefits" : "Totale benefici allocati";
           resultHtml = `
             <div class="result-covered-summary">
+              <span class="kpi-covered-caption">${escapeHtml(tr("calcNoTransferSuggested"))}</span>
               <span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span>
               <span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdown)}</span>
               ${existingSupportHtml}
@@ -4920,6 +4921,7 @@ const defaultExpenseItems = [
         } else {
           resultHtml = `
             <div class="result-covered-summary">
+              <span class="kpi-covered-caption">${escapeHtml(tr("calcNoTransferSuggested"))}</span>
               <span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span>
               <span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdown)}</span>
               ${existingSupportHtml}
@@ -5160,7 +5162,7 @@ const defaultExpenseItems = [
             </div>
           `;
         }
-        mainHtml = `<div class="result-covered-summary"><span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span><span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdownMain)}</span>${existingSupportHtmlMain}</div>${benefitCardsHtml}`;
+        mainHtml = `<div class="result-covered-summary"><span class="kpi-covered-caption">${escapeHtml(tr("calcNoTransferSuggested"))}</span><span class="kpi-covered-caption">${escapeHtml(tr("pdfAmountPerChildCovered"))}</span><span class="kpi-covered-amount">${escapeHtml(coveredPerChildBreakdownMain)}</span>${existingSupportHtmlMain}</div>${benefitCardsHtml}`;
       }
       resultMain.innerHTML = mainHtml;
 
