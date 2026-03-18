@@ -57,8 +57,8 @@ function calculateModel(input) {
   const spese2 = speseBase2 + quotaMutuoSpese2;
   const speseTot = spese1 + spese2;
 
-  const disp1 = r1 + aPerc1 + aFam1 - spese1;
-  const disp2 = r2 + aPerc2 + aFam2 - spese2;
+  const disp1 = r1 + aPerc1 + aFam1 - aPag1 - spese1;
+  const disp2 = r2 + aPerc2 + aFam2 - aPag2 - spese2;
 
   const dispPos1 = Math.max(0, disp1);
   const dispPos2 = Math.max(0, disp2);
