@@ -2757,7 +2757,7 @@
       min-width: 0;
     }
 
-    .kpi-item span {
+    .kpi-item > span {
       font-size: 0.78rem;
       color: var(--muted);
       flex: 1;
@@ -2805,7 +2805,7 @@
       gap: 5px;
     }
 
-    .kpi-item--longtext span {
+    .kpi-item--longtext > span {
       width: 100%;
       flex: none;
     }
