@@ -5719,8 +5719,8 @@ const defaultExpenseItems = [
   .kpi-lbl { font-size: 7.5pt; color: #4a7d77; text-transform: uppercase; letter-spacing: 0.4px; }
   .kpi-val { font-size: 13pt; font-weight: 700; margin-top: 2px; }
   .kpi-val.kpi-covered-value { display: block; white-space: normal; }
-  .kpi-covered-caption { display: block; font-size: 8.2pt; line-height: 1.25; }
-  .kpi-covered-amount { display: block; margin-top: 3px; font-size: 14.8pt; font-weight: 800; line-height: 1.05; }
+  .kpi-covered-caption { display: block; font-size: 9.2pt; line-height: 1.2; }
+  .kpi-covered-amount { display: block; margin-top: 4px; font-size: 17.2pt; font-weight: 900; line-height: 1; letter-spacing: 0.01em; }
   .kpi-val.ok { color: #0b6e66; }
   .kpi-val.warn { color: #c77a11; }
   .kpi-val.bad { color: #c0392b; }

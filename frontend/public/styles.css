@@ -2946,20 +2946,25 @@
       white-space: normal;
       text-align: left;
       width: 100%;
+      min-height: 52px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .kpi-covered-caption {
       display: block;
-      font-size: 0.82rem;
-      line-height: 1.25;
+      font-size: 0.9rem;
+      line-height: 1.2;
     }
 
     .kpi-covered-amount {
       display: block;
-      margin-top: 3px;
-      font-size: 1.18rem;
-      font-weight: 800;
-      line-height: 1.05;
+      margin-top: 5px;
+      font-size: clamp(1.5rem, 3.2vw, 2rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.01em;
     }
 
     .kpi-item--longtext {
