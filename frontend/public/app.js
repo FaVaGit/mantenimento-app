@@ -355,8 +355,8 @@ const defaultExpenseItems = [
         calcLegalRule4: "4) L'assegno e il saldo positivo del coniuge debitore verso l'altro.",
         calcGeneralTitle: "Impostazione generale del calcolo",
         calcActiveMode: "Modalita attiva",
-        calcGeneral1: "Disponibilita netta C1 = reddito netto C1 + assegni percepiti C1 + assegni familiari C1 - assegni pagati C1 - spese C1.",
-        calcGeneral2: "Disponibilita netta C2 = reddito netto C2 + assegni percepiti C2 + assegni familiari C2 - assegni pagati C2 - spese C2.",
+        calcGeneral1: "Disponibilita netta C1 = reddito netto C1 + assegni percepiti C1 + assegni familiari C1 - spese C1. (Gli assegni pagati da C1 per obblighi pregressi non riducono la base di calcolo.)",
+        calcGeneral2: "Disponibilita netta C2 = reddito netto C2 + assegni percepiti C2 + assegni familiari C2 - spese C2. (Gli assegni pagati da C2 per obblighi pregressi non riducono la base di calcolo.)",
         calcGeneral3: "Peso contributivo = disponibilita positiva del coniuge / somma disponibilita positive.",
         calcGeneral4: "Fabbisogno figli stimato = totale spese inserite x 35%.",
         calcInputMeaningTitle: "Significato delle principali voci richieste in input",
@@ -3893,8 +3893,8 @@ const defaultExpenseItems = [
       const spese2 = speseBase2 + quotaMutuoSpese2;
       const speseTot = spese1 + spese2;
 
-      const disp1 = r1 + aPerc1 + aFam1 - aPag1 - spese1;
-      const disp2 = r2 + aPerc2 + aFam2 - aPag2 - spese2;
+      const disp1 = r1 + aPerc1 + aFam1 - spese1;
+      const disp2 = r2 + aPerc2 + aFam2 - spese2;
 
       const dispPos1 = Math.max(0, disp1);
       const dispPos2 = Math.max(0, disp2);
@@ -4892,9 +4892,7 @@ const defaultExpenseItems = [
         const coveredPerChildAmount = m.figli > 0 ? eur(benefitTotal / m.figli) : eur(benefitTotal);
         const coveredPerChildBreakdown = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmount, children: m.figli || 0 });
         const existingSupportFlows = getExistingMonthlySupportFlows(m, c1n(), c2n());
-        const existingSupportHtml = existingSupportFlows.length
-          ? `<div class="result-covered-extra"><span class="result-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="result-covered-extra-value">${existingSupportFlows.map((flow) => `${escapeHtml(flow.spouse)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
-          : "";
+        const existingSupportHtml = "";
         if (benefitRows.length) {
           const rawBenefs = Array.isArray(m.compensativeBenefits)
             ? m.compensativeBenefits.filter((r) => r && Number(r.amount || 0) > 0.005)
@@ -5140,9 +5138,7 @@ const defaultExpenseItems = [
         const coveredPerChildAmountMain = m.figli > 0 ? eur(benefitTotal / m.figli) : eur(benefitTotal);
         const coveredPerChildBreakdownMain = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmountMain, children: m.figli || 0 });
         const existingSupportFlowsMain = getExistingMonthlySupportFlows(m, c1n(), c2n());
-        const existingSupportHtmlMain = existingSupportFlowsMain.length
-          ? `<div class="result-covered-extra"><span class="result-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="result-covered-extra-value">${existingSupportFlowsMain.map((flow) => `${escapeHtml(flow.spouse)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
-          : "";
+        const existingSupportHtmlMain = "";
         let benefitCardsHtml = "";
         if (benefitRows.length) {
           const rawBenefs = Array.isArray(m.compensativeBenefits)
@@ -5409,9 +5405,7 @@ const defaultExpenseItems = [
       const coveredPerChildAmountPdf = m.figli > 0 ? eur(compBenefitsTotal / m.figli) : eur(compBenefitsTotal);
       const coveredPerChildBreakdownPdf = msg("pdfAmountPerChildCoveredBreakdown", { amount: coveredPerChildAmountPdf, children: m.figli || 0 });
       const existingSupportFlowsPdf = getExistingMonthlySupportFlows(m, c1Name, c2Name);
-      const existingSupportHtmlPdf = existingSupportFlowsPdf.length
-        ? `<div class="pdf-covered-extra"><span class="pdf-covered-extra-label">${escapeHtml(tr("pdfSupportPaid"))}</span><strong class="pdf-covered-extra-value">${existingSupportFlowsPdf.map((flow) => `${escapeHtml(flow.spouse)}: ${eur(flow.amount)}`).join(" · ")}</strong></div>`
-        : "";
+      const existingSupportHtmlPdf = "";
       const compBenefitsRowsHtml = compBenefits.length
         ? compBenefits.map((row) => `<tr><td>${escapeHtml(row.label)}</td><td class="num">${eur(row.amount)}</td></tr>`).join("")
         : `<tr><td colspan="2">${tr("pdfCompBenefitsNone")}</td></tr>`;
