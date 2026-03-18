@@ -556,6 +556,58 @@
       color: var(--muted);
     }
 
+    .income-monthly-meta {
+      margin-top: 6px;
+      padding: 8px 9px;
+      border: 1px solid #d3e2dd;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(243, 249, 247, 0.96), rgba(236, 245, 242, 0.9));
+    }
+
+    .income-monthly-meta.is-hidden {
+      display: none;
+    }
+
+    .income-monthly-meta-intro {
+      font-size: 0.76rem;
+      line-height: 1.35;
+      color: #3f5e5a;
+    }
+
+    .income-monthly-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .income-monthly-meta-field {
+      gap: 4px;
+    }
+
+    .income-monthly-meta-field label {
+      font-size: 0.78rem;
+    }
+
+    .income-monthly-meta-field select,
+    .income-monthly-meta-field input {
+      min-width: 0;
+    }
+
+    .income-monthly-meta-note {
+      margin-top: 7px;
+      font-size: 0.74rem;
+      line-height: 1.35;
+      color: #29514c;
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .income-monthly-meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .perm-inline-field {
       grid-column: 1 / -1;
     }

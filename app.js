@@ -92,6 +92,10 @@ const defaultExpenseItems = [
         redditoMensile: "Reddito mensile netto",
         redditoCu: "Reddito lordo annuale CU (Certif. Unica)",
         incomeHintCu: "Reddito lordo annuale da Certificazione Unica di {spouse}: il sistema stima il netto mensile deducendo IRPEF, INPS dipendente e addizionali (stima orientativa).",
+        incomeMonthlyMetaIntro: "La cifra indicata riassume il totale medio mensile, comprensivo del numero di mensilita e di eventuali bonus ricevuti.",
+        incomeMonthlyInstallmentsLabel: "Mensilita annue",
+        incomeMonthlyBonusLabel: "Bonus netti annui ({currency})",
+        incomeMonthlyMetaNote: "Configurazione indicativa: {months} mensilita considerate, bonus netti annui {bonus}.",
         pdfIncomeCuBase: "CU – Lordo annuale (netto stimato)",
         pdfCuMonthlyConv: "Netto mensile stimato da CU (÷IRPEF/INPS)",
         cuNetNoteText: "il netto mensile è stimato dal lordo CU applicando aliquote IRPEF 2025, contributi INPS dipendente (9,19%) e addizionali medie (1,73%). Stima orientativa, non sostitutiva di calcolo professionale.",
@@ -466,6 +470,10 @@ const defaultExpenseItems = [
         redditoMensile: "Monthly net income",
         redditoCu: "Gross annual income – CU (tax certificate)",
         incomeHintCu: "Gross annual income from {spouse}'s CU (Certificazione Unica): the system estimates monthly net by deducting IRPEF, employee INPS (9.19%) and average regional taxes (indicative estimate).",
+        incomeMonthlyMetaIntro: "The amount shown summarizes the average monthly total, including the number of salary payments and any bonuses received.",
+        incomeMonthlyInstallmentsLabel: "Annual salary payments",
+        incomeMonthlyBonusLabel: "Annual net bonuses ({currency})",
+        incomeMonthlyMetaNote: "Reference setup: {months} salary payments considered, annual net bonuses {bonus}.",
         pdfIncomeCuBase: "CU – Gross yearly (estimated net)",
         pdfCuMonthlyConv: "Estimated monthly net from CU (÷IRPEF/INPS)",
         cuNetNoteText: "monthly net is estimated from CU gross income applying 2025 IRPEF brackets, employee INPS contributions (9.19%) and average regional/municipal taxes (1.73%). Indicative estimate only.",
@@ -1064,6 +1072,24 @@ const defaultExpenseItems = [
 
     function getCurrentLocale() {
       return currentLang === "en" ? "en-US" : "it-IT";
+    }
+
+    function updateIncomeMonthlyMetaUi() {
+      const isMonthly = (document.getElementById("incomeMode")?.value || "monthly") === "monthly";
+      [1, 2].forEach((idx) => {
+        const wrap = document.getElementById(`incomeMonthlyMeta${idx}`);
+        const intro = document.getElementById(`incomeMonthlyIntro${idx}`);
+        const installmentsLabel = document.getElementById(`lblMensilita${idx}`);
+        const bonusLabel = document.getElementById(`lblBonusNetto${idx}`);
+        const note = document.getElementById(`incomeMonthlyNote${idx}`);
+        const months = Math.min(15, Math.max(12, Math.round(num(`mensilita${idx}`) || 12)));
+        const bonus = eur(num(`bonusNetto${idx}`));
+        if (wrap) wrap.classList.toggle("is-hidden", !isMonthly);
+        if (intro) intro.textContent = tr("incomeMonthlyMetaIntro");
+        if (installmentsLabel) installmentsLabel.textContent = tr("incomeMonthlyInstallmentsLabel");
+        if (bonusLabel) bonusLabel.textContent = msg("incomeMonthlyBonusLabel", { currency: currentCurrency });
+        if (note) note.textContent = msg("incomeMonthlyMetaNote", { months, bonus });
+      });
     }
 
     function convertedMoney(v) {
@@ -3751,6 +3777,7 @@ const defaultExpenseItems = [
       if (redditoLabel2) redditoLabel2.textContent = labelText;
       if (redditoHint1) redditoHint1.title = hintText1;
       if (redditoHint2) redditoHint2.title = hintText2;
+      updateIncomeMonthlyMetaUi();
 
       const guideline = document.getElementById("modeGuideline");
       if (guideline) {
@@ -3784,6 +3811,10 @@ const defaultExpenseItems = [
         normProfile: calcProfileCfg.normProfile,
         r1Raw: num("reddito1"),
         r2Raw: num("reddito2"),
+        mensilita1: Math.min(15, Math.max(12, Math.round(num("mensilita1") || 12))),
+        mensilita2: Math.min(15, Math.max(12, Math.round(num("mensilita2") || 12))),
+        bonusNetto1: num("bonusNetto1"),
+        bonusNetto2: num("bonusNetto2"),
         figli: Math.max(1, Math.round(num("numFigli"))),
         perm1: Math.min(100, Math.max(0, num("perm1"))),
         mode: calcProfileCfg.mode,
@@ -4632,6 +4663,10 @@ const defaultExpenseItems = [
 
       setVal("reddito1", Number(payload.r1Raw || 0));
       setVal("reddito2", Number(payload.r2Raw || 0));
+      setVal("mensilita1", Math.min(15, Math.max(12, Math.round(Number(payload.mensilita1 || 12)))));
+      setVal("mensilita2", Math.min(15, Math.max(12, Math.round(Number(payload.mensilita2 || 12)))));
+      setVal("bonusNetto1", Number(payload.bonusNetto1 || 0));
+      setVal("bonusNetto2", Number(payload.bonusNetto2 || 0));
       setVal("numFigli", Math.max(1, Math.round(Number(payload.figli || 1))));
       setVal("perm1", Math.min(100, Math.max(0, Number(payload.perm1 || 0))));
       setVal("simplePerc", Math.min(100, Math.max(0, Number(payload.simplePerc || 0))));
@@ -6247,6 +6282,10 @@ ${scenarioLab.length ? `
       const base = {
         reddito1: num("reddito1"),
         reddito2: num("reddito2"),
+        mensilita1: Math.min(15, Math.max(12, Math.round(num("mensilita1") || 12))),
+        mensilita2: Math.min(15, Math.max(12, Math.round(num("mensilita2") || 12))),
+        bonusNetto1: num("bonusNetto1"),
+        bonusNetto2: num("bonusNetto2"),
         incomeMode: document.getElementById("incomeMode").value,
         calcProfile: calcProfileCfg.id,
         normProfile: calcProfileCfg.normProfile,
@@ -6726,6 +6765,8 @@ ${scenarioLab.length ? `
             r1: num("reddito1"),
             r2: num("reddito2")
           };
+        } else if (e.target.id === "bonusNetto1" || e.target.id === "bonusNetto2") {
+          updateIncomeMonthlyMetaUi();
         }
         renderAll();
       }
@@ -6740,6 +6781,8 @@ ${scenarioLab.length ? `
         }
         updateModeUi();
         renderAll();
+      } else if (e.target && (e.target.id === "mensilita1" || e.target.id === "mensilita2")) {
+        updateIncomeMonthlyMetaUi();
       } else if (e.target && (e.target.id === "primaCasaMutuoEnabled" || e.target.id === "primaCasaAssegnataA" || e.target.id === "primaCasaMutuoScadenza")) {
         updateFirstHomeMortgageUi();
         renderAll();
